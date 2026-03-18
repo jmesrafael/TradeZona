@@ -1,27 +1,5 @@
-// supabase/functions/create-checkout/index.ts
-//
-// SETUP STEPS:
-// 1. Install Supabase CLI: https://supabase.com/docs/guides/cli
-// 2. Run: supabase functions new create-checkout
-// 3. Replace this file content with the code below
-// 4. Set secrets:
-//    supabase secrets set STRIPE_SECRET_KEY=sk_live_XXXX
-//    supabase secrets set STRIPE_PRICE_ID=price_XXXX
-//    supabase secrets set APP_URL=https://your-netlify-site.netlify.app
-// 5. Deploy: supabase functions deploy create-checkout
-//
-// In Stripe dashboard:
-// - Create a Product "TradeZona Pro" → recurring $5/month
-// - Copy the Price ID (starts with price_) → set as STRIPE_PRICE_ID
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@12.18.0?target=deno&no-check";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-  apiVersion: "2023-10-16",
-  httpClient: Stripe.createFetchHttpClient(),
-});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,13 +7,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // 1. Verify the user is logged in via Supabase JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -56,7 +32,6 @@ serve(async (req) => {
       });
     }
 
-    // 2. Check if user already has a Stripe customer ID (stored in profiles)
     const { data: profile } = await supabase
       .from("profiles")
       .select("stripe_customer_id, plan")
@@ -64,23 +39,32 @@ serve(async (req) => {
       .single();
 
     if (profile?.plan === "pro") {
-      return new Response(JSON.stringify({ error: "Already subscribed to Pro" }), {
+      return new Response(JSON.stringify({ error: "Already on Pro" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // 3. Get or create Stripe customer
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")!;
+    const appUrl = Deno.env.get("APP_URL") || "https://tradezona.vercel.app";
+
+    // Get or create Stripe customer via REST API directly
     let customerId = profile?.stripe_customer_id;
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { supabase_user_id: user.id },
+      const customerRes = await fetch("https://api.stripe.com/v1/customers", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${stripeKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          email: user.email!,
+          "metadata[supabase_user_id]": user.id,
+        }),
       });
+      const customer = await customerRes.json();
       customerId = customer.id;
 
-      // Save customer ID to profiles table
-      // NOTE: You need to add stripe_customer_id column to profiles:
-      //   ALTER TABLE public.profiles ADD COLUMN stripe_customer_id text;
+      // Save customer ID using service role
       const serviceClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -91,20 +75,31 @@ serve(async (req) => {
         .eq("id", user.id);
     }
 
-    // 4. Create Stripe Checkout session
-    const appUrl = Deno.env.get("APP_URL") || "https://yoursite.netlify.app";
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      line_items: [{ price: Deno.env.get("STRIPE_PRICE_ID")!, quantity: 1 }],
-      success_url: `${appUrl}/subscription.html?upgraded=1`,
-      cancel_url:  `${appUrl}/subscription.html?cancelled=1`,
-      allow_promotion_codes: true,
-      billing_address_collection: "auto",
-      metadata: { supabase_user_id: user.id },
+    // Create checkout session via REST API directly
+    const sessionRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${stripeKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        customer: customerId,
+        mode: "subscription",
+        "line_items[0][price]": Deno.env.get("STRIPE_PRICE_ID")!,
+        "line_items[0][quantity]": "1",
+        success_url: `${appUrl}/subscription.html?upgraded=1`,
+        cancel_url: `${appUrl}/subscription.html?cancelled=1`,
+        "metadata[supabase_user_id]": user.id,
+      }),
     });
 
-    // 5. Return checkout URL → frontend redirects user there
+    const session = await sessionRes.json();
+
+    if (!session.url) {
+      console.error("Stripe session error:", JSON.stringify(session));
+      throw new Error(session.error?.message || "Failed to create session");
+    }
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
