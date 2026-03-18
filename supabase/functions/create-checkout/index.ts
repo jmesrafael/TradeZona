@@ -15,7 +15,7 @@
 // - Copy the Price ID (starts with price_) → set as STRIPE_PRICE_ID
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@13.3.0?target=deno";
+import Stripe from "https://esm.sh/stripe@12.18.0?target=deno&no-check";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
@@ -83,7 +83,7 @@ serve(async (req) => {
       //   ALTER TABLE public.profiles ADD COLUMN stripe_customer_id text;
       const serviceClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SERVICE_ROLE_KEY")!
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
       await serviceClient
         .from("profiles")
