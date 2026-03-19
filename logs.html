@@ -256,7 +256,12 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
 // ── Theme ──────────────────────────────────────────────────────
 function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
 (()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
-window.addEventListener('message',e=>{if(e.data?.theme)applyTheme(e.data.theme);if(e.data?.type==='tz_settings_updated')reloadSettings();if(e.data?.type==='tz_plan'&&e.data.isPro!==undefined)userIsPro=e.data.isPro;});
+window.addEventListener('message',e=>{
+  if(e.data?.theme)applyTheme(e.data.theme);
+  if(e.data?.type==='tz_settings_updated')reloadSettings();
+  if(e.data?.type==='tz_plan'&&e.data.isPro!==undefined)userIsPro=e.data.isPro;
+  if(e.data?.type==='tz_flush_request')flushAll();
+});
 
 // ── State ─────────────────────────────────────────────────────
 const jid=sessionStorage.getItem('tz_current_journal')||(()=>{try{return parent?.sessionStorage?.getItem('tz_current_journal');}catch(e){return null;}})();
@@ -265,15 +270,18 @@ let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
 let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null;
 
 // ── Auto-save: per-trade debounce timers ───────────────────────
-// Every edit updates trades[] immediately and schedules a 600ms save for that trade.
-// On page hide (navigating away), all pending saves are flushed synchronously.
+// Every edit updates trades[] immediately and schedules a short debounced save.
+// On blur/change (discrete events), saves are committed immediately — no debounce.
+// The parent (journal.html) calls flushAndAck() before navigating away,
+// which flushes all pending saves and posts 'tz_flushed' back when done.
 const _saveTimers={};  // tradeId → timerId
 const _pending=new Set(); // tradeIds with unsaved changes
 
 function scheduleSave(id){
   _pending.add(id);
   clearTimeout(_saveTimers[id]);
-  _saveTimers[id]=setTimeout(()=>commitSave(id),600);
+  // Short 300ms debounce for oninput — aggressive enough to save before most navigations
+  _saveTimers[id]=setTimeout(()=>commitSave(id),300);
   setSaveInd('saving');
 }
 
@@ -288,19 +296,26 @@ async function commitSave(id){
     _pending.delete(id);
     if(_pending.size===0)setSaveInd('saved');
   }catch(e){
-    showToast('Auto-save failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+    showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');
   }
 }
 
+// Flush all dirty trades — called by parent before navigating away.
+// Posts 'tz_flushed' back to parent when done so parent knows it's safe to navigate.
 async function flushAll(){
   const ids=[..._pending];
-  if(!ids.length)return;
-  await Promise.all(ids.map(id=>commitSave(id)));
+  if(!ids.length){
+    try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}
+    return;
+  }
+  try{
+    await Promise.all(ids.map(id=>commitSave(id)));
+  }finally{
+    try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}
+  }
 }
 
-// Flush when page is hidden or unloaded (user navigates to dashboard, closes tab, etc.)
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushAll();});
-window.addEventListener('pagehide',()=>flushAll());
+// Listen for flush request from parent (before navigation)
 
 // Save indicator
 let _savedTimer=null;

@@ -570,13 +570,43 @@ applyTheme(localStorage.getItem('tl_theme')||'dark');
 })();
 
 // ── Navigation ──────────────────────────────────────
+// ── Safe navigation — always flush logs before leaving ─────────
+// When the user navigates away, we ask the logs iframe to save all pending
+// changes first, wait for its 'tz_flushed' ack, then navigate.
+// This is the only reliable way to save because async fetch() is cancelled
+// when an iframe is destroyed mid-flight.
+let _flushTarget=null; // where to navigate after flush
+let _flushTimer=null;
+
+function navigateSafely(dest){
+  const logsFrame=document.getElementById('logsFrame');
+  // If logs iframe isn't loaded or has no pending saves, navigate immediately
+  if(!logsFrame?.contentWindow){location.href=dest;return;}
+  _flushTarget=dest;
+  // Give the iframe 2s max to flush — then navigate regardless
+  clearTimeout(_flushTimer);
+  _flushTimer=setTimeout(()=>{_flushTarget=null;location.href=dest;},2000);
+  try{logsFrame.contentWindow.postMessage({type:'tz_flush_request'},'*');}
+  catch(e){location.href=dest;}
+}
+
+// Listen for flush completion from logs iframe
+window.addEventListener('message',e=>{
+  if(e.data?.type==='tz_flushed'&&_flushTarget){
+    clearTimeout(_flushTimer);
+    const dest=_flushTarget;
+    _flushTarget=null;
+    location.href=dest;
+  }
+});
+
 function goBack(){
   // Only block navigation if we're on the settings tab with unsaved changes
   if(activeTab==='settings'&&isDirty){
     showToast('Save or discard your settings changes first.','fa-solid fa-triangle-exclamation','red');
     return;
   }
-  location.href='/dashboard';
+  navigateSafely('/dashboard');
 }
 
 function switchTab(name){
