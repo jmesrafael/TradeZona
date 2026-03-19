@@ -1,9 +1,11 @@
+<!-- journal.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — Journal</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -13,38 +15,65 @@
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes spin{to{transform:rotate(360deg)}}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0}
-.hleft{display:flex;align-items:center;gap:12px}
-.logo-link{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
-.logo-link span{color:var(--accent)}
-.back-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 12px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif}
+
+/* ── Page loader ── */
+.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .35s}
+.page-loader.gone{opacity:0;pointer-events:none}
+.pl-logo{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:18px;text-align:center}
+.pl-logo span{color:var(--accent)}
+.pl-spin{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+
+/* ── Header ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;gap:12px}
+.hleft{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
 .back-btn:hover{border-color:var(--accent2);color:var(--text)}
-.jname{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--text);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-nav{display:flex;gap:2px;padding:8px 20px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;align-items:center}
-.tab{padding:8px 15px;background:none;border:none;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.jname{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.hright{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.huser-info{display:flex;align-items:center;gap:7px;padding:5px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s}
+.huser-info:hover{border-color:var(--accent2)}
+.huser-name{font-size:12px;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.badge-pro{background:rgba(0,255,136,.15);color:var(--accent2);border:1px solid rgba(0,255,136,.3)}
+.badge-free{background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border)}
+
+/* ── Nav ── */
+nav{display:flex;gap:2px;padding:8px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tab{padding:7px 13px;background:none;border:none;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .tab.active{color:var(--accent);background:rgba(0,255,136,.08)}
 .tab-spacer{flex:1}
-.tab-content{display:none;flex:1;overflow:hidden}
+.tab-content{display:none;flex:1;overflow:hidden;position:relative}
 .tab-content.active{display:flex;flex-direction:column}
-iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 110px)}
-/* Settings panel */
-.settings-panel{flex:1;overflow-y:auto;padding:28px 24px;background:var(--bg)}
-.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:980px;margin:0 auto}
+iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 112px);opacity:0;transition:opacity .25s}
+iframe.ready{opacity:1}
+
+/* Tab loading overlay */
+.tab-loader{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:10;transition:opacity .3s;pointer-events:none}
+.tab-loader.hidden{opacity:0;pointer-events:none}
+.tab-loader-spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.tab-loader-label{font-size:13px;color:var(--muted)}
+
+/* ── Settings panel ── */
+.settings-panel{flex:1;overflow-y:auto;padding:24px 20px 80px;background:var(--bg)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:980px;margin:0 auto}
 .settings-grid .full{grid-column:1/-1}
-@media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
-.ssec{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px}
-.ssec-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;font-weight:600;display:flex;align-items:center;gap:7px}
+@media(max-width:680px){.settings-grid{grid-template-columns:1fr}}
+.ssec{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px}
+.ssec-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;font-weight:600;display:flex;align-items:center;gap:7px}
 .ssec-title i{color:var(--accent2)}
-.field-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.field-lbl{font-size:12px;color:var(--muted)}
+.field-row{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.field-lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
 .field-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%}
 .field-input:focus{border-color:var(--accent2)}
-.save-row{display:flex;align-items:center;gap:12px;margin-top:16px}
-.jsave-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:9px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px}
+.save-row{display:flex;align-items:center;gap:10px;margin-top:14px}
+.jsave-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:9px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px}
 .jsave-btn:hover{opacity:.85}
-.saved-msg{font-size:12px;color:var(--accent2);display:none}
-.saved-msg.show{display:inline-flex;align-items:center;gap:4px}
+.saved-msg{font-size:12px;color:var(--accent2);display:none;align-items:center;gap:4px}
+.saved-msg.show{display:inline-flex}
+
+/* ── Toggles ── */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
 .toggle-row:last-child{border-bottom:none;padding-bottom:0}
 .toggle-row:first-child{padding-top:0}
@@ -54,59 +83,179 @@ iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 110px)}
 .tswitch.on{background:var(--accent2)}
 .tswitch::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s}
 .tswitch.on::after{transform:translateX(16px)}
-.tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:28px}
-.stag{display:flex;align-items:center;gap:3px;background:rgba(25,195,125,.12);color:var(--accent2);border-radius:20px;padding:4px 10px;font-size:12px}
-.stag .rm{cursor:pointer;opacity:.55;font-size:11px;line-height:1;transition:opacity .15s;background:none;border:none;color:inherit;padding:0 0 0 2px}
+
+/* ── Tags ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;min-height:26px}
+.stag{display:flex;align-items:center;gap:3px;background:rgba(25,195,125,.12);color:var(--accent2);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:500}
+.stag .rm{cursor:pointer;opacity:.5;font-size:10px;line-height:1;transition:opacity .15s;background:none;border:none;color:inherit;padding:0 0 0 3px}
 .stag .rm:hover{opacity:1}
 .tag-add-row{display:flex;gap:6px}
 .tag-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
 .tag-input:focus{border-color:var(--accent2)}
-.tag-add-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:5px}
-.mood-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:32px}
-.mtag{display:flex;align-items:center;gap:6px;border-radius:20px;padding:5px 10px 5px 8px;font-size:12px;font-weight:500;border:1px solid}
-.mtag-color{width:14px;height:14px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.3);padding:0;appearance:none;flex-shrink:0}
-.mtag-rm{background:none;border:none;cursor:pointer;opacity:.5;font-size:11px;line-height:1;color:inherit;padding:0 0 0 2px;transition:opacity .15s}
-.mtag-rm:hover{opacity:1}
-/* PIN section */
-.pin-section{padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;margin-bottom:14px}
-.pin-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
-.pin-active-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,255,136,.1);color:var(--accent2);border:1px solid rgba(0,255,136,.25);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600}
-.pin-none-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600}
-.pin-action-row{display:flex;gap:8px;margin-top:12px}
-.btn-pin{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;border:1px solid var(--border);background:var(--bg);color:var(--muted)}
+.tag-add-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tag-hint{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px;line-height:1.4}
+
+/* ── PIN section ── */
+.pin-section{padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:9px;margin-bottom:0}
+.pin-status-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pin-active-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,255,136,.1);color:var(--accent2);border:1px solid rgba(0,255,136,.25);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;flex-shrink:0}
+.pin-none-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;flex-shrink:0}
+.pin-action-row{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.btn-pin{flex:1;min-width:80px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;border:1px solid var(--border);background:var(--bg);color:var(--muted)}
 .btn-pin:hover{border-color:var(--accent2);color:var(--accent2)}
 .btn-pin-remove{border-color:rgba(255,95,109,.3);color:#ff5f6d;background:rgba(255,95,109,.06)}
 .btn-pin-remove:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
-.pin-fields{display:none;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.pin-fields{display:none;margin-top:10px;flex-direction:column;gap:7px}
 .pin-fields.show{display:flex}
-/* danger zone */
+
+/* ── Mood grid ── */
+.mood-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;min-height:28px}
+.mtag{display:flex;align-items:center;gap:5px;border-radius:20px;padding:5px 10px 5px 8px;font-size:12px;font-weight:500;border:1px solid}
+.mtag-color{width:13px;height:13px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.3);padding:0;appearance:none;flex-shrink:0}
+.mtag-rm{background:none;border:none;cursor:pointer;opacity:.45;font-size:10px;line-height:1;color:inherit;padding:0 0 0 2px;transition:opacity .15s}
+.mtag-rm:hover{opacity:1}
+
+/* ── Pro lock section ── */
+.pro-lock-section{background:rgba(255,255,255,.025);border:1px dashed var(--border);border-radius:10px;padding:24px;text-align:center}
+.pro-lock-section .lock-icon{font-size:26px;color:var(--muted);margin-bottom:10px;display:block;opacity:.4}
+.pro-lock-section h4{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:6px}
+.pro-lock-section p{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;max-width:380px;margin-left:auto;margin-right:auto}
+.btn-upgrade{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s}
+.btn-upgrade:hover{opacity:.85}
+
+/* ── Export / Import buttons ── */
+.io-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:480px){.io-grid{grid-template-columns:1fr}}
+.io-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;text-align:center}
+.io-btn:hover{border-color:var(--accent2);background:rgba(25,195,125,.04);transform:translateY(-1px)}
+.io-btn.export-btn{border-color:rgba(25,195,125,.3)}
+.io-btn .io-icon{font-size:24px;color:var(--muted);line-height:1}
+.io-btn.export-btn .io-icon{color:var(--accent2)}
+.io-btn .io-label{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.io-btn.export-btn .io-label{color:var(--accent2)}
+.io-btn .io-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.io-note{font-size:11px;color:var(--muted);line-height:1.6;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;display:flex;align-items:flex-start;gap:8px}
+.io-note i{color:var(--accent2);flex-shrink:0;margin-top:1px}
+
+/* ── Danger zone ── */
 .danger-zone{border-color:rgba(255,95,109,.25)!important}
 .danger-zone .ssec-title{color:#ff5f6d}
 .danger-zone .ssec-title i{color:#ff5f6d}
-.btn-danger{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid rgba(255,95,109,.4);color:#ff5f6d;border-radius:8px;padding:9px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s}
+.btn-danger{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,95,109,.4);color:#ff5f6d;border-radius:8px;padding:9px 15px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
 .btn-danger:hover{background:rgba(255,95,109,.1);border-color:#ff5f6d}
-/* unsaved prompt */
-.unsaved-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid rgba(245,158,11,.35);padding:14px 24px;z-index:500;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* ── Unsaved bar ── */
+.unsaved-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:2px solid rgba(245,158,11,.5);padding:12px 20px;z-index:500;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
 .unsaved-bar.show{display:flex}
-.unsaved-text{font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px}
+.unsaved-text{font-size:13px;display:flex;align-items:center;gap:7px;color:var(--text)}
 .unsaved-text i{color:#f59e0b}
 .unsaved-actions{display:flex;gap:8px}
-.btn-discard{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
-.btn-discard:hover{border-color:var(--muted)}
-.btn-save-now{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:6px}
-/* overlay / modal */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:600;align-items:center;justify-content:center}
+.btn-discard{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-discard:hover{border-color:var(--muted);color:var(--text)}
+.btn-save-now{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:5px;transition:opacity .2s}
+.btn-save-now:hover{opacity:.85}
+
+/* ── Overlays / Modals ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:600;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-/* toast */
-#toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all .15s;flex-shrink:0}
+.modal-close:hover{background:var(--border);color:var(--text)}
+.modal-body{padding:20px 22px;flex:1}
+.modal-body p.sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px}
+.btn-primary:hover{opacity:.85}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── Export modal specifics ── */
+.scope-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.scope-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .18s}
+.scope-opt:hover{border-color:rgba(0,255,136,.3)}
+.scope-opt.active{border-color:var(--accent2);background:rgba(0,255,136,.05)}
+.scope-opt .sco-icon{font-size:20px;color:var(--muted);width:28px;text-align:center;flex-shrink:0;transition:color .18s}
+.scope-opt.active .sco-icon{color:var(--accent2)}
+.scope-opt .sco-info{flex:1}
+.scope-opt .sco-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;transition:color .18s}
+.scope-opt.active .sco-title{color:var(--accent2)}
+.scope-opt .sco-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.scope-opt .sco-check{font-size:16px;color:var(--border);flex-shrink:0;transition:color .18s}
+.scope-opt.active .sco-check{color:var(--accent2)}
+.export-summary{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;line-height:2}
+.es-row{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.es-row i{width:14px;text-align:center;font-size:11px}
+.es-row.included{color:var(--text)}
+.es-row.included i{color:var(--accent2)}
+
+/* ── Import modal specifics ── */
+.dropzone{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:14px}
+.dropzone:hover,.dropzone.over{border-color:var(--accent2);background:rgba(0,255,136,.03)}
+.dropzone .dz-icon{font-size:28px;color:var(--muted);margin-bottom:8px;display:block}
+.dropzone .dz-label{font-size:13px;color:var(--muted)}
+.dropzone .dz-label strong{color:var(--accent2)}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-badge{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:none;align-items:center;justify-content:space-between;gap:10px}
+.file-badge.show{display:flex}
+.file-badge .fn{font-size:13px;font-weight:500;color:var(--accent2);word-break:break-all}
+.file-badge .clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 5px;border-radius:4px;transition:color .15s;flex-shrink:0}
+.file-badge .clr:hover{color:#ff5f6d}
+.mode-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mode-opt{padding:11px 10px;background:var(--bg);border:2px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;transition:all .15s}
+.mode-opt:hover{border-color:rgba(0,255,136,.3)}
+.mode-opt.active{border-color:var(--accent2);background:rgba(0,255,136,.06)}
+.mode-opt .mt{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;transition:color .15s}
+.mode-opt.active .mt{color:var(--accent2)}
+.mode-opt .md{font-size:11px;color:var(--muted);line-height:1.4}
+.preview-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:12px;display:none}
+.preview-box.show{display:block}
+.pv-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)}
+.pv-row:last-child{border-bottom:none}
+.pv-lbl{color:var(--muted)}
+.pv-val{font-weight:600;font-family:'Space Grotesk',sans-serif}
+.pv-val.ok{color:var(--accent)}.pv-val.warn{color:#f59e0b}.pv-val.info{color:var(--muted)}
+.settings-restore-row{display:none;margin-bottom:4px}
+.settings-restore-row.show{display:block}
+.restore-chk-label{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text)}
+.restore-chk-label input{accent-color:var(--accent2);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.restore-chk-label span{color:var(--muted)}
+
+/* ── Import progress ── */
+.import-progress{display:none;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;text-align:center}
+.import-progress.show{display:block}
+.progress-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:10px 0 6px}
+.progress-bar{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
+.progress-label{font-size:12px;color:var(--muted)}
+
+/* ── Delete modal ── */
+.del-modal-inner{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:400px;padding:26px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+
+<div class="page-loader" id="pageLoader">
+  <div><div class="pl-logo">Trade<span>Zona</span></div><div class="pl-spin"></div></div>
+</div>
+
 <header>
   <div class="hleft">
     <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-chevron-left"></i> Dashboard</button>
     <span class="jname" id="jnameHdr">Journal</span>
+  </div>
+  <div class="hright">
+    <div class="huser-info" onclick="window.location.href='/subscription'" title="View subscription">
+      <i class="fa-solid fa-circle-user" style="color:var(--muted);font-size:13px"></i>
+      <span class="huser-name" id="hUserName">—</span>
+      <span class="plan-badge badge-free" id="hPlanBadge">Free</span>
+    </div>
   </div>
 </header>
 
@@ -119,138 +268,298 @@ iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 110px)}
   <button class="tab"        data-tab="settings"  onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
 </nav>
 
-<div class="tab-content active" id="tab-logs"><iframe src="logs.html"      id="logsFrame"      onload="frameReady('logs')"></iframe></div>
-<div class="tab-content"        id="tab-calendar"><iframe src="calendar.html" id="calFrame"       onload="frameReady('calendar')"></iframe></div>
-<div class="tab-content"        id="tab-gallery"><iframe src="gallery.html"  id="galFrame"       onload="frameReady('gallery')"></iframe></div>
-<div class="tab-content"        id="tab-analytics"><iframe src="analytics.html" id="analyticsFrame" onload="frameReady('analytics')"></iframe></div>
+<div class="tab-content active" id="tab-logs">
+  <div class="tab-loader" id="loader-logs"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading logs…</span></div>
+  <iframe src="logs.html" id="logsFrame" onload="frameReady('logs')"></iframe>
+</div>
+<div class="tab-content" id="tab-calendar">
+  <div class="tab-loader" id="loader-calendar"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading calendar…</span></div>
+  <iframe id="calFrame" onload="frameReady('calendar')"></iframe>
+</div>
+<div class="tab-content" id="tab-gallery">
+  <div class="tab-loader" id="loader-gallery"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading gallery…</span></div>
+  <iframe id="galFrame" onload="frameReady('gallery')"></iframe>
+</div>
+<div class="tab-content" id="tab-analytics">
+  <div class="tab-loader" id="loader-analytics"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading analytics…</span></div>
+  <iframe id="analyticsFrame" onload="frameReady('analytics')"></iframe>
+</div>
 
-<!-- Settings Tab -->
+<!-- ── Settings Panel ── -->
 <div class="tab-content" id="tab-settings">
   <div class="settings-panel">
     <div class="settings-grid">
 
       <!-- Journal Info -->
       <div class="ssec">
-        <div class="ssec-title"><i class="fa-solid fa-book"></i> Journal Info</div>
-        <div class="field-row"><div class="field-lbl">Journal Name</div><input type="text" class="field-input" id="js-name" maxlength="60" oninput="markDirty()"></div>
-        <div class="field-row"><div class="field-lbl">Account Capital ($)</div><input type="number" class="field-input" id="js-capital" placeholder="e.g. 10000" min="0" oninput="markDirty()"></div>
-
-        <!-- PIN smart section -->
+        <div class="ssec-title"><i class="fa-solid fa-book-open"></i>Journal Info</div>
         <div class="field-row">
-          <div class="field-lbl">Journal PIN</div>
+          <div class="field-lbl">Journal Name</div>
+          <input type="text" class="field-input" id="js-name" maxlength="60" placeholder="My Journal" oninput="markDirty()">
+        </div>
+        <div class="field-row">
+          <div class="field-lbl">Account Capital <span style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></div>
+          <div style="position:relative">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none">$</span>
+            <input type="number" class="field-input" id="js-capital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px" oninput="markDirty()">
+          </div>
+        </div>
+        <!-- PIN -->
+        <div class="field-row" style="margin-bottom:0">
+          <div class="field-lbl">Journal PIN <span id="pinProNote" style="font-size:10px;color:var(--muted);font-weight:400"></span></div>
           <div class="pin-section">
             <div class="pin-status-row">
-              <span id="pinBadge" class="pin-none-badge"><i class="fa-solid fa-lock-open"></i> No PIN set</span>
-              <div id="pinActionsRow" style="display:flex;gap:8px"></div>
+              <span id="pinBadge" class="pin-none-badge"><i class="fa-solid fa-lock-open"></i> No PIN</span>
+              <div id="pinActionsRow" style="display:flex;gap:7px"></div>
             </div>
             <div class="pin-fields" id="pinFields">
-              <input type="password" class="field-input" id="pinNew"     placeholder="Enter new PIN (4–6 digits)" maxlength="6" oninput="markDirty()">
-              <input type="password" class="field-input" id="pinConfirm" placeholder="Confirm PIN" maxlength="6" oninput="markDirty()">
-              <div style="font-size:11px;color:#ff5f6d;display:none" id="pinErr">PINs do not match.</div>
+              <input type="password" class="field-input" id="pinNew"     placeholder="New PIN (4–6 digits)" maxlength="6" style="margin-top:8px" oninput="markDirty()">
+              <input type="password" class="field-input" id="pinConfirm" placeholder="Confirm PIN"          maxlength="6" oninput="markDirty()">
+              <div style="font-size:11px;color:#ff5f6d;display:none" id="pinMismatch"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>PINs do not match.</div>
             </div>
           </div>
         </div>
-
         <div class="save-row">
-          <button class="jsave-btn" onclick="saveJournalSettings()"><i class="fa-solid fa-save"></i> Save Changes</button>
-          <span class="saved-msg" id="savedMsg"><i class="fa-solid fa-circle-check"></i> Saved</span>
+          <button class="jsave-btn" onclick="saveJournalSettings()"><i class="fa-solid fa-floppy-disk"></i>Save Changes</button>
+          <span class="saved-msg" id="savedMsg"><i class="fa-solid fa-circle-check"></i>Saved</span>
         </div>
       </div>
 
       <!-- Display Options -->
       <div class="ssec">
-        <div class="ssec-title"><i class="fa-solid fa-eye"></i> Display Options</div>
+        <div class="ssec-title"><i class="fa-solid fa-eye"></i>Display Options</div>
         <div class="toggle-row">
-          <div class="tinfo"><div class="tname">Show PNL on Dashboard</div><div class="tdesc">Running PNL visible on your journal card</div></div>
+          <div class="tinfo">
+            <div class="tname">Show PNL on Dashboard</div>
+            <div class="tdesc">Running PNL is visible on your journal card</div>
+          </div>
           <div class="tswitch on" id="showPnlToggle" onclick="toggleFlag('show_pnl')"></div>
         </div>
         <div class="toggle-row">
-          <div class="tinfo"><div class="tname">Show Capital on Dashboard</div><div class="tdesc">Account capital visible on your journal card</div></div>
+          <div class="tinfo">
+            <div class="tname">Show Capital on Dashboard</div>
+            <div class="tdesc">Account capital shown on your journal card</div>
+          </div>
           <div class="tswitch on" id="showCapToggle" onclick="toggleFlag('show_capital')"></div>
         </div>
       </div>
 
       <!-- Strategy Tags -->
       <div class="ssec">
-        <div class="ssec-title"><i class="fa-solid fa-chess"></i> Strategy Tags</div>
+        <div class="ssec-title"><i class="fa-solid fa-chess-knight"></i>Strategy Tags</div>
         <div class="tag-list" id="stratList"></div>
         <div class="tag-add-row">
           <input type="text" class="tag-input" id="stratInput" placeholder="Add strategy…">
-          <button class="tag-add-btn" onclick="addTag('strategies','stratInput')"><i class="fa-solid fa-plus"></i> Add</button>
+          <button class="tag-add-btn" onclick="addTag('strategies','stratInput')"><i class="fa-solid fa-plus"></i>Add</button>
         </div>
+        <div class="tag-hint" id="stratHint"></div>
       </div>
 
       <!-- Timeframe Tags -->
       <div class="ssec">
-        <div class="ssec-title"><i class="fa-solid fa-clock"></i> Timeframe Tags</div>
+        <div class="ssec-title"><i class="fa-solid fa-clock"></i>Timeframe Tags</div>
         <div class="tag-list" id="tfList"></div>
         <div class="tag-add-row">
           <input type="text" class="tag-input" id="tfInput" placeholder="Add timeframe…">
-          <button class="tag-add-btn" onclick="addTag('timeframes','tfInput')"><i class="fa-solid fa-plus"></i> Add</button>
+          <button class="tag-add-btn" onclick="addTag('timeframes','tfInput')"><i class="fa-solid fa-plus"></i>Add</button>
         </div>
+        <div class="tag-hint" id="tfHint"></div>
       </div>
 
       <!-- Pair Suggestions -->
       <div class="ssec">
-        <div class="ssec-title"><i class="fa-solid fa-arrow-right-arrow-left"></i> Pair Suggestions</div>
+        <div class="ssec-title"><i class="fa-solid fa-arrow-right-arrow-left"></i>Pair Suggestions</div>
         <div class="tag-list" id="pairList"></div>
         <div class="tag-add-row">
           <input type="text" class="tag-input" id="pairInput" placeholder="Add pair e.g. EURUSD…">
-          <button class="tag-add-btn" onclick="addTag('pairs','pairInput')"><i class="fa-solid fa-plus"></i> Add</button>
+          <button class="tag-add-btn" onclick="addTag('pairs','pairInput')"><i class="fa-solid fa-plus"></i>Add</button>
         </div>
+        <div class="tag-hint" id="pairHint"></div>
       </div>
 
       <!-- Mood Tags -->
       <div class="ssec full">
-        <div class="ssec-title"><i class="fa-solid fa-face-smile"></i> Mood Tags &amp; Colors</div>
+        <div class="ssec-title"><i class="fa-solid fa-face-smile"></i>Mood Tags &amp; Colors</div>
         <div class="mood-grid" id="moodGrid"></div>
         <div class="tag-add-row" style="margin-top:10px">
-          <input type="color" id="moodColor" value="#8fa39a" style="width:36px;height:36px;border:1px solid var(--border);border-radius:7px;background:none;cursor:pointer;padding:2px;flex-shrink:0">
+          <input type="color" id="moodColor" value="#8fa39a" style="width:38px;height:38px;border:1px solid var(--border);border-radius:7px;background:none;cursor:pointer;padding:2px;flex-shrink:0">
           <input type="text" class="tag-input" id="moodInput" placeholder="New mood e.g. Focused…">
-          <button class="tag-add-btn" onclick="addMoodTag()"><i class="fa-solid fa-plus"></i> Add</button>
+          <button class="tag-add-btn" onclick="addMoodTag()"><i class="fa-solid fa-plus"></i>Add</button>
         </div>
+        <div class="tag-hint" id="moodHint"></div>
+      </div>
+
+      <!-- Export & Import — Pro only -->
+      <div class="ssec full">
+        <div class="ssec-title"><i class="fa-solid fa-database"></i>Export &amp; Import Journal</div>
+        <div id="exportImportContent"><!-- rendered by JS --></div>
       </div>
 
       <!-- Danger Zone -->
       <div class="ssec full danger-zone">
-        <div class="ssec-title"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</div>
+        <div class="ssec-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div style="font-size:13px;color:var(--muted);flex:1;line-height:1.7">
             <strong style="display:block;font-size:14px;color:var(--text);margin-bottom:3px">Delete This Journal</strong>
-            Permanently removes this journal and all its trades, notes, and images. Cannot be undone.
+            Permanently removes this journal and all its trades, notes, and images. This cannot be undone.
           </div>
-          <button class="btn-danger" onclick="openDelJournal()"><i class="fa-solid fa-trash"></i> Delete Journal</button>
+          <button class="btn-danger" onclick="openDelJournal()"><i class="fa-solid fa-trash"></i>Delete Journal</button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- Unsaved changes bar -->
+<!-- ── Unsaved bar ── -->
 <div class="unsaved-bar" id="unsavedBar">
-  <div class="unsaved-text"><i class="fa-solid fa-triangle-exclamation"></i> You have unsaved changes in Journal Settings.</div>
+  <div class="unsaved-text"><i class="fa-solid fa-triangle-exclamation"></i>You have unsaved changes.</div>
   <div class="unsaved-actions">
     <button class="btn-discard" onclick="discardChanges()">Discard</button>
-    <button class="btn-save-now" onclick="saveJournalSettings()"><i class="fa-solid fa-save"></i> Save Now</button>
+    <button class="btn-save-now" onclick="saveJournalSettings()"><i class="fa-solid fa-floppy-disk"></i>Save Now</button>
   </div>
 </div>
 
-<!-- Delete Journal Confirm -->
-<div class="overlay" id="delJournalOverlay">
-  <div style="background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:400px;margin:20px;padding:28px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+<!-- ══════════════════════════════════════════════════
+     EXPORT MODAL
+═══════════════════════════════════════════════════ -->
+<div class="overlay" id="exportOverlay">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3><i class="fa-solid fa-file-arrow-down" style="color:var(--accent2)"></i>Export Journal</h3>
+      <button class="modal-close" onclick="closeExport()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="sub">Choose what to include in your export file. The file will be saved as <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px">.json</code> to your downloads folder.</p>
+
+      <div class="scope-grid">
+        <!-- Full Backup -->
+        <div class="scope-opt active" id="scopeFull" onclick="setScope('full')">
+          <div class="sco-icon"><i class="fa-solid fa-database"></i></div>
+          <div class="sco-info">
+            <div class="sco-title">Full Backup</div>
+            <div class="sco-desc">Trades + settings (tags, moods, colors, capital, journal name)</div>
+          </div>
+          <div class="sco-check"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+        <!-- Trades Only -->
+        <div class="scope-opt" id="scopeTrades" onclick="setScope('trades')">
+          <div class="sco-icon"><i class="fa-solid fa-table-list"></i></div>
+          <div class="sco-info">
+            <div class="sco-title">Trades Only</div>
+            <div class="sco-desc">Just trade data — no settings, tags, or configuration</div>
+          </div>
+          <div class="sco-check"><i class="fa-regular fa-circle"></i></div>
+        </div>
+      </div>
+
+      <!-- What's included summary -->
+      <div class="export-summary" id="exportSummary">
+        <div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeExport()">Cancel</button>
+      <button class="btn-primary" id="exportConfirmBtn" onclick="confirmExport()">
+        <i class="fa-solid fa-download"></i>Download .json
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     IMPORT MODAL
+═══════════════════════════════════════════════════ -->
+<div class="overlay" id="importOverlay">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3><i class="fa-solid fa-file-arrow-up" style="color:var(--accent2)"></i>Import Journal</h3>
+      <button class="modal-close" onclick="closeImport()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="sub">Restore trades from a previously exported TradeZona <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px">.json</code> file.</p>
+
+      <!-- Drop zone -->
+      <div class="dropzone" id="importDropzone"
+           ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+        <span class="dz-icon"><i class="fa-solid fa-folder-open"></i></span>
+        <div class="dz-label">Drop your file here or <strong>click to browse</strong></div>
+        <input type="file" id="importFile" accept=".json,application/json" onchange="onFileSelect(event)">
+      </div>
+
+      <!-- File badge (shown once file selected) -->
+      <div class="file-badge" id="fileBadge">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+          <i class="fa-solid fa-file-code" style="color:var(--accent2);flex-shrink:0"></i>
+          <span class="fn" id="fileNameLabel">—</span>
+        </div>
+        <button class="clr" onclick="clearFile()" title="Remove file"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Import mode -->
+      <div class="mode-lbl">Import Mode</div>
+      <div class="mode-grid">
+        <div class="mode-opt active" id="modeReplace" onclick="setMode('replace')">
+          <div class="mt">Replace</div>
+          <div class="md">Delete all current trades and replace with imported data</div>
+        </div>
+        <div class="mode-opt" id="modeMerge" onclick="setMode('merge')">
+          <div class="mt">Merge</div>
+          <div class="md">Keep current trades, add only new ones (skip duplicates)</div>
+        </div>
+      </div>
+
+      <!-- Preview (shown once file is parsed) -->
+      <div class="preview-box" id="previewBox">
+        <div class="pv-row"><span class="pv-lbl">Trades in file</span>     <span class="pv-val ok"   id="pvTotal">0</span></div>
+        <div class="pv-row" id="pvNewRow"    style="display:none"><span class="pv-lbl">New trades to add</span>  <span class="pv-val ok"   id="pvNew">0</span></div>
+        <div class="pv-row" id="pvDupRow"    style="display:none"><span class="pv-lbl">Already exist (skip)</span><span class="pv-val warn" id="pvDup">0</span></div>
+        <div class="pv-row" id="pvCurRow"                        ><span class="pv-lbl">Current trades (will be replaced)</span><span class="pv-val warn" id="pvCur">0</span></div>
+        <div class="pv-row"><span class="pv-lbl">Contains settings</span>  <span class="pv-val info" id="pvHasSettings">No</span></div>
+        <div class="pv-row"><span class="pv-lbl">Journal in file</span>    <span class="pv-val info" id="pvJournal">—</span></div>
+        <div class="pv-row"><span class="pv-lbl">Exported on</span>        <span class="pv-val info" id="pvDate">—</span></div>
+      </div>
+
+      <!-- Restore settings checkbox (shown only if file has settings) -->
+      <div class="settings-restore-row" id="settingsRestoreRow">
+        <label class="restore-chk-label">
+          <input type="checkbox" id="restoreSettingsChk" checked>
+          Restore settings too <span>(tags, moods, colors, capital, journal name)</span>
+        </label>
+      </div>
+
+      <!-- Import progress -->
+      <div class="import-progress" id="importProgressBox">
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px" id="importProgressLabel">Importing…</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="importProgressBar"></div></div>
+        <div class="progress-label" id="importProgressSub">Please wait</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeImport()" id="importCancelBtn">Cancel</button>
+      <button class="btn-primary" id="importConfirmBtn" onclick="confirmImport()" disabled>
+        <i class="fa-solid fa-file-import"></i>Import
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Journal Modal ── -->
+<div class="overlay" id="delOverlay">
+  <div class="del-modal-inner">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <i class="fa-solid fa-trash" style="color:#ff5f6d;font-size:18px"></i>
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600">Delete Journal?</h3>
     </div>
     <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:6px">Permanently delete <strong id="delJournalName" style="color:var(--text)">this journal</strong> and all of its data?</p>
-    <p style="font-size:12px;color:#ff5f6d;margin-bottom:20px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>All trades, notes and images will be erased. No undo.</p>
-    <div style="margin-bottom:16px">
+    <p style="font-size:12px;color:#ff5f6d;margin-bottom:18px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>All trades, notes and images will be erased. There is no undo.</p>
+    <div style="margin-bottom:14px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Type the journal name to confirm:</div>
-      <input type="text" id="delConfirmInput" class="field-input" placeholder="Journal name…" oninput="checkDelConfirm()">
+      <input type="text" id="delConfirmInput" class="field-input" placeholder="Journal name…" oninput="checkDel()">
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="closeDelJournal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
-      <button id="delConfirmBtn" onclick="executeDeleteJournal()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-trash" style="margin-right:6px"></i>Delete Forever</button>
+      <button onclick="closeDelJournal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s">Cancel</button>
+      <button id="delConfirmBtn" onclick="executeDelete()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-trash" style="margin-right:6px"></i>Delete Forever</button>
     </div>
   </div>
 </div>
@@ -258,108 +567,207 @@ iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 110px)}
 <div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
 
 <script>
-const tabNames = ['logs','calendar','gallery','analytics','settings'];
-let activeTab = 'logs', journalId = sessionStorage.getItem('tz_current_journal');
-let journalObj = null, settings = null, currentUser = null;
-let isDirty = false, pendingTab = null;
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+const TAB_NAMES = ['logs','calendar','gallery','analytics','settings'];
+let activeTab   = 'logs';
+let journalId   = sessionStorage.getItem('tz_current_journal');
+let journalObj  = null;
+let settings    = null;
+let currentUser = null;
+let userIsPro   = false;
+let isDirty     = false;
+
+// Export/Import state
+let exportScope  = 'full';
+let importMode   = 'replace';
+let importPayload = null;
+
+const FREE_TAG_LIMIT = 5;
 
 // ── Theme ──────────────────────────────────────────────────
 function applyTheme(t) {
   const r = document.documentElement;
   const dark = t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);
-  if (!dark) { r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578'); }
-  else { r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a'); }
+  if (!dark) {
+    r.style.setProperty('--bg','#f4f7f5'); r.style.setProperty('--panel','#ffffff');
+    r.style.setProperty('--accent','#19c37d'); r.style.setProperty('--accent2','#0fa86a');
+    r.style.setProperty('--border','#dde8e3'); r.style.setProperty('--text','#0f1c17'); r.style.setProperty('--muted','#6b8578');
+  } else {
+    r.style.setProperty('--bg','#0b0f0c'); r.style.setProperty('--panel','#111816');
+    r.style.setProperty('--accent','#00ff88'); r.style.setProperty('--accent2','#19c37d');
+    r.style.setProperty('--border','#1c2a25'); r.style.setProperty('--text','#e6f2ec'); r.style.setProperty('--muted','#8fa39a');
+  }
 }
-applyTheme(localStorage.getItem('tl_theme')||'dark');
+applyTheme(localStorage.getItem('tl_theme') || 'dark');
 
 // ── Boot ──────────────────────────────────────────────────
 (async () => {
-  currentUser = await requireAuth(); if (!currentUser) return;
-  if (!journalId) { window.location.href = 'dashboard.html'; return; }
+  currentUser = await requireAuth();
+  if (!currentUser) return;
+  if (!journalId) { window.location.href = '/dashboard'; return; }
+
+  const profile = await getProfile(currentUser.id);
+  userIsPro = profile?.plan === 'pro';
+  window._userIsPro = userIsPro;
+
+  // Header
+  document.getElementById('hUserName').textContent = profile?.name || currentUser.email;
+  if (userIsPro) {
+    document.getElementById('hPlanBadge').textContent = 'Pro';
+    document.getElementById('hPlanBadge').className = 'plan-badge badge-pro';
+  }
+
+  // Load journal + settings
   const journals = await getJournals(currentUser.id);
   journalObj = journals.find(j => j.id === journalId);
-  if (!journalObj) { window.location.href = 'dashboard.html'; return; }
+  if (!journalObj) { window.location.href = '/dashboard'; return; }
   document.getElementById('jnameHdr').textContent = journalObj.name;
   document.title = 'TradeZona — ' + journalObj.name;
   settings = await getJournalSettings(journalId);
+
+  // Broadcast plan to iframes
+  broadcastToFrames({ type: 'tz_plan', isPro: userIsPro });
+
+  // Dismiss page loader
+  document.getElementById('pageLoader').classList.add('gone');
+  setTimeout(() => {
+    const pl = document.getElementById('pageLoader');
+    if (pl) pl.style.display = 'none';
+  }, 400);
+
+  // If logs frame already loaded before boot finished, hide its loader
+  const logsFrame = document.getElementById('logsFrame');
+  if (logsFrame?.contentDocument?.readyState === 'complete') {
+    frameReady('logs');
+  }
 })();
 
-// ── Navigation ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════════════
 function goBack() {
-  if (isDirty) {
-    if (confirm('⚠️ You have unsaved changes. Leave without saving?')) {
-      window.location.href = 'dashboard.html';
-    }
-  } else {
-    window.location.href = 'dashboard.html';
-  }
+  if (isDirty) { if (!confirm('⚠️ You have unsaved changes. Leave without saving?')) return; }
+  window.location.href = '/dashboard';
 }
+
+// Track which tabs have been loaded
+const loadedTabs = new Set(['logs']); // logs loads on boot
 
 function switchTab(name) {
   if (activeTab === 'settings' && isDirty && name !== 'settings') {
-    pendingTab = name;
-    // Show prompt via unsaved bar — user must explicitly discard or save
     showToast('Save or discard changes before switching tabs.', 'fa-solid fa-triangle-exclamation');
     return;
   }
-  tabNames.forEach(t => {
-    document.getElementById('tab-'+t).classList.toggle('active', t===name);
-    document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active', t===name);
+  TAB_NAMES.forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === name);
+    document.querySelector(`[data-tab="${t}"]`)?.classList.toggle('active', t === name);
   });
   activeTab = name;
-  const reloads = { calendar:'calFrame:calendar.html', gallery:'galFrame:gallery.html', analytics:'analyticsFrame:analytics.html' };
-  if (reloads[name]) { const [fid,src]=reloads[name].split(':'); document.getElementById(fid).src=src+'?t='+Date.now(); }
+
+  // Lazy load iframes — only load when first visited, reload on revisit
+  const frameMap = {
+    calendar:  { id: 'calFrame',       src: 'calendar.html' },
+    gallery:   { id: 'galFrame',       src: 'gallery.html' },
+    analytics: { id: 'analyticsFrame', src: 'analytics.html' },
+  };
+  if (frameMap[name]) {
+    const { id, src } = frameMap[name];
+    const frame = document.getElementById(id);
+    // Show loader, hide iframe
+    showTabLoader(name);
+    frame.classList.remove('ready');
+    frame.src = src + '?t=' + Date.now();
+    loadedTabs.add(name);
+  }
+
   if (name === 'settings') populateSettings();
   document.getElementById('unsavedBar').classList.remove('show');
 }
 
-function frameReady(name) {
-  const map={logs:'logsFrame',calendar:'calFrame',gallery:'galFrame',analytics:'analyticsFrame'};
-  const f=document.getElementById(map[name]);
-  try{if(f?.contentWindow?.applyTheme)f.contentWindow.applyTheme(localStorage.getItem('tl_theme')||'dark');}catch(e){}
+function showTabLoader(name) {
+  const loader = document.getElementById('loader-' + name);
+  if (loader) { loader.classList.remove('hidden'); }
 }
 
-// ── Dirty tracking ────────────────────────────────────────
-function markDirty() {
-  isDirty = true;
-  document.getElementById('unsavedBar').classList.add('show');
+function frameReady(name) {
+  const map = { logs:'logsFrame', calendar:'calFrame', gallery:'galFrame', analytics:'analyticsFrame' };
+  const loaderId = 'loader-' + name;
+  const f = document.getElementById(map[name]);
+  // Apply theme to iframe
+  try { if (f?.contentWindow?.applyTheme) f.contentWindow.applyTheme(localStorage.getItem('tl_theme') || 'dark'); } catch(e){}
+  // Broadcast plan
+  try { if (f?.contentWindow) f.contentWindow.postMessage({ type:'tz_plan', isPro: userIsPro }, '*'); } catch(e){}
+  // Fade in iframe, hide loader
+  if (f) {
+    f.classList.add('ready');
+    const loader = document.getElementById(loaderId);
+    if (loader) {
+      loader.classList.add('hidden');
+      setTimeout(() => { if (loader.classList.contains('hidden')) loader.style.display = 'none'; }, 350);
+    }
+  }
 }
-function clearDirty() {
-  isDirty = false;
-  document.getElementById('unsavedBar').classList.remove('show');
+
+function broadcastToFrames(msg) {
+  ['logsFrame','calFrame','galFrame','analyticsFrame'].forEach(id => {
+    const f = document.getElementById(id);
+    try { if (f?.contentWindow) f.contentWindow.postMessage(msg, '*'); } catch(e){}
+  });
 }
+
+// ════════════════════════════════════════════════════════
+//  DIRTY TRACKING
+// ════════════════════════════════════════════════════════
+function markDirty()    { isDirty = true;  document.getElementById('unsavedBar').classList.add('show'); }
+function clearDirty()   { isDirty = false; document.getElementById('unsavedBar').classList.remove('show'); }
 function discardChanges() {
   isDirty = false;
   document.getElementById('unsavedBar').classList.remove('show');
   populateSettings();
-  if (pendingTab) { const t=pendingTab; pendingTab=null; switchTab(t); }
 }
 
-// ── Settings populate ─────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  SETTINGS — POPULATE
+// ════════════════════════════════════════════════════════
 function populateSettings() {
   if (!journalObj || !settings) return;
-  document.getElementById('js-name').value    = journalObj.name || '';
+  document.getElementById('js-name').value    = journalObj.name    || '';
   document.getElementById('js-capital').value = journalObj.capital || '';
-  document.getElementById('showPnlToggle').classList.toggle('on', journalObj.show_pnl !== false);
+  document.getElementById('showPnlToggle').classList.toggle('on', journalObj.show_pnl     !== false);
   document.getElementById('showCapToggle').classList.toggle('on', journalObj.show_capital !== false);
+  // PIN note for Pro
+  document.getElementById('pinProNote').textContent = userIsPro ? '' : '(Pro plan)';
   renderPinSection();
   renderTagLists();
   renderMoodGrid();
+  renderExportImport();
   clearDirty();
 }
 
-// ── PIN section ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  PIN
+// ════════════════════════════════════════════════════════
 function renderPinSection() {
   const hasPin = !!(journalObj?.pin_hash);
   const badge  = document.getElementById('pinBadge');
   const actRow = document.getElementById('pinActionsRow');
   const fields = document.getElementById('pinFields');
 
+  if (!userIsPro) {
+    badge.className = 'pin-none-badge';
+    badge.innerHTML = '<i class="fa-solid fa-lock"></i> Pro only';
+    actRow.innerHTML = `<button class="btn-pin" onclick="window.location.href='/subscription'" style="font-size:11px"><i class="fa-solid fa-arrow-up"></i> Upgrade</button>`;
+    fields.classList.remove('show');
+    return;
+  }
+
   if (hasPin) {
     badge.className = 'pin-active-badge';
     badge.innerHTML = '<i class="fa-solid fa-lock"></i> PIN Active';
     actRow.innerHTML = `
-      <button class="btn-pin" onclick="showPinFields()"><i class="fa-solid fa-pen"></i> Change</button>
+      <button class="btn-pin" onclick="showPinFields()" id="pinChangeBtn"><i class="fa-solid fa-pen"></i> Change</button>
       <button class="btn-pin btn-pin-remove" onclick="removePin()"><i class="fa-solid fa-lock-open"></i> Remove</button>`;
   } else {
     badge.className = 'pin-none-badge';
@@ -367,9 +775,9 @@ function renderPinSection() {
     actRow.innerHTML = `<button class="btn-pin" onclick="showPinFields()"><i class="fa-solid fa-plus"></i> Add PIN</button>`;
   }
   fields.classList.remove('show');
-  document.getElementById('pinNew').value = '';
+  document.getElementById('pinNew').value     = '';
   document.getElementById('pinConfirm').value = '';
-  document.getElementById('pinErr').style.display = 'none';
+  document.getElementById('pinMismatch').style.display = 'none';
 }
 
 function showPinFields() {
@@ -384,70 +792,92 @@ async function removePin() {
     journalObj.pin_hash = null;
     renderPinSection();
     showToast('PIN removed.', 'fa-solid fa-lock-open');
-  } catch(e) { showToast('Error: '+e.message, 'fa-solid fa-circle-exclamation'); }
+  } catch(e) { showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation'); }
 }
 
-// ── Save Journal Settings ─────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  SAVE JOURNAL SETTINGS
+// ════════════════════════════════════════════════════════
 async function saveJournalSettings() {
   const name    = document.getElementById('js-name').value.trim();
   const capital = document.getElementById('js-capital').value.trim();
   const pinNew  = document.getElementById('pinNew').value.trim();
   const pinConf = document.getElementById('pinConfirm').value.trim();
   const updates = {};
-  if (name)    updates.name    = name;
-  if (capital !== '') updates.capital = parseFloat(capital) || null;
 
-  if (pinNew) {
+  if (name)              updates.name    = name;
+  if (capital !== '')    updates.capital = parseFloat(capital) || null;
+
+  // PIN update only for Pro
+  if (userIsPro && document.getElementById('pinFields').classList.contains('show') && pinNew) {
     if (pinNew.length < 4) { showToast('PIN must be at least 4 digits.', 'fa-solid fa-circle-exclamation'); return; }
-    if (pinNew !== pinConf) {
-      document.getElementById('pinErr').style.display = 'block';
-      return;
-    }
+    if (pinNew !== pinConf) { document.getElementById('pinMismatch').style.display = 'block'; return; }
     updates.pin_hash = await hashPin(pinNew);
+    document.getElementById('pinMismatch').style.display = 'none';
   }
-  document.getElementById('pinErr').style.display = 'none';
 
   try {
     await updateJournal(journalId, updates);
     Object.assign(journalObj, updates);
-    if (name) { document.getElementById('jnameHdr').textContent = name; document.title = 'TradeZona — '+name; }
+    if (name) {
+      document.getElementById('jnameHdr').textContent = name;
+      document.title = 'TradeZona — ' + name;
+    }
     renderPinSection();
     clearDirty();
     const m = document.getElementById('savedMsg');
     m.classList.add('show'); setTimeout(() => m.classList.remove('show'), 2500);
-    if (pendingTab) { const t=pendingTab; pendingTab=null; switchTab(t); }
-  } catch(e) { showToast('Save failed: '+e.message, 'fa-solid fa-circle-exclamation'); }
+  } catch(e) { showToast('Save failed: ' + e.message, 'fa-solid fa-circle-exclamation'); }
 }
 
 async function toggleFlag(field) {
   const cur = journalObj[field] !== false;
   journalObj[field] = !cur;
-  const id = field==='show_pnl'?'showPnlToggle':'showCapToggle';
+  const id = field === 'show_pnl' ? 'showPnlToggle' : 'showCapToggle';
   document.getElementById(id).classList.toggle('on', !cur);
   await updateJournal(journalId, { [field]: !cur });
 }
 
-// ── Tag management ────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  TAGS
+// ════════════════════════════════════════════════════════
 function renderTagLists() {
-  renderTagList('strategies','stratList');
-  renderTagList('timeframes','tfList');
-  renderTagList('pairs','pairList');
+  renderTagList('strategies', 'stratList', 'stratHint');
+  renderTagList('timeframes',  'tfList',   'tfHint');
+  renderTagList('pairs',       'pairList', 'pairHint');
 }
 
-function renderTagList(key, listId) {
-  const list = settings?.[key] || [];
+function renderTagList(key, listId, hintId) {
+  const list  = settings?.[key] || [];
+  const limit = FREE_TAG_LIMIT;
+  const atLim = !userIsPro && list.length >= limit;
+
   document.getElementById(listId).innerHTML = list.map(t =>
-    `<span class="stag">${esc(t)}<button class="rm" onclick="removeTag('${key}','${esc(t)}')" title="Remove"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button></span>`
+    `<span class="stag">${esc(t)}<button class="rm" onclick="removeTag('${key}','${esc(t)}')" title="Remove"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></span>`
   ).join('');
+
+  const hint = document.getElementById(hintId);
+  if (!userIsPro) {
+    hint.style.cssText = `display:flex;color:${atLim ? '#f59e0b' : 'var(--muted)'}`;
+    hint.innerHTML = atLim
+      ? `<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached (${limit} tags on Free). <a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade for 10</a>`
+      : `<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${list.length}/${limit} tags used on Free plan`;
+  } else {
+    hint.style.display = 'none';
+  }
 }
 
 async function addTag(key, inputId) {
   const inp = document.getElementById(inputId);
-  let val = inp.value.trim();
-  if (!val) return;
+  let val = inp.value.trim(); if (!val) return;
   if (key === 'pairs') val = val.toUpperCase();
-  if (!settings[key].find(x => x.toLowerCase()===val.toLowerCase())) {
-    settings[key] = [...settings[key], val];
+  const list = settings[key] || [];
+  if (!userIsPro && list.length >= FREE_TAG_LIMIT) {
+    showToast(`Free plan: max ${FREE_TAG_LIMIT} tags. Upgrade to Pro for 10.`, 'fa-solid fa-lock');
+    return;
+  }
+  if (!list.find(x => x.toLowerCase() === val.toLowerCase())) {
+    settings[key] = [...list, val];
     await updateJournalSettings(journalId, { [key]: settings[key] });
     renderTagLists(); broadcastSettings();
   }
@@ -455,103 +885,472 @@ async function addTag(key, inputId) {
 }
 
 async function removeTag(key, val) {
-  settings[key] = (settings[key]||[]).filter(t => t !== val);
+  settings[key] = (settings[key] || []).filter(t => t !== val);
   await updateJournalSettings(journalId, { [key]: settings[key] });
   renderTagLists();
 }
 
-// ── Mood management ───────────────────────────────────────
+// ════════════════════════════════════════════════════════
+//  MOODS
+// ════════════════════════════════════════════════════════
 function renderMoodGrid() {
   const moods  = settings?.moods || [];
   const colors = settings?.mood_colors || {};
   const grid   = document.getElementById('moodGrid');
-  if (!moods.length) { grid.innerHTML='<span style="font-size:12px;color:var(--muted)">No moods yet. Add one below.</span>'; return; }
-  grid.innerHTML = moods.map(m => {
-    const col = colors[m] || '#8fa39a';
-    const r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
-    return `<div class="mtag" style="background:rgba(${r},${g},${b},.15);color:${col};border-color:rgba(${r},${g},${b},.35)">
-      <input type="color" class="mtag-color" value="${col}" style="background:${col}" oninput="updateMoodColor('${esc(m)}',this.value)" title="Change color">
-      <span>${esc(m)}</span>
-      <button class="mtag-rm" onclick="removeMoodTag('${esc(m)}')"><i class="fa-solid fa-xmark" style="font-size:10px"></i></button>
-    </div>`;
-  }).join('');
+  const hint   = document.getElementById('moodHint');
+
+  grid.innerHTML = moods.length
+    ? moods.map(m => {
+        const col = colors[m] || '#8fa39a';
+        const [r,g,b] = [col.slice(1,3), col.slice(3,5), col.slice(5,7)].map(x => parseInt(x,16));
+        return `<div class="mtag" style="background:rgba(${r},${g},${b},.15);color:${col};border-color:rgba(${r},${g},${b},.35)">
+          <input type="color" class="mtag-color" value="${col}" style="background:${col}" oninput="updateMoodColor('${esc(m)}',this.value)" title="Change color">
+          <span>${esc(m)}</span>
+          <button class="mtag-rm" onclick="removeMoodTag('${esc(m)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:12px;color:var(--muted)">No moods yet. Add one below.</span>';
+
+  const atLim = !userIsPro && moods.length >= FREE_TAG_LIMIT;
+  if (!userIsPro) {
+    hint.style.cssText = `display:flex;color:${atLim ? '#f59e0b' : 'var(--muted)'}`;
+    hint.innerHTML = atLim
+      ? `<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached (${FREE_TAG_LIMIT} moods on Free). <a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade</a>`
+      : `<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${moods.length}/${FREE_TAG_LIMIT} moods used on Free plan`;
+  } else { hint.style.display = 'none'; }
 }
 
 async function addMoodTag() {
-  const inp=document.getElementById('moodInput'),picker=document.getElementById('moodColor');
-  const val=inp.value.trim(); if(!val) return;
-  if (!settings.moods.find(m=>m.toLowerCase()===val.toLowerCase())) {
-    settings.moods=[...settings.moods,val];
-    settings.mood_colors={...settings.mood_colors,[val]:picker.value};
-    await updateJournalSettings(journalId,{moods:settings.moods,mood_colors:settings.mood_colors});
+  const inp = document.getElementById('moodInput');
+  const col = document.getElementById('moodColor').value;
+  const val = inp.value.trim(); if (!val) return;
+  const moods = settings.moods || [];
+  if (!userIsPro && moods.length >= FREE_TAG_LIMIT) {
+    showToast(`Free plan: max ${FREE_TAG_LIMIT} moods. Upgrade for more.`, 'fa-solid fa-lock');
+    return;
+  }
+  if (!moods.find(m => m.toLowerCase() === val.toLowerCase())) {
+    settings.moods = [...moods, val];
+    settings.mood_colors = { ...settings.mood_colors, [val]: col };
+    await updateJournalSettings(journalId, { moods: settings.moods, mood_colors: settings.mood_colors });
     renderMoodGrid(); broadcastSettings();
   }
-  inp.value=''; picker.value='#8fa39a';
+  inp.value = ''; document.getElementById('moodColor').value = '#8fa39a';
 }
 
 async function removeMoodTag(val) {
-  settings.moods=settings.moods.filter(m=>m!==val);
-  const c={...settings.mood_colors}; delete c[val]; settings.mood_colors=c;
-  await updateJournalSettings(journalId,{moods:settings.moods,mood_colors:settings.mood_colors});
+  settings.moods = settings.moods.filter(m => m !== val);
+  const c = { ...settings.mood_colors }; delete c[val]; settings.mood_colors = c;
+  await updateJournalSettings(journalId, { moods: settings.moods, mood_colors: settings.mood_colors });
   renderMoodGrid(); broadcastSettings();
 }
 
-async function updateMoodColor(mood,color) {
-  settings.mood_colors={...settings.mood_colors,[mood]:color};
-  await updateJournalSettings(journalId,{mood_colors:settings.mood_colors});
+async function updateMoodColor(mood, color) {
+  settings.mood_colors = { ...settings.mood_colors, [mood]: color };
+  await updateJournalSettings(journalId, { mood_colors: settings.mood_colors });
   renderMoodGrid(); broadcastSettings();
 }
 
-function broadcastSettings() {
-  ['logsFrame','calFrame','galFrame','analyticsFrame'].forEach(id=>{
-    const f=document.getElementById(id);
-    try{f?.contentWindow?.postMessage({type:'tz_settings_updated'},'*');}catch(e){}
+function broadcastSettings() { broadcastToFrames({ type: 'tz_settings_updated' }); }
+
+// ════════════════════════════════════════════════════════
+//  EXPORT / IMPORT SECTION RENDER
+// ════════════════════════════════════════════════════════
+function renderExportImport() {
+  const el = document.getElementById('exportImportContent');
+  if (!userIsPro) {
+    el.innerHTML = `
+      <div class="pro-lock-section">
+        <i class="fa-solid fa-lock lock-icon"></i>
+        <h4>Pro Feature — Export &amp; Import</h4>
+        <p>Back up your entire journal as a <strong>.json</strong> file — trades, settings, tags, moods and more. Restore it on any device. Available exclusively on the Pro plan.</p>
+        <button class="btn-upgrade" onclick="window.location.href='/subscription'">
+          <i class="fa-solid fa-arrow-up"></i> Upgrade to Pro
+        </button>
+      </div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="io-grid">
+      <button class="io-btn export-btn" onclick="openExport()">
+        <div class="io-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+        <div class="io-label">Export Journal</div>
+        <div class="io-desc">Download all trades and/or settings as a .json backup file</div>
+      </button>
+      <button class="io-btn" onclick="openImport()">
+        <div class="io-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+        <div class="io-label">Import Journal</div>
+        <div class="io-desc">Restore trades from a previously exported .json backup file</div>
+      </button>
+    </div>
+    <div class="io-note">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>Export regularly to back up your trades. Use <strong>Full Backup</strong> to include all settings, or <strong>Trades Only</strong> for just trade data. Import supports <strong>Replace</strong> (overwrite) and <strong>Merge</strong> (append new only) modes.</span>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+//  EXPORT LOGIC
+// ════════════════════════════════════════════════════════
+function openExport() {
+  exportScope = 'full';
+  setScope('full');
+  document.getElementById('exportOverlay').classList.add('open');
+}
+function closeExport() { document.getElementById('exportOverlay').classList.remove('open'); }
+
+function setScope(scope) {
+  exportScope = scope;
+  ['full','trades'].forEach(s => {
+    const opt = document.getElementById('scope' + (s === 'full' ? 'Full' : 'Trades'));
+    const isActive = s === scope;
+    opt.classList.toggle('active', isActive);
+    opt.querySelector('.sco-check').innerHTML = isActive
+      ? '<i class="fa-solid fa-circle-check"></i>'
+      : '<i class="fa-regular fa-circle"></i>';
   });
+  refreshExportSummary();
 }
 
-// ── Delete Journal ────────────────────────────────────────
+async function refreshExportSummary() {
+  const el = document.getElementById('exportSummary');
+  el.innerHTML = '<div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading trade count…</div>';
+  const trades = await getTrades(journalId);
+  const s = settings || {};
+  const isFull = exportScope === 'full';
+  el.innerHTML = `
+    <div class="es-row included"><i class="fa-solid fa-check"></i> ${trades.length} trade${trades.length !== 1 ? 's' : ''} (with notes &amp; images)</div>
+    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.strategies||[]).length} strategy tags</div>
+    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.timeframes||[]).length} timeframe tags</div>
+    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.pairs||[]).length} pair suggestions</div>
+    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.moods||[]).length} mood tags &amp; colors</div>
+    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> Capital ($${journalObj.capital || 0}) &amp; journal name</div>`;
+}
+
+async function confirmExport() {
+  const btn = document.getElementById('exportConfirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+  try {
+    const trades  = await getTrades(journalId);
+    const isFull  = exportScope === 'full';
+    const payload = {
+      _meta: {
+        version:     '2.0',
+        app:         'TradeZona',
+        journalName: journalObj.name,
+        exportedAt:  new Date().toISOString(),
+        exportScope: exportScope,
+        tradeCount:  trades.length,
+      },
+      trades: trades.map(dbToTrade),
+      ...(isFull && settings ? {
+        settings: {
+          strategies:  settings.strategies  || [],
+          timeframes:  settings.timeframes  || [],
+          pairs:       settings.pairs       || [],
+          moods:       settings.moods       || [],
+          mood_colors: settings.mood_colors || {},
+          capital:     journalObj.capital,
+          journalName: journalObj.name,
+        }
+      } : {})
+    };
+
+    const json  = JSON.stringify(payload, null, 2);
+    const blob  = new Blob([json], { type: 'application/json' });
+    const url   = URL.createObjectURL(blob);
+    const fname = `${journalObj.name.replace(/[^a-z0-9]/gi,'_')}_${exportScope}_${new Date().toISOString().slice(0,10)}.json`;
+    const a     = Object.assign(document.createElement('a'), { href: url, download: fname });
+    a.click();
+    URL.revokeObjectURL(url);
+    closeExport();
+    showToast(`Exported ${trades.length} trades!`, 'fa-solid fa-circle-check');
+  } catch(e) {
+    showToast('Export failed: ' + e.message, 'fa-solid fa-circle-exclamation');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-download"></i>Download .json';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  IMPORT LOGIC
+// ════════════════════════════════════════════════════════
+function openImport() {
+  importPayload = null;
+  clearFile();
+  setMode('replace');
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('settingsRestoreRow').classList.remove('show');
+  document.getElementById('importProgressBox').classList.remove('show');
+  document.getElementById('importConfirmBtn').disabled = true;
+  document.getElementById('importOverlay').classList.add('open');
+}
+function closeImport() { document.getElementById('importOverlay').classList.remove('open'); }
+
+function setMode(mode) {
+  importMode = mode;
+  document.getElementById('modeReplace').classList.toggle('active', mode === 'replace');
+  document.getElementById('modeMerge').classList.toggle('active',  mode === 'merge');
+  if (importPayload) refreshImportPreview();
+}
+
+// Drag/drop
+function dzOver(e)  { e.preventDefault(); document.getElementById('importDropzone').classList.add('over'); }
+function dzLeave()  { document.getElementById('importDropzone').classList.remove('over'); }
+function dzDrop(e)  { e.preventDefault(); dzLeave(); const f = e.dataTransfer.files[0]; if (f) loadFile(f); }
+function onFileSelect(e) { const f = e.target.files[0]; if (f) loadFile(f); }
+
+function clearFile() {
+  importPayload = null;
+  document.getElementById('fileBadge').classList.remove('show');
+  document.getElementById('fileNameLabel').textContent = '—';
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('settingsRestoreRow').classList.remove('show');
+  document.getElementById('importFile').value = '';
+  setImportBtnState(false);
+}
+
+function setImportBtnState(enabled) {
+  const btn = document.getElementById('importConfirmBtn');
+  btn.disabled = !enabled;
+}
+
+function loadFile(file) {
+  if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
+    showToast('Please select a valid .json export file.', 'fa-solid fa-circle-exclamation');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Support both plain array and wrapped format
+      if (Array.isArray(parsed)) {
+        importPayload = {
+          _meta:  { journalName: 'Unknown', exportedAt: null, tradeCount: parsed.length, exportScope: 'trades' },
+          trades: parsed,
+        };
+      } else if (parsed.trades && Array.isArray(parsed.trades)) {
+        importPayload = parsed;
+      } else {
+        showToast('Invalid file — expected a TradeZona export.', 'fa-solid fa-circle-exclamation');
+        return;
+      }
+      document.getElementById('fileNameLabel').textContent = file.name;
+      document.getElementById('fileBadge').classList.add('show');
+      refreshImportPreview();
+      setImportBtnState(true);
+    } catch(err) {
+      showToast('Could not parse file. Make sure it is a valid JSON file.', 'fa-solid fa-circle-exclamation');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function refreshImportPreview() {
+  if (!importPayload) return;
+  const previewBox = document.getElementById('previewBox');
+  previewBox.classList.add('show');
+
+  const incoming   = importPayload.trades || [];
+  const current    = await getTrades(journalId);
+  const currentIds = new Set(current.map(t => t.id));
+  const dups       = incoming.filter(t => currentIds.has(t.id)).length;
+  const newCount   = incoming.length - dups;
+  const hasSettings = !!(importPayload.settings);
+
+  document.getElementById('pvTotal').textContent  = incoming.length;
+  document.getElementById('pvJournal').textContent = importPayload._meta?.journalName || '—';
+  const rawDate = importPayload._meta?.exportedAt;
+  document.getElementById('pvDate').textContent = rawDate ? new Date(rawDate).toLocaleString() : '—';
+  document.getElementById('pvHasSettings').textContent = hasSettings ? 'Yes' : 'No';
+
+  if (importMode === 'merge') {
+    document.getElementById('pvNewRow').style.display = '';
+    document.getElementById('pvDupRow').style.display = dups > 0 ? '' : 'none';
+    document.getElementById('pvCurRow').style.display = 'none';
+    document.getElementById('pvNew').textContent = newCount;
+    document.getElementById('pvDup').textContent = dups;
+  } else {
+    document.getElementById('pvNewRow').style.display = 'none';
+    document.getElementById('pvDupRow').style.display = 'none';
+    document.getElementById('pvCurRow').style.display = '';
+    document.getElementById('pvCur').textContent = current.length;
+  }
+
+  // Show "restore settings" checkbox only if file has settings
+  const restoreRow = document.getElementById('settingsRestoreRow');
+  restoreRow.classList.toggle('show', hasSettings);
+}
+
+async function confirmImport() {
+  if (!importPayload) return;
+
+  const incoming = importPayload.trades || [];
+  const confirmBtn = document.getElementById('importConfirmBtn');
+  const cancelBtn  = document.getElementById('importCancelBtn');
+
+  // Lock UI
+  confirmBtn.disabled = true;
+  cancelBtn.disabled  = true;
+  document.getElementById('importProgressBox').classList.add('show');
+
+  const setProgress = (pct, label) => {
+    document.getElementById('importProgressBar').style.width  = pct + '%';
+    document.getElementById('importProgressSub').textContent  = label;
+  };
+
+  try {
+    const current    = await getTrades(journalId);
+    const currentIds = new Set(current.map(t => t.id));
+    let finalCount   = 0;
+
+    if (importMode === 'replace') {
+      // Step 1 — delete existing
+      document.getElementById('importProgressLabel').textContent = 'Deleting existing trades…';
+      setProgress(5, `0 / ${current.length} deleted`);
+      for (let i = 0; i < current.length; i++) {
+        await deleteTrade(current[i].id);
+        setProgress(5 + Math.round((i+1)/current.length * 35), `${i+1} / ${current.length} deleted`);
+      }
+      // Step 2 — insert all incoming
+      document.getElementById('importProgressLabel').textContent = 'Importing trades…';
+      for (let i = 0; i < incoming.length; i++) {
+        const t = incoming[i];
+        // Strip old ID — let DB create a new one
+        const { id: _id, ...tradeData } = t;
+        await createTrade(currentUser.id, journalId, tradeData);
+        finalCount++;
+        setProgress(40 + Math.round((i+1)/incoming.length * 50), `${i+1} / ${incoming.length} imported`);
+      }
+    } else {
+      // Merge — only add trades not already in DB
+      const newTrades = incoming.filter(t => !currentIds.has(t.id));
+      document.getElementById('importProgressLabel').textContent = 'Merging trades…';
+      for (let i = 0; i < newTrades.length; i++) {
+        const { id: _id, ...tradeData } = newTrades[i];
+        await createTrade(currentUser.id, journalId, tradeData);
+        finalCount++;
+        setProgress(10 + Math.round((i+1)/newTrades.length * 80), `${i+1} / ${newTrades.length} added`);
+      }
+      finalCount = current.length + newTrades.length;
+    }
+
+    // Step 3 — restore settings if requested
+    const hasSettings  = !!(importPayload.settings);
+    const shouldRestore = hasSettings && document.getElementById('restoreSettingsChk')?.checked;
+    if (shouldRestore) {
+      setProgress(95, 'Restoring settings…');
+      const s = importPayload.settings;
+      const settingsUpdate = {};
+      if (s.strategies)  settingsUpdate.strategies  = s.strategies;
+      if (s.timeframes)  settingsUpdate.timeframes  = s.timeframes;
+      if (s.pairs)       settingsUpdate.pairs       = s.pairs;
+      if (s.moods)       settingsUpdate.moods       = s.moods;
+      if (s.mood_colors) settingsUpdate.mood_colors = s.mood_colors;
+      await updateJournalSettings(journalId, settingsUpdate);
+      settings = { ...settings, ...settingsUpdate };
+
+      const jUpdates = {};
+      if (s.capital)     jUpdates.capital = s.capital;
+      if (s.journalName) jUpdates.name    = s.journalName;
+      if (Object.keys(jUpdates).length) {
+        await updateJournal(journalId, jUpdates);
+        Object.assign(journalObj, jUpdates);
+        if (s.journalName) {
+          document.getElementById('jnameHdr').textContent = s.journalName;
+          document.title = 'TradeZona — ' + s.journalName;
+        }
+      }
+    }
+
+    setProgress(100, 'Done!');
+    await new Promise(r => setTimeout(r, 600));
+
+    closeImport();
+    // Reload logs iframe
+    document.getElementById('logsFrame').src = 'logs.html?t=' + Date.now();
+    if (activeTab === 'settings') populateSettings();
+    showToast(
+      `Import complete — ${finalCount} trade${finalCount !== 1 ? 's' : ''}${shouldRestore ? ' + settings restored' : ''}`,
+      'fa-solid fa-circle-check'
+    );
+  } catch(e) {
+    showToast('Import failed: ' + e.message, 'fa-solid fa-circle-exclamation');
+    document.getElementById('importProgressBox').classList.remove('show');
+    confirmBtn.disabled = false;
+    cancelBtn.disabled  = false;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  DELETE JOURNAL
+// ════════════════════════════════════════════════════════
 function openDelJournal() {
-  document.getElementById('delJournalName').textContent=journalObj?.name||'this journal';
-  document.getElementById('delConfirmInput').value=''; checkDelConfirm();
-  document.getElementById('delJournalOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('delConfirmInput').focus(),120);
+  document.getElementById('delJournalName').textContent = journalObj?.name || 'this journal';
+  document.getElementById('delConfirmInput').value = '';
+  checkDel();
+  document.getElementById('delOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('delConfirmInput').focus(), 120);
 }
-function closeDelJournal(){document.getElementById('delJournalOverlay').classList.remove('open');}
-function checkDelConfirm(){
-  const expected=(journalObj?.name||'').trim().toLowerCase();
-  const typed=document.getElementById('delConfirmInput').value.trim().toLowerCase();
-  const ok=typed===expected&&expected!=='';
-  const btn=document.getElementById('delConfirmBtn');
-  btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';
+function closeDelJournal() { document.getElementById('delOverlay').classList.remove('open'); }
+function checkDel() {
+  const expected = (journalObj?.name || '').trim().toLowerCase();
+  const typed    = document.getElementById('delConfirmInput').value.trim().toLowerCase();
+  const ok       = typed === expected && expected !== '';
+  const btn      = document.getElementById('delConfirmBtn');
+  btn.disabled          = !ok;
+  btn.style.opacity     = ok ? '1' : '.4';
+  btn.style.cursor      = ok ? 'pointer' : 'not-allowed';
 }
-async function executeDeleteJournal(){
-  try{await deleteJournal(journalId);sessionStorage.removeItem('tz_current_journal');window.location.href='dashboard.html';}
-  catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation');}
+async function executeDelete() {
+  try {
+    await deleteJournal(journalId);
+    sessionStorage.removeItem('tz_current_journal');
+    window.location.href = '/dashboard';
+  } catch(e) { showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation'); }
 }
-document.getElementById('delJournalOverlay').addEventListener('click',function(e){if(e.target===this)closeDelJournal();});
 
-// ── Toast ──────────────────────────────────────────────────
-let _tt;
-function showToast(msg,icon='fa-solid fa-circle-check'){
-  const t=document.getElementById('toast');
-  document.getElementById('toastIcon').className=icon;
-  document.getElementById('toastMsg').textContent=msg;
-  t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3500);
-}
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-
-// Enter key for tag inputs
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Enter')return;
-  const a=document.activeElement;
-  if(a.id==='stratInput')addTag('strategies','stratInput');
-  if(a.id==='tfInput')addTag('timeframes','tfInput');
-  if(a.id==='pairInput')addTag('pairs','pairInput');
-  if(a.id==='moodInput')addMoodTag();
+// ── Backdrop closes ────────────────────────────────────
+['delOverlay','exportOverlay','importOverlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) {
+      if (id === 'delOverlay')    closeDelJournal();
+      if (id === 'exportOverlay') closeExport();
+      if (id === 'importOverlay') closeImport();
+    }
+  });
 });
 
-// Warn on page unload if dirty
-window.addEventListener('beforeunload',e=>{if(isDirty){e.preventDefault();e.returnValue='';}});
+// ════════════════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════════════════
+let _tt;
+function showToast(msg, icon = 'fa-solid fa-circle-check') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').className = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 3800);
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Enter keys ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const a = document.activeElement;
+  if (a.id === 'stratInput') addTag('strategies', 'stratInput');
+  if (a.id === 'tfInput')    addTag('timeframes',  'tfInput');
+  if (a.id === 'pairInput')  addTag('pairs',       'pairInput');
+  if (a.id === 'moodInput')  addMoodTag();
+});
+
+window.addEventListener('beforeunload', e => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
 </script>
 </body>
 </html>

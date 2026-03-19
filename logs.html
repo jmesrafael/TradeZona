@@ -1,8 +1,10 @@
+<!-- logs.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Logs</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
@@ -13,7 +15,7 @@
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:18px}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:18px}
 .pw{max-width:1200px;margin:0 auto}
 /* topbar */
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
@@ -122,6 +124,15 @@ td{padding:7px 9px;vertical-align:middle;text-align:center}
 .lb img{max-width:90vw;max-height:88vh;border-radius:8px;object-fit:contain}
 .lb-x{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;cursor:pointer;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .lb-x:hover{background:rgba(255,255,255,.2)}
+/* ad slot */
+.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:16px}
+.ad-slot.visible{display:block}
+.ad-slot-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6}
+.ad-slot-inner{min-height:80px;display:flex;align-items:center;justify-content:center;padding:12px}
+.upgrade-inline{display:none;align-items:center;gap:10px;padding:9px 12px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.2);border-radius:8px;font-size:12px;color:var(--muted);margin-top:8px}
+.upgrade-inline.show{display:flex}
+.upgrade-inline a{color:var(--accent2);text-decoration:none;font-weight:600;white-space:nowrap}
+.upgrade-inline a:hover{text-decoration:underline}
 /* toast */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
@@ -174,6 +185,14 @@ td{padding:7px 9px;vertical-align:middle;text-align:center}
   </table>
 </div>
 <div class="pp" id="pp" style="display:none" onclick="event.stopPropagation()"></div>
+
+<!-- Ad slot for Free users -->
+<div class="ad-slot" id="logsAdSlot">
+  <div class="ad-slot-label">Advertisement</div>
+  <div class="ad-slot-inner">
+    <ins class="adsbygoogle" style="display:block;width:100%;min-height:70px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+    <div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:8px"><i class="fa-solid fa-rectangle-ad" style="margin-right:5px;opacity:.4"></i>Ad — Free plan · <a href="/subscription" style="color:var(--accent2);text-decoration:none">Upgrade to Pro</a> to remove</div>
+  </div>
 </div>
 
 <!-- Notes / Image Modal -->
@@ -188,12 +207,15 @@ td{padding:7px 9px;vertical-align:middle;text-align:center}
       <textarea class="nmta" id="nmText" placeholder="Analysis, observations, what you learned…"></textarea>
 
       <div class="nmlbl"><i class="fa-solid fa-images"></i> Images <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0" id="imgCountLabel"></span></div>
-      <!-- Images show here, loaded from DB -->
       <div class="img-grid" id="nmImgs"></div>
-      <div class="nmuprow">
+      <div class="nmuprow" id="uploadRow">
         <button class="upbtn" onclick="document.getElementById('nmFile').click()"><i class="fa-solid fa-paperclip"></i> Upload Image</button>
         <input type="file" id="nmFile" accept="image/*" multiple style="display:none" onchange="handleUpload(event)">
         <span style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-clipboard" style="margin-right:4px"></i> Paste (Ctrl+V)</span>
+      </div>
+      <div id="imgProLock" style="display:none;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--muted)">
+        <i class="fa-solid fa-lock" style="color:var(--muted);opacity:.5"></i>
+        <span>Image uploads are available in the <a href="/subscription" style="color:var(--accent2);text-decoration:none;font-weight:600">Pro plan</a>. Upgrade to add up to 3 images per trade.</span>
       </div>
     </div>
     <div class="nmftr">
@@ -228,22 +250,36 @@ function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='sys
 (()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
 
 const jid=sessionStorage.getItem('tz_current_journal')||parent?.sessionStorage?.getItem?.('tz_current_journal');
-let currentUser=null,trades=[],settings=null;
+let currentUser=null,trades=[],settings=null,userIsPro=false;
 let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
 let pendingDeleteId=null,activeNotesId=null,imgBuffer=[],activePill=null,saveTimer=null;
+const FREE_TAG_LIMIT=2, FREE_IMG_LIMIT=1;
 
 (async()=>{
   const {data:{user}}=await db.auth.getUser();
   currentUser=user;
   if(!currentUser||!jid){showToast('Session expired. Please log in.','fa-solid fa-circle-exclamation');return;}
+  // Get plan from parent or fetch
+  try { userIsPro = parent?._userIsPro || false; } catch(e){}
+  if (!userIsPro) {
+    // Double-check via DB
+    const profile = await getProfile(currentUser.id);
+    userIsPro = profile?.plan === 'pro';
+  }
   settings=await getJournalSettings(jid);
   const raw=await getTrades(jid);
   trades=raw.map(dbToTrade);
   document.getElementById('skelTable').style.display='none';
   document.getElementById('tableWrap').style.display='';
+  // Show ad for free users
+  if (!userIsPro) { document.getElementById('logsAdSlot').classList.add('visible'); try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){} }
   applyAnalyticsState();render();
+  document.body.style.visibility='visible';
   subscribeTrades(jid,()=>refreshTrades());
-  window.addEventListener('message',e=>{if(e.data?.type==='tz_settings_updated')reloadSettings();});
+  window.addEventListener('message',e=>{
+    if(e.data?.type==='tz_settings_updated')reloadSettings();
+    if(e.data?.type==='tz_plan'){userIsPro=e.data.isPro;if(!userIsPro)document.getElementById('logsAdSlot').classList.add('visible');}
+  });
 })();
 
 async function reloadSettings(){settings=await getJournalSettings(jid);render();}
@@ -337,7 +373,19 @@ popup.innerHTML=`<div style="display:flex;align-items:center;justify-content:spa
 ${filter&&!all.find(t=>t.toLowerCase()===filter.toLowerCase())?`<div class="pnew"><div class="pnew-lbl">Create new</div><span class="ppl" style="border-style:dashed" onclick="createTag('${id}','${field}','${esc(filter)}')">${esc(filter)}</span></div>`:''}`;}
 
 function ppKey(e,id,field,val){if(e.key==='Enter'&&val.trim()){const ex=tags(field).find(t=>t.toLowerCase()===val.trim().toLowerCase());if(ex)toggleTag(id,field,ex);else createTag(id,field,val.trim());}if(e.key==='Escape')closePP();}
-async function toggleTag(id,field,val){const t=trades.find(x=>x.id===id);if(!t)return;if(!t[field])t[field]=[];const idx=t[field].indexOf(val);if(idx>-1)t[field].splice(idx,1);else t[field].push(val);if(activePill){const f=document.querySelector('#pp .pps')?.value||'';renderPP(id,field,f);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}});}updateTagCell(id,field,t[field]);await updateTrade(id,{[field]:t[field]});}
+async function toggleTag(id,field,val){
+  const t=trades.find(x=>x.id===id);if(!t)return;
+  if(!t[field])t[field]=[];
+  const idx=t[field].indexOf(val);
+  // Free plan: max 2 tags per field per trade
+  if(!userIsPro && idx===-1 && t[field].length>=FREE_TAG_LIMIT){
+    showToast(`Free plan allows ${FREE_TAG_LIMIT} tags per trade. Upgrade to Pro for unlimited.`,'fa-solid fa-lock');
+    return;
+  }
+  if(idx>-1)t[field].splice(idx,1);else t[field].push(val);
+  if(activePill){const f=document.querySelector('#pp .pps')?.value||'';renderPP(id,field,f);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}});}
+  updateTagCell(id,field,t[field]);await updateTrade(id,{[field]:t[field]});
+}
 async function createTag(id,field,val){const v=val.trim();if(!v||!settings)return;const k={strategy:'strategies',timeframe:'timeframes',pair:'pairs',mood:'moods'}[field];if(!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){settings[k]=[...settings[k],v];await updateJournalSettings(jid,{[k]:settings[k]});}toggleTag(id,field,v);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.value='';i.focus();renderPP(id,field,'');}});}
 function updateTagCell(id,field,sel){const pre=field==='strategy'?'st_':field==='timeframe'?'tf_':'md_';const c=document.getElementById(pre+id);if(!c)return;const lbl='<span class="pill ep"><i class="fa-solid fa-plus" style="font-size:9px"></i></span>';c.innerHTML=sel.length?sel.map(s=>`<span class="pill"${field==='mood'?` style="${moodStyle(s)}"`:''}>${esc(s)}</span>`).join(''):lbl;}
 function closePP(){document.getElementById('pp').style.display='none';activePill=null;}
@@ -345,13 +393,21 @@ document.addEventListener('click',()=>{if(document.getElementById('pp').style.di
 
 // ── Notes Modal — FIXED image loading ────────────────────
 // imgBuffer stores: {id, data} for existing; {data} (no id) for new unsaved
-function openNotes(id){
+async function openNotes(id){
   const t=trades.find(x=>x.id===id);if(!t)return;
   activeNotesId=id;
-  // Deep-copy images from trade object (already loaded from DB via dbToTrade)
-  imgBuffer=JSON.parse(JSON.stringify(t.images||[]));
+  // Deep-copy images and pre-resolve display URLs from Storage
+  imgBuffer = await Promise.all((t.images||[]).map(async img => {
+    const displayUrl = img._previewUrl || img.data || await getImageUrl(img);
+    return { ...img, _previewUrl: displayUrl };
+  }));
   document.getElementById('nmTitle').textContent=`${t.pair||'Trade'} — ${t.date||'—'}`;
   document.getElementById('nmText').value=t.notes||'';
+  const upRow=document.getElementById('uploadRow');
+  const proLock=document.getElementById('imgProLock');
+  const atLimit=!userIsPro && imgBuffer.length>=FREE_IMG_LIMIT;
+  upRow.style.display   = atLimit ? 'none' : 'flex';
+  proLock.style.display = atLimit ? 'flex' : 'none';
   renderImgs();
   document.getElementById('nOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('nmText').focus(),100);
@@ -367,14 +423,28 @@ async function saveNotes(){
   try{
     await updateTrade(activeNotesId,{notes:newNotes});
     t.notes=newNotes;
-    // Delete removed images (ones in original t.images but not in imgBuffer)
+    // Delete removed images — pass storage_path for bucket cleanup
     const keepIds=new Set(imgBuffer.filter(i=>i.id).map(i=>i.id));
-    for(const img of(t.images||[])){if(img.id&&!keepIds.has(img.id))await deleteTradeImage(img.id);}
+    for(const img of(t.images||[])){
+      if(img.id&&!keepIds.has(img.id)){
+        await deleteTradeImage(img.id, img.storage_path||null);
+      }
+    }
     // Save new images (those without an id)
     const final=[];
     for(const img of imgBuffer){
-      if(img.id){final.push(img);}
-      else{const s=await addTradeImage(currentUser.id,activeNotesId,img.data);final.push({id:s.id,data:img.data});}
+      if(img.id){
+        final.push(img);
+      } else {
+        // New image — upload to Storage via addTradeImage
+        const saved=await addTradeImage(currentUser.id,activeNotesId,img._previewUrl||img.data);
+        final.push({
+          id:           saved.id,
+          storage_path: saved.storage_path||null,
+          data:         saved.data||null,
+          _previewUrl:  img._previewUrl||img.data,
+        });
+      }
     }
     t.images=final;
     closeNotes();render();
@@ -387,19 +457,25 @@ function renderImgs(){
   const cnt=document.getElementById('imgCountLabel');
   cnt.textContent=imgBuffer.length?`(${imgBuffer.length} image${imgBuffer.length>1?'s':''})`:''
   if(!imgBuffer.length){box.innerHTML='<div class="no-imgs"><i class="fa-solid fa-image" style="margin-right:5px;opacity:.4"></i>No images attached.</div>';return;}
-  box.innerHTML=imgBuffer.map((img,i)=>`
-    <div class="img-thumb">
-      <img src="${img.data}" alt="Trade image" onclick="openLb('${img.data}')" loading="lazy">
+  box.innerHTML=imgBuffer.map((img,i)=>{
+    const src = img._previewUrl || img.data || '';
+    return `<div class="img-thumb">
+      <img src="${src}" alt="Trade image" onclick="openLb('${src.substring(0,4)==='data'?src:''}','${img.storage_path||''}')" loading="lazy">
       <button class="del-img" onclick="rmImg(${i})" title="Remove image"><i class="fa-solid fa-xmark"></i></button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
 
 function handleUpload(e){
   [...e.target.files].forEach(f=>{
+    if(!userIsPro && imgBuffer.length>=FREE_IMG_LIMIT){
+      showToast(`Free plan allows ${FREE_IMG_LIMIT} image per trade. Upgrade to Pro for 3.`,'fa-solid fa-lock');
+      return;
+    }
     const r=new FileReader();
-    r.onload=ev=>{imgBuffer.push({data:ev.target.result});renderImgs();};
+    r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};
     r.readAsDataURL(f);
   });
   e.target.value='';
@@ -408,16 +484,29 @@ function handleUpload(e){
 // Paste images into modal
 document.addEventListener('paste',e=>{
   if(!document.getElementById('nOverlay').classList.contains('open'))return;
+  if(!userIsPro && imgBuffer.length>=FREE_IMG_LIMIT){showToast(`Free plan allows ${FREE_IMG_LIMIT} image per trade. Upgrade to Pro.`,'fa-solid fa-lock');return;}
   [...e.clipboardData.items].forEach(item=>{
     if(item.type.startsWith('image/')){
+      if(!userIsPro && imgBuffer.length>=FREE_IMG_LIMIT)return;
       const r=new FileReader();
-      r.onload=ev=>{imgBuffer.push({data:ev.target.result});renderImgs();};
+      r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};
       r.readAsDataURL(item.getAsFile());
     }
   });
 });
 
-function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
+async function openLb(src, storagePath){
+  const lb=document.getElementById('lb');
+  const lbImg=document.getElementById('lbImg');
+  lbImg.src='';
+  lb.classList.add('open');
+  if(src){
+    lbImg.src=src;
+  } else if(storagePath){
+    const url = await getImageUrl({storage_path:storagePath});
+    lbImg.src=url;
+  }
+}
 
 // ── Analytics ─────────────────────────────────────────────
 function toggleAnalytics(){analyticsOn=!analyticsOn;localStorage.setItem('tl_analytics_on',analyticsOn);applyAnalyticsState();updateAnalytics();}

@@ -1,9 +1,11 @@
+<!-- dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -117,14 +119,15 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 </div>
 
 <header>
-  <div class="logo" onclick="window.location.href='dashboard.html'">Trade<span>Zona</span></div>
+  <div class="logo" onclick="window.location.href='/dashboard'">Trade<span>Zona</span></div>
   <div class="hright">
     <div class="huser">
+      <i class="fa-solid fa-circle-user" style="color:var(--muted);font-size:15px"></i>
       <span class="uname" id="uName">—</span>
-      <span class="plan-badge badge-free" id="planBadge" onclick="window.location.href='subscription.html'" title="View plan">Free</span>
+      <span class="plan-badge badge-free" id="planBadge" onclick="window.location.href='/subscription'" title="View plan">Free</span>
     </div>
     <button class="btn-ghost" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Settings</button>
-    <button class="btn-ghost" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+    <button class="btn-ghost" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
   </div>
 </header>
 
@@ -178,7 +181,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <strong><i class="fa-solid fa-circle-xmark" style="color:#ff5f6d;margin-right:5px"></i>Remove ads &amp; unlock everything</strong>
       Unlimited journals · Full analytics · Gallery · PIN journals · No ads. Ever.
     </div>
-    <button class="ad-nudge-btn" onclick="window.location.href='subscription.html'">
+    <button class="ad-nudge-btn" onclick="window.location.href='/subscription'">
       <i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro — $5/mo
     </button>
   </div>
@@ -253,7 +256,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
             <div class="plan-lbl">Current Plan</div>
             <div class="plan-val" id="settingsPlanLabel">Free</div>
           </div>
-          <button class="upgrade-btn" onclick="window.location.href='subscription.html'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
+          <button class="upgrade-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
         </div>
         <div class="plan-row">
           <div>
@@ -325,14 +328,14 @@ function setTheme(t) {
   document.getElementById('uName').textContent = profile?.name || currentUser.email;
   const badge = document.getElementById('planBadge');
   const isPro = profile?.plan === 'pro';
+  window._userIsPro = isPro;
+  window._userName = profile?.name || currentUser.email;
   if (isPro) { badge.textContent = 'Pro'; badge.className = 'plan-badge badge-pro'; }
   document.getElementById('settingsPlanLabel').textContent = isPro ? 'Pro' : 'Free';
   document.getElementById('proLockIcon').style.display = isPro ? 'none' : '';
-  // Show ads + upgrade nudge only to Free users
   if (!isPro) {
     document.getElementById('dashAdSlot').classList.add('visible');
     document.getElementById('dashUpgradeNudge').classList.add('visible');
-    // Push AdSense (safe to call even if not live yet)
     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
   }
   await loadJournals();
@@ -378,10 +381,19 @@ function renderJournals() {
   }).join('');
 }
 
-function goToJournal(id) { sessionStorage.setItem('tz_current_journal', id); window.location.href = 'journal.html'; }
+function goToJournal(id) { sessionStorage.setItem('tz_current_journal', id); window.location.href = '/journal'; }
 
 // ── Create Journal ────────────────────────────────────────
-function openCreate() { document.getElementById('createModal').classList.add('open'); setTimeout(() => document.getElementById('jName').focus(), 100); }
+function openCreate() {
+  // Free users limited to 1 journal
+  if (!window._userIsPro && journals.length >= 1) {
+    showToast('Free plan allows 1 journal. Upgrade to Pro for unlimited journals.', 'fa-solid fa-lock');
+    setTimeout(() => window.location.href = '/subscription', 2000);
+    return;
+  }
+  document.getElementById('createModal').classList.add('open');
+  setTimeout(() => document.getElementById('jName').focus(), 100);
+}
 function closeCreate() {
   document.getElementById('createModal').classList.remove('open');
   document.getElementById('jName').value = '';
@@ -439,7 +451,7 @@ function confirmDeleteAccount() {
 }
 
 // ── Logout ────────────────────────────────────────────────
-async function logout() { await db.auth.signOut(); sessionStorage.clear(); window.location.href = 'auth.html'; }
+async function logout() { await db.auth.signOut(); sessionStorage.clear(); window.location.href = '/auth'; }
 
 // ── Toast ──────────────────────────────────────────────────
 let _tt;

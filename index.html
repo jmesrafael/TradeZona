@@ -5,229 +5,129 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — The Trading Journal That Thinks Like a Trader</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="description" content="TradeZona is a cloud-powered trading journal with deep analytics, mood tracking, strategy breakdown, equity curves, and more. Start free, upgrade to Pro.">
+<meta property="og:title" content="TradeZona — The Trading Journal That Thinks Like a Trader">
+<meta property="og:description" content="Turn your raw trade data into sharp insights. Win streaks, mood patterns, best hours, worst habits. Know exactly why you're profitable.">
+<meta property="og:url" content="https://tradezona.vercel.app">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --bg:#070a08;
-  --panel:#0d1410;
-  --panel2:#111e17;
-  --accent:#00ff88;
-  --accent2:#19c37d;
-  --accent-dim:rgba(0,255,136,.08);
-  --accent-glow:rgba(0,255,136,.18);
-  --border:rgba(0,255,136,.1);
-  --border2:rgba(255,255,255,.07);
-  --text:#e8f5ee;
-  --text2:#b0c8bc;
-  --muted:#6a8a7a;
-  --red:#ff5f6d;
-  --gold:#f5c518;
-  --r1:0 0 0 1px var(--border);
+  --bg:#070a08;--panel:#0d1410;--panel2:#111e17;
+  --accent:#00ff88;--accent2:#19c37d;
+  --accent-dim:rgba(0,255,136,.08);--accent-glow:rgba(0,255,136,.18);
+  --border:rgba(0,255,136,.1);--border2:rgba(255,255,255,.07);
+  --text:#e8f5ee;--text2:#b0c8bc;--muted:#6a8a7a;--red:#ff5f6d;--gold:#f5c518;
 }
-
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;line-height:1.45}
-
-/* ── NOISE TEXTURE ─────────────────────────────────────── */
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity:.025;pointer-events:none;z-index:0;
-}
-
-/* ── GLOBAL GRID GLOW ──────────────────────────────────── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;z-index:0}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif}
 .glow-orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
 
-/* ── TYPOGRAPHY ─────────────────────────────────────────── */
-h1,h2,h3,.syne{font-family:'Space Grotesk',sans-serif}
-
-/* ── NAV ───────────────────────────────────────────────── */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 40px;
-  background:rgba(7,10,8,.7);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border2);
-}
-.nav-logo{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text)}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(7,10,8,.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--border2)}
+.nav-logo{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text);text-decoration:none}
 .nav-logo span{color:var(--accent)}
 .nav-links{display:flex;align-items:center;gap:32px}
 .nav-links a{font-size:14px;color:var(--text2);text-decoration:none;transition:color .2s}
 .nav-links a:hover{color:var(--accent)}
 .nav-cta{background:var(--accent);color:#070a08;border:none;border-radius:8px;padding:9px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.3px}
 .nav-cta:hover{background:#00e67a;box-shadow:0 0 20px rgba(0,255,136,.35)}
-@media(max-width:640px){.nav-links{display:none}.nav{padding:16px 24px}}
+@media(max-width:640px){.nav-links{display:none}nav{padding:16px 24px}}
 
-/* ── HERO ──────────────────────────────────────────────── */
-.hero{
-  position:relative;min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;
-  padding:120px 24px 80px;overflow:hidden;
-}
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;overflow:hidden}
 .hero .glow-orb:nth-child(1){width:600px;height:600px;background:rgba(0,255,136,.07);top:-100px;left:50%;transform:translateX(-50%)}
 .hero .glow-orb:nth-child(2){width:300px;height:300px;background:rgba(25,195,125,.1);top:60%;left:10%}
 .hero .glow-orb:nth-child(3){width:250px;height:250px;background:rgba(0,255,136,.06);top:40%;right:5%}
-
-.hero-badge{
-  display:inline-flex;align-items:center;gap:7px;
-  background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);
-  border-radius:20px;padding:6px 14px;
-  font-size:12px;color:var(--accent2);font-weight:500;
-  margin-bottom:28px;letter-spacing:.3px;
-  animation:fadeUp .7s ease both;
-}
-.hero-badge i{font-size:10px}
-
-.hero h1{
-  font-size:clamp(42px,7vw,88px);font-weight:800;line-height:1.0;
-  letter-spacing:-2px;margin-bottom:24px;
-  animation:fadeUp .7s .1s ease both;
-}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--accent2);font-weight:500;margin-bottom:28px;letter-spacing:.3px;animation:fadeUp .7s ease both}
+.hero h1{font-size:clamp(42px,7vw,88px);font-weight:800;line-height:1.0;letter-spacing:-2px;margin-bottom:24px;animation:fadeUp .7s .1s ease both}
 .hero h1 .line2{display:block;color:var(--accent)}
 .hero h1 .line3{display:block;font-size:clamp(28px,4.5vw,56px);font-weight:400;color:var(--text2);letter-spacing:-1px;margin-top:8px}
-
-.hero-sub{
-  line-height:1.5;
-  font-size:clamp(15px,2vw,18px);color:var(--text2);max-width:560px;
-  line-height:1.5;margin-bottom:36px;
-  animation:fadeUp .7s .2s ease both;
-}
+.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--text2);max-width:560px;line-height:1.6;margin-bottom:36px;animation:fadeUp .7s .2s ease both}
 .hero-sub strong{color:var(--text)}
-
-.hero-actions{
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
-  animation:fadeUp .7s .3s ease both;
-  margin-bottom:64px;
-}
-.btn-hero{
-  display:inline-flex;align-items:center;gap:9px;
-  background:var(--accent);color:#070a08;border:none;border-radius:10px;
-  padding:14px 28px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;text-decoration:none;transition:all .25s;letter-spacing:.2px;
-}
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;animation:fadeUp .7s .3s ease both;margin-bottom:64px}
+.btn-hero{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#070a08;border:none;border-radius:10px;padding:14px 28px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .25s;letter-spacing:.2px}
 .btn-hero:hover{background:#00e67a;box-shadow:0 0 30px rgba(0,255,136,.4);transform:translateY(-1px)}
-.btn-hero-ghost{
-  display:inline-flex;align-items:center;gap:9px;
-  background:none;border:1px solid var(--border2);color:var(--text);
-  border-radius:10px;padding:14px 28px;font-family:'Inter',sans-serif;
-  font-size:15px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .25s;
-}
+.btn-hero-ghost{display:inline-flex;align-items:center;gap:9px;background:none;border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:14px 28px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .25s}
 .btn-hero-ghost:hover{border-color:rgba(0,255,136,.4);color:var(--accent)}
 
-/* fake screen */
-.hero-screen{
-  position:relative;width:100%;max-width:860px;margin:0 auto;
-  animation:fadeUp .8s .4s ease both;
-}
-.hero-screen::before{
-  content:'';position:absolute;inset:-1px;border-radius:14px;
-  background:linear-gradient(135deg,rgba(0,255,136,.3),rgba(0,255,136,.05) 50%,transparent);
-  z-index:-1;
-}
-.screen-bar{
-  background:var(--panel);border-radius:12px 12px 0 0;border:1px solid var(--border);
-  padding:12px 16px;display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--border2);
-}
-.dot{width:10px;height:10px;border-radius:50%}
-.dot.r{background:#ff5f6d}.dot.y{background:#f5c518}.dot.g{background:#00ff88}
+/* HERO SCREEN */
+.hero-screen{position:relative;width:100%;max-width:860px;margin:0 auto;animation:fadeUp .8s .4s ease both}
+.hero-screen::before{content:'';position:absolute;inset:-1px;border-radius:14px;background:linear-gradient(135deg,rgba(0,255,136,.3),rgba(0,255,136,.05) 50%,transparent);z-index:-1}
+.screen-bar{background:var(--panel);border-radius:12px 12px 0 0;border:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border2)}
+.dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f6d}.dot.y{background:#f5c518}.dot.g{background:#00ff88}
 .screen-tab{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border2);border-radius:5px;padding:3px 10px;margin-left:12px}
 .screen-tab.active{color:var(--accent2);border-color:rgba(0,255,136,.2)}
-.screen-body{
-  background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;
-  padding:20px;overflow:hidden;
-}
+.screen-body{background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:20px;overflow:hidden}
 .screen-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
 .ss-card{background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px}
 .ss-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
 .ss-val{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
-.ss-val.pos{color:var(--accent)}.ss-val.neg{color:var(--red)}.ss-val.gold{color:var(--gold)}
-/* mock table rows */
+.ss-val.pos{color:var(--accent)}.ss-val.gold{color:var(--gold)}
 .mock-table{width:100%;border-collapse:collapse}
 .mock-table th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border2)}
 .mock-table td{font-size:11px;color:var(--text2);padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.03)}
-.mock-table td.pos{color:var(--accent);font-weight:600}
-.mock-table td.neg{color:var(--red);font-weight:600}
+.mock-table td.pos{color:var(--accent);font-weight:600}.mock-table td.neg{color:var(--red);font-weight:600}
 .mock-pill{display:inline-block;background:rgba(25,195,125,.12);color:var(--accent2);border:1px solid rgba(25,195,125,.25);border-radius:20px;padding:2px 7px;font-size:10px}
 .mock-pill.red{background:rgba(255,95,109,.1);color:var(--red);border-color:rgba(255,95,109,.25)}
 .mock-pill.gold{background:rgba(245,197,24,.1);color:var(--gold);border-color:rgba(245,197,24,.25)}
-.mock-stars{color:var(--gold);font-size:10px;letter-spacing:1px}
 
-/* ── TRUST BAR ─────────────────────────────────────────── */
-.trust-bar{
-  border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);
-  padding:24px 40px;display:flex;align-items:center;justify-content:center;
-  gap:48px;flex-wrap:wrap;
-}
+/* TICKER */
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--border2);padding:12px 0;background:rgba(0,255,136,.02)}
+.ticker{display:flex;gap:56px;animation:ticker 28s linear infinite;white-space:nowrap}
+.ticker-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ticker-item i{color:var(--accent2);font-size:11px}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* TRUST BAR */
+.trust-bar{border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:24px 40px;display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap}
 .trust-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
 .trust-item i{color:var(--accent2);font-size:14px}
 .trust-item strong{color:var(--text2)}
 
-/* ── SECTION BASE ──────────────────────────────────────── */
+/* SECTIONS */
 section{position:relative;overflow:hidden}
 .sec-inner{max-width:1080px;margin:0 auto;padding:100px 40px}
 @media(max-width:640px){.sec-inner{padding:72px 24px}}
-
-.sec-label{
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:11px;font-weight:600;color:var(--accent2);
-  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;
-}
+.sec-label{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
 .sec-label::before{content:'';width:24px;height:1px;background:var(--accent2)}
 .sec-title{font-size:clamp(28px,4vw,46px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px}
 .sec-title span{color:var(--accent)}
 .sec-sub{font-size:16px;color:var(--text2);line-height:1.7;max-width:540px}
 
-/* ── PROBLEM / WHY SECTION ─────────────────────────────── */
+/* WHY */
 #why{background:linear-gradient(180deg,var(--bg) 0%,var(--panel) 100%)}
 .pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:52px}
 @media(max-width:700px){.pain-grid{grid-template-columns:1fr}}
-.pain-card{
-  background:var(--panel2);border:1px solid var(--border2);border-radius:12px;
-  padding:24px;position:relative;overflow:hidden;transition:border-color .2s;
-}
+.pain-card{background:var(--panel2);border:1px solid var(--border2);border-radius:12px;padding:24px;position:relative;overflow:hidden;transition:border-color .2s}
 .pain-card:hover{border-color:rgba(0,255,136,.2)}
-.pain-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  opacity:0;transition:opacity .3s;
-}
+.pain-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
 .pain-card:hover::before{opacity:1}
-.pain-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,255,136,.08);
-  border:1px solid rgba(0,255,136,.15);display:flex;align-items:center;justify-content:center;
-  font-size:16px;color:var(--accent2);margin-bottom:14px}
+.pain-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.15);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--accent2);margin-bottom:14px}
 .pain-card h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px}
 .pain-card p{font-size:13px;color:var(--text2);line-height:1.7}
 
-/* ── FEATURES ───────────────────────────────────────────── */
+/* FEATURES */
 #features{background:var(--panel)}
 #features .glow-orb{width:500px;height:500px;background:rgba(0,255,136,.04);top:50%;left:-100px;transform:translateY(-50%)}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
 @media(max-width:900px){.feat-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:580px){.feat-grid{grid-template-columns:1fr}}
-.feat-card{
-  background:var(--bg);border:1px solid var(--border2);border-radius:14px;
-  padding:28px 24px;transition:all .25s;position:relative;
-}
+.feat-card{background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:28px 24px;transition:all .25s;position:relative}
 .feat-card:hover{border-color:rgba(0,255,136,.25);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
-.feat-num{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:var(--muted);
-  letter-spacing:1px;margin-bottom:14px;display:block}
-.feat-icon-wrap{width:44px;height:44px;border-radius:11px;
-  background:linear-gradient(135deg,rgba(0,255,136,.12),rgba(0,255,136,.04));
-  border:1px solid rgba(0,255,136,.15);
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;color:var(--accent2);margin-bottom:16px}
+.feat-num{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:14px;display:block}
+.feat-icon-wrap{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,rgba(0,255,136,.12),rgba(0,255,136,.04));border:1px solid rgba(0,255,136,.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent2);margin-bottom:16px}
 .feat-card h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px}
 .feat-card p{font-size:13px;color:var(--text2);line-height:1.7}
-.feat-tag{display:inline-block;margin-top:14px;font-size:10px;font-weight:600;
-  color:var(--accent2);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.15);
-  border-radius:4px;padding:3px 8px;text-transform:uppercase;letter-spacing:.7px}
+.feat-tag{display:inline-block;margin-top:14px;font-size:10px;font-weight:600;color:var(--accent2);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.15);border-radius:4px;padding:3px 8px;text-transform:uppercase;letter-spacing:.7px}
 
-/* ── STATS ROW ─────────────────────────────────────────── */
+/* STATS */
 #stats{background:var(--bg);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2)}
 .stats-inner{max-width:1080px;margin:0 auto;padding:64px 40px}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
@@ -237,57 +137,35 @@ section{position:relative;overflow:hidden}
 .stat-num{font-family:'Space Grotesk',sans-serif;font-size:clamp(32px,4vw,52px);font-weight:800;color:var(--accent);line-height:1;margin-bottom:6px;display:block}
 .stat-lbl{font-size:13px;color:var(--muted)}
 
-/* ── HOW IT WORKS ──────────────────────────────────────── */
+/* HOW */
 #how{background:linear-gradient(180deg,var(--bg),var(--panel))}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:56px;position:relative}
-.steps::before{
-  content:'';position:absolute;top:28px;left:calc(16.66% + 20px);right:calc(16.66% + 20px);
-  height:1px;background:linear-gradient(90deg,var(--accent2),rgba(25,195,125,.3),var(--accent2));
-}
+.steps::before{content:'';position:absolute;top:28px;left:calc(16.66% + 20px);right:calc(16.66% + 20px);height:1px;background:linear-gradient(90deg,var(--accent2),rgba(25,195,125,.3),var(--accent2))}
 @media(max-width:700px){.steps{grid-template-columns:1fr;gap:32px}.steps::before{display:none}}
 .step{text-align:center;padding:0 24px;position:relative}
-.step-num{
-  width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
-  font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;color:#070a08;
-  box-shadow:0 0 0 8px rgba(0,255,136,.1);position:relative;z-index:1;
-}
+.step-num{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;color:#070a08;box-shadow:0 0 0 8px rgba(0,255,136,.1);position:relative;z-index:1}
 .step h3{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;margin-bottom:8px}
 .step p{font-size:13px;color:var(--text2);line-height:1.7}
 
-/* ── TESTIMONIALS ──────────────────────────────────────── */
+/* TESTIMONIALS */
 #testimonials{background:var(--panel)}
 .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:52px}
 @media(max-width:860px){.testi-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:540px){.testi-grid{grid-template-columns:1fr}}
-.testi-card{
-  background:var(--bg);border:1px solid var(--border2);border-radius:14px;
-  padding:24px;display:flex;flex-direction:column;gap:16px;transition:border-color .2s;
-}
+.testi-card{background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px;transition:border-color .2s}
 .testi-card:hover{border-color:rgba(0,255,136,.2)}
 .testi-stars{color:var(--gold);font-size:13px;letter-spacing:2px}
 .testi-quote{font-size:14px;color:var(--text);line-height:1.5;flex:1}
 .testi-quote strong{color:var(--accent2)}
 .testi-author{display:flex;align-items:center;gap:12px}
-.testi-avatar{
-  width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent2),var(--accent));
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#070a08;flex-shrink:0;
-}
+.testi-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#070a08;flex-shrink:0}
 .testi-name{font-size:13px;font-weight:600}
 .testi-role{font-size:11px;color:var(--muted)}
 
-/* ── CTA SECTION ───────────────────────────────────────── */
-#cta{
-  background:var(--bg);
-  position:relative;overflow:hidden;
-}
-#cta .glow-orb:nth-child(1){width:700px;height:700px;background:rgba(0,255,136,.06);top:50%;left:50%;transform:translate(-50%,-50%)}
-.cta-inner{
-  max-width:720px;margin:0 auto;padding:120px 40px;text-align:center;position:relative;z-index:1;
-}
+/* CTA */
+#cta{background:var(--bg);position:relative;overflow:hidden}
+#cta .glow-orb{width:700px;height:700px;background:rgba(0,255,136,.06);top:50%;left:50%;transform:translate(-50%,-50%)}
+.cta-inner{max-width:720px;margin:0 auto;padding:120px 40px;text-align:center;position:relative;z-index:1}
 .cta-inner h2{font-size:clamp(32px,5vw,60px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;margin-bottom:20px}
 .cta-inner h2 span{color:var(--accent)}
 .cta-inner p{font-size:17px;color:var(--text2);line-height:1.5;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}
@@ -295,91 +173,27 @@ section{position:relative;overflow:hidden}
 .cta-note{font-size:12px;color:var(--muted)}
 .cta-note i{color:var(--accent2);margin-right:4px}
 
-/* ── FAQ ────────────────────────────────────────────────── */
+/* FAQ */
 #faq{background:var(--panel);border-top:1px solid var(--border2)}
 .faq-list{max-width:660px;margin:52px auto 0;display:flex;flex-direction:column;gap:4px}
 .faq-item{border:1px solid var(--border2);border-radius:10px;overflow:hidden;transition:border-color .2s}
 .faq-item.open{border-color:rgba(0,255,136,.2)}
-.faq-q{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 20px;cursor:pointer;font-size:14px;font-weight:500;
-  transition:background .15s;user-select:none;
-}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;cursor:pointer;font-size:14px;font-weight:500;transition:background .15s;user-select:none}
 .faq-q:hover{background:rgba(255,255,255,.03)}
 .faq-q i{font-size:12px;color:var(--muted);transition:transform .25s;flex-shrink:0}
 .faq-item.open .faq-q i{transform:rotate(180deg);color:var(--accent2)}
-.faq-a{
-  max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;
-  font-size:13px;color:var(--text2);line-height:1.5;padding:0 20px;
-}
-.faq-item.open .faq-a{max-height:200px;padding:0 20px 18px}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;font-size:13px;color:var(--text2);line-height:1.6;padding:0 20px}
+.faq-item.open .faq-a{max-height:300px;padding:0 20px 18px}
 
-/* ── FOOTER ─────────────────────────────────────────────── */
-footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40px 28px}
-.footer-inner{max-width:1080px;margin:0 auto;display:flex;gap:56px;flex-wrap:wrap;margin-bottom:40px}
-.footer-brand{flex:1;min-width:200px}
-.footer-logo{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
-.footer-logo span{color:var(--accent)}
-.footer-tagline{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.4}
-.footer-badges{display:flex;flex-wrap:wrap;gap:7px}
-.footer-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);
-  background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:3px 10px}
-.footer-badge i{color:var(--accent2);font-size:10px}
-.footer-links-group{display:flex;gap:48px;flex-wrap:wrap}
-.footer-col{display:flex;flex-direction:column;gap:8px;min-width:100px}
-.footer-col-title{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;
-  color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
-.footer-col a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .18s}
-.footer-col a:hover{color:var(--accent2)}
-.footer-bottom{max-width:1080px;margin:0 auto;padding-top:24px;border-top:1px solid var(--border2);
-  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
-  font-size:12px;color:var(--muted)}
-@media(max-width:640px){.footer-inner{flex-direction:column;gap:32px}.footer-bottom{flex-direction:column;align-items:center;text-align:center}}
-
-/* ── ANIMATIONS ─────────────────────────────────────────── */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(24px)}
-  to{opacity:1;transform:translateY(0)}
-}
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
-.reveal.in{opacity:1;transform:translateY(0)}
-.reveal-d1{transition-delay:.08s}
-.reveal-d2{transition-delay:.16s}
-.reveal-d3{transition-delay:.24s}
-.reveal-d4{transition-delay:.32s}
-.reveal-d5{transition-delay:.40s}
-.reveal-d6{transition-delay:.48s}
-
-/* ── TICKER ─────────────────────────────────────────────── */
-.ticker-wrap{overflow:hidden;border-top:1px solid var(--border2);padding:12px 0;background:rgba(0,255,136,.02)}
-.ticker{display:flex;gap:56px;animation:ticker 28s linear infinite;white-space:nowrap}
-.ticker-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.ticker-item i{color:var(--accent2);font-size:11px}
-@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-/* ── PRICING ─────────────────────────────────────────────── */
+/* PRICING */
 #pricing{background:var(--panel)}
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:56px;max-width:780px;margin-left:auto;margin-right:auto}
 @media(max-width:640px){.pricing-grid{grid-template-columns:1fr}}
-.price-card{
-  background:var(--bg);border:1px solid var(--border2);border-radius:16px;
-  padding:32px 28px;position:relative;transition:all .25s;display:flex;flex-direction:column;
-}
+.price-card{background:var(--bg);border:1px solid var(--border2);border-radius:16px;padding:32px 28px;position:relative;transition:all .25s;display:flex;flex-direction:column}
 .price-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.45)}
-.price-card.pro{
-  border-color:rgba(0,255,136,.35);
-  background:linear-gradient(145deg,rgba(0,255,136,.05),var(--bg));
-  box-shadow:0 0 0 1px rgba(0,255,136,.15),0 8px 32px rgba(0,0,0,.3);
-}
-.price-card.pro:hover{box-shadow:0 0 0 1px rgba(0,255,136,.3),0 20px 60px rgba(0,0,0,.45)}
-.price-badge{
-  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
-  background:var(--accent);color:#070a08;font-family:'Space Grotesk',sans-serif;
-  font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;
-  letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;
-}
-.price-plan{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
-  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.price-card.pro{border-color:rgba(0,255,136,.35);background:linear-gradient(145deg,rgba(0,255,136,.05),var(--bg));box-shadow:0 0 0 1px rgba(0,255,136,.15),0 8px 32px rgba(0,0,0,.3)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#070a08;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.price-plan{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
 .price-plan.pro{color:var(--accent2)}
 .price-amount{display:flex;align-items:baseline;gap:4px;margin-bottom:6px}
 .price-dollar{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;color:var(--text);line-height:1}
@@ -390,21 +204,16 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
 .price-features{list-style:none;display:flex;flex-direction:column;gap:11px;flex:1;margin-bottom:28px}
 .price-features li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);line-height:1.5}
 .price-features li i{font-size:12px;margin-top:2px;flex-shrink:0}
-.price-features li i.yes{color:var(--accent2)}
-.price-features li i.no{color:var(--muted);opacity:.45}
+.price-features li i.yes{color:var(--accent2)}.price-features li i.no{color:var(--muted);opacity:.45}
 .price-features li.locked{color:var(--muted)}
 .price-features .feat-limit{font-size:11px;color:var(--muted);display:block;margin-top:1px}
-.price-btn{
-  display:block;width:100%;text-align:center;padding:13px;border-radius:10px;
-  font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;
-  cursor:pointer;text-decoration:none;transition:all .22s;letter-spacing:.2px;
-}
+.price-btn{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .22s;letter-spacing:.2px}
 .price-btn.free{background:none;border:1px solid var(--border2);color:var(--text2)}
 .price-btn.free:hover{border-color:rgba(0,255,136,.3);color:var(--text)}
 .price-btn.pro-btn{background:var(--accent);color:#070a08;border:none}
 .price-btn.pro-btn:hover{background:#00e67a;box-shadow:0 0 24px rgba(0,255,136,.35)}
 
-/* ── COMPARISON TABLE ───────────────────────────────────── */
+/* COMPARE */
 #compare{background:var(--bg)}
 .cmp-wrap{margin-top:52px;overflow-x:auto}
 .cmp-table{width:100%;border-collapse:collapse;min-width:500px}
@@ -414,13 +223,37 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
 .cmp-table td:nth-child(2){background:rgba(0,255,136,.03);color:var(--accent2);font-weight:600}
 .cmp-table td.no{color:var(--muted)}
 .cmp-table i.yes{color:var(--accent2)}.cmp-table i.no{color:var(--muted)}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40px 28px}
+.footer-inner{max-width:1080px;margin:0 auto;display:flex;gap:56px;flex-wrap:wrap;margin-bottom:40px}
+.footer-brand{flex:1;min-width:200px}
+.footer-logo{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+.footer-logo span{color:var(--accent)}
+.footer-tagline{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.4}
+.footer-badges{display:flex;flex-wrap:wrap;gap:7px}
+.footer-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:3px 10px}
+.footer-badge i{color:var(--accent2);font-size:10px}
+.footer-links-group{display:flex;gap:48px;flex-wrap:wrap}
+.footer-col{display:flex;flex-direction:column;gap:8px;min-width:100px}
+.footer-col-title{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.footer-col a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .18s}
+.footer-col a:hover{color:var(--accent2)}
+.footer-bottom{max-width:1080px;margin:0 auto;padding-top:24px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted)}
+@media(max-width:640px){.footer-inner{flex-direction:column;gap:32px}.footer-bottom{flex-direction:column;align-items:center;text-align:center}}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:.08s}.reveal-d2{transition-delay:.16s}.reveal-d3{transition-delay:.24s}
+.reveal-d4{transition-delay:.32s}.reveal-d5{transition-delay:.40s}.reveal-d6{transition-delay:.48s}
 </style>
 </head>
 <body>
 
-<!-- ── NAV ──────────────────────────────────────────────── -->
 <nav>
-  <div class="nav-logo">Trade<span>Zona</span></div>
+  <a href="/" class="nav-logo">Trade<span>Zona</span></a>
   <div class="nav-links">
     <a href="#why">Why TradeZona</a>
     <a href="#features">Features</a>
@@ -428,47 +261,23 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
     <a href="#faq">FAQ</a>
     <a href="#pricing">Pricing</a>
   </div>
-  <a href="auth.html" class="nav-cta">Start Free →</a>
+  <a href="/auth" class="nav-cta">Start Free →</a>
 </nav>
 
-<!-- ── HERO ─────────────────────────────────────────────── -->
+<!-- HERO -->
 <section class="hero">
-  <div class="glow-orb"></div>
-  <div class="glow-orb"></div>
-  <div class="glow-orb"></div>
-
-  <div class="hero-badge">
-    <i class="fa-solid fa-bolt"></i>
-    Built for serious traders · 100% private · Runs in your browser
-  </div>
-
-  <h1>
-    Stop Guessing.<br>
-    <span class="line2">Start Winning.</span>
-    <span class="line3">The journal that shows you the truth.</span>
-  </h1>
-
-  <p class="hero-sub">
-    TradeZona turns your raw trade data into <strong>sharp insights</strong> — win streaks, mood patterns, best hours, worst habits. Know exactly why you're profitable. Know exactly why you're not.
-  </p>
-
+  <div class="glow-orb"></div><div class="glow-orb"></div><div class="glow-orb"></div>
+  <div class="hero-badge"><i class="fa-solid fa-cloud"></i> Cloud-powered · Secure · Multi-device</div>
+  <h1>Stop Guessing.<br><span class="line2">Start Winning.</span><span class="line3">The journal that shows you the truth.</span></h1>
+  <p class="hero-sub">TradeZona turns your raw trade data into <strong>sharp insights</strong> — win streaks, mood patterns, best hours, worst habits. Know exactly why you're profitable. Know exactly why you're not.</p>
   <div class="hero-actions">
-    <a href="auth.html" class="btn-hero">
-      <i class="fa-solid fa-chart-line"></i>
-      Open TradeZona Free
-    </a>
-    <a href="#features" class="btn-hero-ghost">
-      See what's inside <i class="fa-solid fa-arrow-down"></i>
-    </a>
+    <a href="/auth" class="btn-hero"><i class="fa-solid fa-chart-line"></i>Start Journaling Free</a>
+    <a href="#features" class="btn-hero-ghost">See what's inside <i class="fa-solid fa-arrow-down"></i></a>
   </div>
-
-  <!-- Mock App Screen -->
   <div class="hero-screen">
     <div class="screen-bar">
       <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
-      <span class="screen-tab active">Logs</span>
-      <span class="screen-tab">Calendar</span>
-      <span class="screen-tab">Analytics</span>
+      <span class="screen-tab active">Logs</span><span class="screen-tab">Calendar</span><span class="screen-tab">Analytics</span>
     </div>
     <div class="screen-body">
       <div class="screen-stats">
@@ -478,353 +287,189 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
         <div class="ss-card"><div class="ss-lbl">Avg R</div><div class="ss-val pos">+2.3R</div></div>
       </div>
       <table class="mock-table">
-        <thead>
-          <tr>
-            <th>#</th><th>Date</th><th>Pair</th><th>Position</th>
-            <th>Strategy</th><th>PNL</th><th>R</th><th>Confidence</th><th>Mood</th>
-          </tr>
-        </thead>
+        <thead><tr><th>#</th><th>Date</th><th>Pair</th><th>Position</th><th>Strategy</th><th>PNL</th><th>R</th><th>Mood</th></tr></thead>
         <tbody>
-          <tr>
-            <td style="color:var(--muted)">1</td><td>Mar 17</td><td>EURUSD</td>
-            <td class="pos">Long</td>
-            <td><span class="mock-pill">Breakout</span></td>
-            <td class="pos">+$420</td><td class="pos">+2.1R</td>
-            <td style="color:var(--gold);font-size:11px">★★★★★</td>
-            <td><span class="mock-pill">Confident</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted)">2</td><td>Mar 16</td><td>XAUUSD</td>
-            <td class="neg" style="color:var(--red)">Short</td>
-            <td><span class="mock-pill gold">Reversal</span></td>
-            <td class="neg">-$180</td><td class="neg">-1.0R</td>
-            <td style="color:var(--gold);font-size:11px">★★★☆☆</td>
-            <td><span class="mock-pill red">Anxious</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted)">3</td><td>Mar 15</td><td>BTCUSD</td>
-            <td class="pos">Long</td>
-            <td><span class="mock-pill">Trend</span></td>
-            <td class="pos">+$960</td><td class="pos">+3.2R</td>
-            <td style="color:var(--gold);font-size:11px">★★★★☆</td>
-            <td><span class="mock-pill">Neutral</span></td>
-          </tr>
+          <tr><td style="color:var(--muted)">1</td><td>Mar 17</td><td>EURUSD</td><td class="pos">Long</td><td><span class="mock-pill">Breakout</span></td><td class="pos">+$420</td><td class="pos">+2.1R</td><td><span class="mock-pill">Confident</span></td></tr>
+          <tr><td style="color:var(--muted)">2</td><td>Mar 16</td><td>XAUUSD</td><td class="neg">Short</td><td><span class="mock-pill gold">Reversal</span></td><td class="neg">-$180</td><td class="neg">-1.0R</td><td><span class="mock-pill red">Anxious</span></td></tr>
+          <tr><td style="color:var(--muted)">3</td><td>Mar 15</td><td>BTCUSD</td><td class="pos">Long</td><td><span class="mock-pill">Trend</span></td><td class="pos">+$960</td><td class="pos">+3.2R</td><td><span class="mock-pill">Neutral</span></td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<!-- ── TICKER ─────────────────────────────────────────────── -->
-<div class="ticker-wrap">
-  <div class="ticker">
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Trade Log Table</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Equity Curve</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Mood Tracking</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Win/Loss Streaks</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Strategy Breakdown</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Risk Calculator</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Trade Calendar</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Photo Gallery</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Best Hour Analysis</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Export & Import</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Pro: Unlimited Journals</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> PIN Protection</span>
-    <!-- duplicate for infinite scroll -->
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Trade Log Table</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Equity Curve</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Mood Tracking</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Win/Loss Streaks</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Strategy Breakdown</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Risk Calculator</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Trade Calendar</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Photo Gallery</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Best Hour Analysis</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Export & Import</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> Pro: Unlimited Journals</span>
-    <span class="ticker-item"><i class="fa-solid fa-check"></i> PIN Protection</span>
-  </div>
-</div>
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker">
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Trade Log Table</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Equity Curve</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Mood Tracking</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Win/Loss Streaks</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Strategy Breakdown</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Trade Calendar</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Photo Gallery</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Best Hour Analysis</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Export &amp; Import</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Pro: Unlimited Journals</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>PIN Protection</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Cloud Sync</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Trade Log Table</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Equity Curve</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Mood Tracking</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Win/Loss Streaks</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Strategy Breakdown</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Trade Calendar</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Photo Gallery</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Best Hour Analysis</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Export &amp; Import</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Pro: Unlimited Journals</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>PIN Protection</span>
+  <span class="ticker-item"><i class="fa-solid fa-check"></i>Cloud Sync</span>
+</div></div>
 
-<!-- ── TRUST BAR ─────────────────────────────────────────── -->
+<!-- TRUST BAR -->
 <div class="trust-bar">
-  <div class="trust-item"><i class="fa-solid fa-lock"></i><span><strong>100% Private</strong> — data stays in your browser, never on a server</span></div>
-  <div class="trust-item"><i class="fa-solid fa-bolt"></i><span><strong>Instant Setup</strong> — no account, no email, no waiting</span></div>
+  <div class="trust-item"><i class="fa-solid fa-cloud"></i><span><strong>Cloud-Powered</strong> — your trades sync securely across all devices</span></div>
+  <div class="trust-item"><i class="fa-solid fa-bolt"></i><span><strong>30-Second Setup</strong> — create an account and start logging immediately</span></div>
   <div class="trust-item"><i class="fa-solid fa-ban"></i><span><strong>No Ads, Ever</strong> — your trades aren't our product</span></div>
   <div class="trust-item"><i class="fa-solid fa-circle-check"></i><span><strong>Free to Start</strong> — no card needed, upgrade anytime</span></div>
 </div>
 
-<!-- ── WHY ───────────────────────────────────────────────── -->
+<!-- WHY -->
 <section id="why">
   <div class="glow-orb" style="width:400px;height:400px;background:rgba(0,255,136,.04);top:50%;right:-100px;transform:translateY(-50%)"></div>
   <div class="sec-inner">
     <h2 class="sec-title reveal">Most traders lose<br><span>for avoidable reasons.</span></h2>
     <p class="sec-sub reveal">You can't fix what you don't measure. Without a journal, every bad trade gets forgotten — and every bad habit repeats.</p>
-
     <div class="pain-grid">
-      <div class="pain-card reveal reveal-d1">
-        <div class="pain-icon"><i class="fa-solid fa-head-side-virus"></i></div>
-        <h3>Trading on emotion, not data</h3>
-        <p>Revenge trades, FOMO entries, and overconfidence after a win streak — all invisible without a record. TradeZona tracks your mood alongside every trade so you can see the pattern.</p>
-      </div>
-      <div class="pain-card reveal reveal-d2">
-        <div class="pain-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-        <h3>Repeating mistakes at the same hour</h3>
-        <p>Your 3 PM trades might be bleeding you dry while your morning sessions print. Without a time-of-day breakdown, you'll never know. TradeZona shows you exactly when you're at your best.</p>
-      </div>
-      <div class="pain-card reveal reveal-d3">
-        <div class="pain-icon"><i class="fa-solid fa-chart-bar"></i></div>
-        <h3>Over-trading one strategy, under-trading another</h3>
-        <p>That Reversal setup you keep taking might have a 35% win rate. The Breakout you rarely trade might be your best edge. You can't see this in your head — TradeZona shows it plainly.</p>
-      </div>
-      <div class="pain-card reveal reveal-d4">
-        <div class="pain-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <h3>Inconsistent risk management</h3>
-        <p>Your R-multiples tell the whole story. A few -3R days wiping out weeks of +1R gains is a sizing problem, not a strategy problem. TradeZona's built-in risk calculator and R tracking keeps you honest.</p>
-      </div>
+      <div class="pain-card reveal reveal-d1"><div class="pain-icon"><i class="fa-solid fa-head-side-virus"></i></div><h3>Trading on emotion, not data</h3><p>Revenge trades, FOMO entries, and overconfidence after a win streak — all invisible without a record. TradeZona tracks your mood alongside every trade so you can see the pattern.</p></div>
+      <div class="pain-card reveal reveal-d2"><div class="pain-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><h3>Repeating mistakes at the same hour</h3><p>Your 3 PM trades might be bleeding you dry while your morning sessions print. Without a time-of-day breakdown, you'll never know. TradeZona shows you exactly when you're at your best.</p></div>
+      <div class="pain-card reveal reveal-d3"><div class="pain-icon"><i class="fa-solid fa-chart-bar"></i></div><h3>Over-trading one strategy, under-trading another</h3><p>That Reversal setup you keep taking might have a 35% win rate. The Breakout you rarely trade might be your best edge. TradeZona's strategy breakdown shows it plainly.</p></div>
+      <div class="pain-card reveal reveal-d4"><div class="pain-icon"><i class="fa-solid fa-shield-halved"></i></div><h3>Inconsistent risk management</h3><p>Your R-multiples tell the whole story. A few -3R days wiping out weeks of +1R gains is a sizing problem, not a strategy problem. TradeZona's R tracking keeps you honest.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ── FEATURES ───────────────────────────────────────────── -->
+<!-- FEATURES -->
 <section id="features">
   <div class="glow-orb"></div>
   <div class="sec-inner">
     <h2 class="sec-title reveal">Everything a trader<br><span>actually needs.</span></h2>
     <p class="sec-sub reveal">Built from the ground up for active traders. Start free, upgrade when you're ready for more.</p>
-
     <div class="feat-grid">
-      <div class="feat-card reveal reveal-d1">
-        <span class="feat-num">01</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-table-list"></i></div>
-        <h3>Smart Trade Log</h3>
-        <p>Log every trade with pair, position, strategy, timeframe, PNL, R-factor, confidence, and mood. Inline editing — no forms, no clicks.</p>
-        <span class="feat-tag">Core</span>
-      </div>
-      <div class="feat-card reveal reveal-d2">
-        <span class="feat-num">02</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-chart-area"></i></div>
-        <h3>Deep Analytics</h3>
-        <p>Equity curve, win/loss doughnut, strategy PNL, mood vs performance, day-of-week patterns, and hourly heatmaps in AM/PM format.</p>
-        <span class="feat-tag">Insights</span>
-      </div>
-      <div class="feat-card reveal reveal-d3">
-        <span class="feat-num">03</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-calendar-days"></i></div>
-        <h3>Trade Calendar</h3>
-        <p>See every trading day at a glance — green for profit, red for loss. Click any day to review individual trades and daily PNL.</p>
-        <span class="feat-tag">Visual</span>
-      </div>
-      <div class="feat-card reveal reveal-d4">
-        <span class="feat-num">04</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-face-smile"></i></div>
-        <h3>Mood Tracking</h3>
-        <p>Tag each trade with a custom mood (Confident, Anxious, Revenge, and more). Color-coded pills show instantly how emotion affects performance.</p>
-        <span class="feat-tag">Psychology</span>
-      </div>
-      <div class="feat-card reveal reveal-d5">
-        <span class="feat-num">05</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-calculator"></i></div>
-        <h3>Risk Calculator</h3>
-        <p>Drag the floating calculator anywhere. Enter stoploss %, account risk %, and capital — get instant margin and risk amount. Save defaults.</p>
-        <span class="feat-tag">Risk</span>
-      </div>
-      <div class="feat-card reveal reveal-d6">
-        <span class="feat-num">06</span>
-        <div class="feat-icon-wrap"><i class="fa-solid fa-images"></i></div>
-        <h3>Screenshot Gallery</h3>
-        <p>Attach chart screenshots to any trade. Paste from clipboard, upload files, or drag and drop. View all images in a filterable gallery.</p>
-        <span class="feat-tag">Analysis</span>
-      </div>
+      <div class="feat-card reveal reveal-d1"><span class="feat-num">01</span><div class="feat-icon-wrap"><i class="fa-solid fa-table-list"></i></div><h3>Smart Trade Log</h3><p>Log every trade with pair, position, strategy, timeframe, PNL, R-factor, confidence, and mood. Inline editing — no forms, no clicks.</p><span class="feat-tag">Core</span></div>
+      <div class="feat-card reveal reveal-d2"><span class="feat-num">02</span><div class="feat-icon-wrap"><i class="fa-solid fa-chart-area"></i></div><h3>Deep Analytics</h3><p>Equity curve, win/loss breakdown, strategy PNL, mood vs performance, day-of-week patterns, and hourly heatmaps. Pro unlocks the full suite.</p><span class="feat-tag">Insights</span></div>
+      <div class="feat-card reveal reveal-d3"><span class="feat-num">03</span><div class="feat-icon-wrap"><i class="fa-solid fa-calendar-days"></i></div><h3>Trade Calendar</h3><p>See every trading day at a glance — green for profit, red for loss. Click any day to review individual trades and daily PNL.</p><span class="feat-tag">Visual</span></div>
+      <div class="feat-card reveal reveal-d4"><span class="feat-num">04</span><div class="feat-icon-wrap"><i class="fa-solid fa-face-smile"></i></div><h3>Mood Tracking</h3><p>Tag each trade with a custom mood (Confident, Anxious, Revenge, and more). Color-coded pills show instantly how emotion affects your performance.</p><span class="feat-tag">Psychology</span></div>
+      <div class="feat-card reveal reveal-d5"><span class="feat-num">05</span><div class="feat-icon-wrap"><i class="fa-solid fa-cloud"></i></div><h3>Cloud Sync</h3><p>Your trades are securely stored in the cloud and instantly available on any device — phone, tablet, or desktop. No manual exports needed.</p><span class="feat-tag">Sync</span></div>
+      <div class="feat-card reveal reveal-d6"><span class="feat-num">06</span><div class="feat-icon-wrap"><i class="fa-solid fa-images"></i></div><h3>Screenshot Gallery</h3><p>Attach chart screenshots to any trade. Paste from clipboard, upload files, or drag and drop. View all images in a filterable gallery.</p><span class="feat-tag">Analysis · Pro</span></div>
     </div>
   </div>
 </section>
 
-<!-- ── STATS ──────────────────────────────────────────────── -->
+<!-- STATS -->
 <section id="stats">
   <div class="stats-inner">
     <div class="stats-row">
       <div class="stat-item reveal"><span class="stat-num">13+</span><span class="stat-lbl">Data points per trade</span></div>
-      <div class="stat-item reveal reveal-d1"><span class="stat-num">0</span><span class="stat-lbl">Data sent to any server</span></div>
-      <div class="stat-item reveal reveal-d2"><span class="stat-num">∞</span><span class="stat-lbl">Journals you can create</span></div>
-      <div class="stat-item reveal reveal-d3"><span class="stat-num">$0</span><span class="stat-lbl">Forever. No paywalls.</span></div>
+      <div class="stat-item reveal reveal-d1"><span class="stat-num">256-bit</span><span class="stat-lbl">Encrypted data storage</span></div>
+      <div class="stat-item reveal reveal-d2"><span class="stat-num">∞</span><span class="stat-lbl">Journals on Pro plan</span></div>
+      <div class="stat-item reveal reveal-d3"><span class="stat-num">$0</span><span class="stat-lbl">Free forever, 1 journal</span></div>
     </div>
   </div>
 </section>
 
-<!-- ── COMPARISON ─────────────────────────────────────────── -->
+<!-- COMPARE -->
 <section id="compare">
   <div class="sec-inner">
     <h2 class="sec-title reveal">How TradeZona<br><span>stacks up.</span></h2>
     <div class="cmp-wrap reveal">
       <table class="cmp-table">
-        <thead>
-          <tr>
-            <th>Feature</th>
-            <th>TradeZona</th>
-            <th style="color:var(--muted)">Other Tools</th>
-            <th style="color:var(--muted)">Spreadsheets</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Feature</th><th>TradeZona</th><th style="color:var(--muted)">Other Tools</th><th style="color:var(--muted)">Spreadsheets</th></tr></thead>
         <tbody>
           <tr><td>Free plan available</td><td><i class="fa-solid fa-check yes"></i> 1 journal free</td><td class="no">$20–$50/mo</td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td></tr>
-          <tr><td>100% Private (local data)</td><td><i class="fa-solid fa-check yes"></i></td><td class="no">Cloud stored</td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td></tr>
-          <tr><td>Mood & Psychology Tracking</td><td><i class="fa-solid fa-check yes"></i></td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td><td class="no">Manual</td></tr>
-          <tr><td>Built-in Risk Calculator</td><td style="color:var(--accent2)">Pro only</td><td class="no">Separate tool</td><td class="no">Manual formula</td></tr>
-          <tr><td>Instant Setup (No Account)</td><td><i class="fa-solid fa-check yes"></i></td><td class="no">Email signup</td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td></tr>
+          <tr><td>Cloud sync across devices</td><td><i class="fa-solid fa-check yes"></i></td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td><td class="no">Manual</td></tr>
+          <tr><td>Mood &amp; Psychology Tracking</td><td><i class="fa-solid fa-check yes"></i></td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td><td class="no">Manual</td></tr>
           <tr><td>Screenshot Gallery</td><td style="color:var(--accent2)">Pro (3 imgs/trade)</td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td><td class="no">Not supported</td></tr>
           <tr><td>Full Analytics Suite</td><td style="color:var(--accent2)">Pro only</td><td>Varies</td><td class="no">Manual</td></tr>
           <tr><td>Export / Import Backup</td><td style="color:var(--accent2)">Pro only</td><td>Varies</td><td><i class="fa-solid fa-check" style="color:var(--muted)"></i></td></tr>
+          <tr><td>PIN-protected journals</td><td><i class="fa-solid fa-check yes"></i> Pro only</td><td class="no">Rarely</td><td class="no">No</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<!-- ── HOW IT WORKS ──────────────────────────────────────── -->
+<!-- HOW -->
 <section id="how">
   <div class="sec-inner">
     <h2 class="sec-title reveal">Up and logging<br><span>in 30 seconds.</span></h2>
-
     <div class="steps">
-      <div class="step reveal reveal-d1">
-        <div class="step-num">1</div>
-        <h3>Open TradeZona</h3>
-        <p>No signup, no email, no app download. Click the link and you're in. Your data lives in your browser — private by design.</p>
-      </div>
-      <div class="step reveal reveal-d2">
-        <div class="step-num">2</div>
-        <h3>Create a Journal</h3>
-        <p>Name it, set a capital amount, add an optional PIN. Free users get 1 journal. Upgrade to Pro for unlimited Forex, Crypto, Futures journals — all separate.</p>
-      </div>
-      <div class="step reveal reveal-d3">
-        <div class="step-num">3</div>
-        <h3>Log & Discover</h3>
-        <p>Add trades after every session. Check your Analytics tab weekly. Watch patterns emerge. Fix what the data reveals. Grow your edge.</p>
-      </div>
+      <div class="step reveal reveal-d1"><div class="step-num">1</div><h3>Create Your Account</h3><p>Sign up with email and password in seconds. No credit card needed. Your data is securely stored in the cloud and accessible from any device.</p></div>
+      <div class="step reveal reveal-d2"><div class="step-num">2</div><h3>Create a Journal</h3><p>Name it, set a capital amount, add an optional PIN. Free users get 1 journal. Upgrade to Pro for unlimited Forex, Crypto, Futures journals — all separate.</p></div>
+      <div class="step reveal reveal-d3"><div class="step-num">3</div><h3>Log &amp; Discover</h3><p>Add trades after every session. Check your Analytics tab weekly. Watch patterns emerge. Fix what the data reveals. Grow your edge.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ── TESTIMONIALS ─────────────────────────────────────── -->
+<!-- TESTIMONIALS -->
 <section id="testimonials">
   <div class="sec-inner">
     <h2 class="sec-title reveal">Trusted by traders<br><span>who take it seriously.</span></h2>
-
     <div class="testi-grid">
-      <div class="testi-card reveal reveal-d1">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-quote">"I discovered my Tuesday trades were consistently negative. Turned out I always traded right after the London open when I was rushing. <strong>TradeZona made that invisible problem impossible to ignore.</strong>"</p>
-        <div class="testi-author">
-          <div class="testi-avatar">MR</div>
-          <div><div class="testi-name">Marco R.</div><div class="testi-role">Forex Day Trader · 3 years</div></div>
-        </div>
-      </div>
-      <div class="testi-card reveal reveal-d2">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-quote">"The mood tracking feature sounds gimmicky until you see that <strong>100% of your revenge trades are tagged "Anxious"</strong> and lose 2R on average. That data hit different."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">SK</div>
-          <div><div class="testi-name">Sara K.</div><div class="testi-role">Crypto Swing Trader</div></div>
-        </div>
-      </div>
-      <div class="testi-card reveal reveal-d3">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-quote">"I've tried three paid journaling tools. This one — free, runs offline, no account — <strong>beats them all on features and simplicity</strong>. The risk calculator alone saves me time every session."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">JL</div>
-          <div><div class="testi-name">James L.</div><div class="testi-role">Futures Scalper · 6 years</div></div>
-        </div>
-      </div>
+      <div class="testi-card reveal reveal-d1"><div class="testi-stars">★★★★★</div><p class="testi-quote">"I discovered my Tuesday trades were consistently negative. Turned out I always traded right after the London open when I was rushing. <strong>TradeZona made that invisible problem impossible to ignore.</strong>"</p><div class="testi-author"><div class="testi-avatar">MR</div><div><div class="testi-name">Marco R.</div><div class="testi-role">Forex Day Trader · 3 years</div></div></div></div>
+      <div class="testi-card reveal reveal-d2"><div class="testi-stars">★★★★★</div><p class="testi-quote">"The mood tracking feature sounds gimmicky until you see that <strong>100% of your revenge trades are tagged "Anxious"</strong> and lose 2R on average. That data hit different."</p><div class="testi-author"><div class="testi-avatar">SK</div><div><div class="testi-name">Sara K.</div><div class="testi-role">Crypto Swing Trader</div></div></div></div>
+      <div class="testi-card reveal reveal-d3"><div class="testi-stars">★★★★★</div><p class="testi-quote">"Having my trades synced across my desktop and phone is a game changer. I log on my phone right after a session, then review analytics on my desktop. <strong>Seamless.</strong>"</p><div class="testi-author"><div class="testi-avatar">JL</div><div><div class="testi-name">James L.</div><div class="testi-role">Futures Scalper · 6 years</div></div></div></div>
     </div>
   </div>
 </section>
 
-<!-- ── PRICING ─────────────────────────────────────────────── -->
+<!-- PRICING -->
 <section id="pricing">
   <div class="sec-inner">
     <h2 class="sec-title reveal" style="text-align:center">Simple, honest<br><span>pricing.</span></h2>
-    <p class="sec-sub reveal" style="margin:0 auto 0;text-align:center">Start free. Upgrade when your trading gets serious.</p>
-
+    <p class="sec-sub reveal" style="margin:0 auto;text-align:center">Start free. Upgrade when your trading gets serious.</p>
     <div class="pricing-grid">
-
-      <!-- FREE -->
       <div class="price-card reveal reveal-d1">
         <div class="price-plan">Free</div>
-        <div class="price-amount">
-          <span class="price-dollar">$0</span>
-          <span class="price-period">/ forever</span>
-        </div>
+        <div class="price-amount"><span class="price-dollar">$0</span><span class="price-period">/ forever</span></div>
         <p class="price-desc">Everything you need to start building the habit of journaling.</p>
         <hr class="price-divider">
         <ul class="price-features">
           <li><i class="fa-solid fa-check yes"></i><span>1 Journal</span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Unlimited trades</span></li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>5 tags per category
-              <span class="feat-limit">Strategy, Timeframe, Pair, Mood</span>
-            </span>
-          </li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>1 image per trade note</span>
-          </li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>Basic analytics
-              <span class="feat-limit">PNL, Win Rate, Streaks, Equity Curve</span>
-            </span>
-          </li>
+          <li><i class="fa-solid fa-check yes"></i><span>5 tags per category<span class="feat-limit">Strategy, Timeframe, Pair, Mood</span></span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>1 image per trade note</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>Basic analytics<span class="feat-limit">PNL, Win Rate, Streaks, Equity Curve</span></span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Trade Calendar view</span></li>
-          <li><i class="fa-solid fa-check yes"></i><span>Dark theme (default)</span></li>
-          <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Risk Calculator</span></li>
-          <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Export / Import</span></li>
-          <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Theme switching</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>Cloud sync across devices</span></li>
+          <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Export / Import backup</span></li>
           <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Multiple journals</span></li>
           <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Full analytics suite</span></li>
+          <li class="locked"><i class="fa-solid fa-xmark no"></i><span>Screenshot gallery</span></li>
         </ul>
-        <a href="auth.html" class="price-btn free">Get Started Free</a>
+        <a href="/auth" class="price-btn free">Get Started Free</a>
       </div>
-
-      <!-- PRO -->
       <div class="price-card pro reveal reveal-d2">
         <div class="price-badge">Most Popular</div>
         <div class="price-plan pro">Pro</div>
-        <div class="price-amount">
-          <span class="price-dollar pro">$5</span>
-          <span class="price-period">/ month</span>
-        </div>
-        <p class="price-desc">For traders who are serious about tracking every edge and building real consistency.</p>
+        <div class="price-amount"><span class="price-dollar pro">$5</span><span class="price-period">/ month</span></div>
+        <p class="price-desc">For traders serious about tracking every edge and building real consistency.</p>
         <hr class="price-divider">
         <ul class="price-features">
-          <li><i class="fa-solid fa-check yes"></i><span>Unlimited Journals
-            <span class="feat-limit">Forex, Crypto, Futures — all separate</span>
-          </span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>Unlimited Journals<span class="feat-limit">Forex, Crypto, Futures — all separate</span></span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Unlimited trades</span></li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>10 tags per category
-              <span class="feat-limit">Strategy, Timeframe, Pair, Mood</span>
-            </span>
-          </li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>3 images per trade note</span>
-          </li>
-          <li><i class="fa-solid fa-check yes"></i>
-            <span>Full analytics suite
-              <span class="feat-limit">Strategy breakdown, Mood performance, Hourly heatmap, Day-of-week, Long vs Short, and more</span>
-            </span>
-          </li>
-          <li><i class="fa-solid fa-check yes"></i><span>Trade Calendar view</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>10 tags per category</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>3 images per trade note</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>Full analytics suite<span class="feat-limit">Strategy, Mood, Hourly heatmap, Day-of-week, Long vs Short</span></span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Screenshot Gallery</span></li>
-          <li><i class="fa-solid fa-check yes"></i><span>Risk Calculator (draggable)</span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Export / Import (Full Backup)</span></li>
-          <li><i class="fa-solid fa-check yes"></i><span>Dark &amp; Light theme switching</span></li>
           <li><i class="fa-solid fa-check yes"></i><span>PIN-protected journals</span></li>
+          <li><i class="fa-solid fa-check yes"></i><span>Cloud sync across devices</span></li>
           <li><i class="fa-solid fa-check yes"></i><span>Priority support</span></li>
         </ul>
-        <a href="auth.html" class="price-btn pro-btn"><i class="fa-solid fa-rocket" style="margin-right:7px"></i>Upgrade to Pro — $5/mo</a>
+        <a href="/auth" class="price-btn pro-btn"><i class="fa-solid fa-rocket" style="margin-right:7px"></i>Upgrade to Pro — $5/mo</a>
       </div>
-
     </div>
-
     <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--muted)">
       <i class="fa-solid fa-shield-halved" style="color:var(--accent2);margin-right:5px"></i>
       Cancel anytime &nbsp;·&nbsp; Your data is always yours &nbsp;·&nbsp; No hidden fees
@@ -832,73 +477,67 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
   </div>
 </section>
 
-<!-- ── CTA ───────────────────────────────────────────────── -->
+<!-- CTA -->
 <section id="cta">
   <div class="glow-orb"></div>
   <div class="cta-inner">
     <h2>Your edge is hiding<br><span>in your data.</span></h2>
     <p>TradeZona reveals it. Start free — no card needed. Upgrade to <strong style="color:var(--accent)">Pro</strong> for unlimited journals, full analytics, and more.</p>
     <div class="cta-btns">
-      <a href="auth.html" class="btn-hero">
-        <i class="fa-solid fa-rocket"></i>
-        Open TradeZona Now — Free
-      </a>
-      <a href="#features" class="btn-hero-ghost">
-        Explore Features
-      </a>
+      <a href="/auth" class="btn-hero"><i class="fa-solid fa-rocket"></i>Start Journaling Free</a>
+      <a href="#features" class="btn-hero-ghost">Explore Features</a>
     </div>
-    <p class="cta-note"><i class="fa-solid fa-lock"></i> No signup · No data collection · Works offline · Free forever for 1 journal</p>
+    <p class="cta-note"><i class="fa-solid fa-cloud"></i> Cloud-powered · Secure · Accessible from any device · Free forever for 1 journal</p>
   </div>
 </section>
 
-<!-- ── FAQ ───────────────────────────────────────────────── -->
+<!-- FAQ -->
 <section id="faq">
   <div class="sec-inner">
     <h2 class="sec-title reveal" style="text-align:center">Quick answers.</h2>
-
     <div class="faq-list">
       <div class="faq-item reveal reveal-d1">
         <div class="faq-q" onclick="toggleFaq(this)">Is TradeZona really free? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">The Free plan is free forever — 1 journal, basic analytics, unlimited trades. The Pro plan is $5/month and unlocks unlimited journals, full analytics, risk calculator, export/import, theme switching, and more. Cancel anytime.</div>
+        <div class="faq-a">Yes. The Free plan is free forever — 1 journal, basic analytics, unlimited trades, no credit card required. The Pro plan is $5/month and unlocks unlimited journals, full analytics, screenshot gallery, export/import, and more. Cancel anytime.</div>
       </div>
       <div class="faq-item reveal reveal-d2">
         <div class="faq-q" onclick="toggleFaq(this)">Where is my data stored? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">Entirely in your browser's localStorage. Nothing is ever sent to a server. Your trades, notes, images, and settings never leave your device unless you export them yourself.</div>
+        <div class="faq-a">Your trades are stored securely in our cloud database powered by Supabase. All data is protected with row-level security — only you can access your journals and trades. We never sell your data or use it for advertising.</div>
       </div>
       <div class="faq-item reveal reveal-d3">
         <div class="faq-q" onclick="toggleFaq(this)">Can I use it on multiple devices? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">Yes — Pro users can use the Export/Import feature to download a full backup JSON and restore it on any device. Full Backup includes all settings, tags, and mood colors.</div>
+        <div class="faq-a">Yes — simply sign in on any device and your trades, journals, and settings are all there instantly. No manual export or sync needed. This works on Free and Pro plans.</div>
       </div>
       <div class="faq-item reveal reveal-d4">
         <div class="faq-q" onclick="toggleFaq(this)">Do I need to create an account? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">No account, no email, no password. Just open TradeZona and start. The optional PIN only locks the app on your own device — it's not an online account.</div>
+        <div class="faq-a">Yes — TradeZona requires a free account (email + password) to securely store and sync your trade data across devices. Sign up takes about 15 seconds with no credit card required.</div>
       </div>
       <div class="faq-item reveal reveal-d5">
         <div class="faq-q" onclick="toggleFaq(this)">Can I track multiple trading accounts? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">Pro users can create unlimited journals — one for Forex, one for Crypto, one for your prop firm account. Free users get 1 journal. Each journal has its own capital, PIN, and trade history completely separate.</div>
+        <div class="faq-a">Pro users can create unlimited journals — one for Forex, one for Crypto, one for your prop firm account. Free users get 1 journal. Each journal has its own capital, PIN, tags, and trade history completely separate.</div>
       </div>
       <div class="faq-item reveal reveal-d5">
         <div class="faq-q" onclick="toggleFaq(this)">How does billing work for Pro? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">Pro is $5/month, billed monthly. Cancel at any time — no long-term commitment. If you cancel, you keep your data and revert to the Free plan limits. Your trades are never deleted.</div>
+        <div class="faq-a">Pro is $5/month, billed monthly. Cancel at any time with no long-term commitment. If you cancel, you keep your data and revert to the Free plan limits. Your trades are never deleted.</div>
       </div>
       <div class="faq-item reveal reveal-d6">
-        <div class="faq-q" onclick="toggleFaq(this)">What if I clear my browser data? <i class="fa-solid fa-chevron-down"></i></div>
-        <div class="faq-a">Your trades would be cleared along with browser storage. Pro users should export a Full Backup regularly from the Settings tab. It takes 2 seconds and protects everything.</div>
+        <div class="faq-q" onclick="toggleFaq(this)">Can I export my data? <i class="fa-solid fa-chevron-down"></i></div>
+        <div class="faq-a">Yes — Pro users can export a full backup of their journal (trades + all settings) as a .json file, or trades-only as a simpler export. You can also import a backup to restore or migrate journals between accounts.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="footer-logo">Trade<span>Zona</span></div>
       <p class="footer-tagline">The trading journal that thinks like a trader.</p>
       <div class="footer-badges">
-        <span class="footer-badge"><i class="fa-solid fa-lock"></i> 100% Private</span>
+        <span class="footer-badge"><i class="fa-solid fa-cloud"></i> Cloud-Powered</span>
         <span class="footer-badge"><i class="fa-solid fa-ban"></i> No Ads</span>
-        <span class="footer-badge"><i class="fa-solid fa-bolt"></i> No Account Needed</span>
+        <span class="footer-badge"><i class="fa-solid fa-lock"></i> Secure</span>
       </div>
     </div>
     <div class="footer-links-group">
@@ -911,31 +550,30 @@ footer{background:var(--bg);border-top:1px solid var(--border2);padding:52px 40p
       </div>
       <div class="footer-col">
         <div class="footer-col-title">Account</div>
-        <a href="auth.html">Sign Up Free</a>
-        <a href="auth.html">Log In</a>
-        <a href="auth.html">Upgrade to Pro</a>
+        <a href="/auth">Sign Up Free</a>
+        <a href="/auth">Log In</a>
+        <a href="/subscription">Upgrade to Pro</a>
       </div>
       <div class="footer-col">
-        <div class="footer-col-title">Support</div>
+        <div class="footer-col-title">Legal</div>
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
         <a href="#faq">FAQ</a>
-        <a href="#testimonials">Reviews</a>
       </div>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 TradeZona. Your data never leaves your browser.</span>
+    <span>© 2026 TradeZona. Secure cloud-powered trading journal.</span>
     <span>Free forever for 1 journal &nbsp;·&nbsp; Pro at $5/mo</span>
   </div>
 </footer>
 
 <script>
-// ── Scroll reveal ─────────────────────────────────────────
 const ro = new IntersectionObserver((entries)=>{
   entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
-}, { threshold:0.12 });
+},{ threshold:0.12 });
 document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
 
-// ── FAQ toggle ────────────────────────────────────────────
 function toggleFaq(btn){
   const item = btn.closest('.faq-item');
   const isOpen = item.classList.contains('open');
@@ -943,7 +581,6 @@ function toggleFaq(btn){
   if(!isOpen) item.classList.add('open');
 }
 
-// ── Smooth active nav ─────────────────────────────────────
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
 window.addEventListener('scroll',()=>{

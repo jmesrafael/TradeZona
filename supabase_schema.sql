@@ -1,3 +1,4 @@
+-- supabase_schema.sql
 -- ================================================================
 --  TradeZona — Complete Supabase SQL Schema
 --  Paste this ENTIRE file into:

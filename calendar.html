@@ -1,98 +1,319 @@
+<!-- calendar.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Calendar</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Calendar</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
-.pw{max-width:900px;margin:0 auto}
-.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.ch h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600}
-.nav-btns{display:flex;gap:6px}
-.nb{background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
-.nb:hover{border-color:var(--accent2);color:var(--text)}
-.drow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
-.dlbl{text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:6px 0}
-.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cd{background:var(--panel);border:1px solid var(--border);border-radius:8px;aspect-ratio:1/1;padding:6px 5px 5px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;min-width:0}
-.cd:hover{border-color:var(--accent2);background:rgba(255,255,255,.02)}
-.cd.empty{background:transparent;border-color:transparent;cursor:default}
-.cd.today{border-color:var(--accent2)}
-.cd.profit{border-left:3px solid var(--accent)}
-.cd.loss{border-left:3px solid #ff5f6d}
-.dn{font-size:11px;color:var(--muted);font-weight:500;line-height:1;flex-shrink:0;align-self:flex-start}
-.cd.today .dn{color:var(--accent);font-weight:700}
-.db{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;padding:2px 0}
-.dc{font-size:10px;color:var(--muted);width:100%;text-align:center;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dp{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
-.dp.pos{color:var(--accent)}.dp.neg{color:#ff5f6d}
-.ms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.mc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.mc .ml{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
-.mc .mv{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
-.mc .mv.pos{color:var(--accent)}.mc .mv.neg{color:#ff5f6d}
-.det{display:none;position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:100;background:var(--panel);border:1px solid var(--border);border-radius:12px;width:275px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.5);max-height:70vh;overflow-y:auto}
-.det.open{display:block}
-.dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.dh h3{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
-.dx{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
-.ti{border-bottom:1px solid var(--border);padding:8px 0}.ti:last-child{border-bottom:none}
-.ti-top{display:flex;justify-content:space-between;margin-bottom:2px}
-.ti-pair{font-weight:600;font-size:13px}
-.ti-pnl{font-size:13px;font-weight:600}.ti-pnl.pos{color:var(--accent)}.ti-pnl.neg{color:#ff5f6d}
-.ti-sub{font-size:11px;color:var(--muted)}
-@media(max-width:520px){.ms{grid-template-columns:repeat(2,1fr)}}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:18px;min-height:100vh}
+.pw{max-width:860px;margin:0 auto}
+/* header */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.cal-hdr h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
+.nav-row{display:flex;align-items:center;gap:8px}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px}
+.nav-btn:hover{border-color:var(--accent2);color:var(--text)}
+.month-lbl{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;min-width:130px;text-align:center}
+/* skeleton */
+.skel-cal{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.skel-row{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.skel-cell{height:72px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
+/* calendar */
+.cal-wrap{display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dow-hdr{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border)}
+.dow-cell{padding:9px 8px;text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.cal-day{background:var(--panel);min-height:72px;padding:7px 8px;cursor:pointer;transition:background .15s;position:relative;display:flex;flex-direction:column}
+.cal-day:hover{background:rgba(255,255,255,.04)}
+.cal-day.other-month{opacity:.35}
+.cal-day.today .dn{color:var(--accent);font-weight:700}
+.cal-day.has-trades{cursor:pointer}
+.cal-day.locked{cursor:default;opacity:.4}
+.cal-day.locked:hover{background:var(--panel)}
+.dn{font-size:12px;color:var(--muted);margin-bottom:5px;line-height:1}
+.day-pnl{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700}
+.day-pnl.pos{color:var(--accent)}.day-pnl.neg{color:#ff5f6d}.day-pnl.be{color:var(--muted)}
+.day-cnt{font-size:10px;color:var(--muted);margin-top:2px}
+.day-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 2px 2px}
+.day-bar.pos{background:var(--accent)}.day-bar.neg{background:#ff5f6d}
+/* summary bar */
+.sum-bar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.sum-item{display:flex;flex-direction:column;gap:2px;min-width:70px}
+.sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.sum-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+.sum-val.pos{color:var(--accent)}.sum-val.neg{color:#ff5f6d}
+/* day detail panel */
+.day-panel{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px}
+.day-panel.show{display:block}
+.dp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dp-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
+.dp-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:3px;transition:color .15s}
+.dp-close:hover{color:var(--text)}
+.dp-trade{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:7px;margin-bottom:6px;font-size:13px}
+.dp-trade:last-child{margin-bottom:0}
+.dp-pair{font-weight:600;font-family:'Space Grotesk',sans-serif}
+.dp-pos{font-size:11px;padding:2px 7px;border-radius:20px;font-weight:600}
+.dp-pos.long{background:rgba(0,255,136,.12);color:var(--accent2)}
+.dp-pos.short{background:rgba(255,95,109,.1);color:#ff5f6d}
+.dp-pnl{font-family:'Space Grotesk',sans-serif;font-weight:700}
+.dp-pnl.pos{color:var(--accent)}.dp-pnl.neg{color:#ff5f6d}
+/* free limit banner */
+.free-limit-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:9px;margin-bottom:14px;font-size:12px;color:var(--muted)}
+.free-limit-banner i{color:#f59e0b;flex-shrink:0}
+.free-limit-banner a{color:var(--accent2);text-decoration:none;font-weight:600}
+.free-limit-banner a:hover{text-decoration:underline}
+/* ad slot */
+.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:16px}
+.ad-slot.visible{display:block}
+.ad-slot-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6}
+.ad-slot-inner{min-height:70px;display:flex;align-items:center;justify-content:center;padding:12px}
 </style>
 </head>
 <body>
 <div class="pw">
-  <div class="ch"><h2 id="mlbl">—</h2><div class="nav-btns"><button class="nb" onclick="prev()">‹</button><button class="nb" onclick="goToday()">Today</button><button class="nb" onclick="next()">›</button></div></div>
-  <div class="drow"><div class="dlbl">Sun</div><div class="dlbl">Mon</div><div class="dlbl">Tue</div><div class="dlbl">Wed</div><div class="dlbl">Thu</div><div class="dlbl">Fri</div><div class="dlbl">Sat</div></div>
-  <div class="cgrid" id="cgrid"></div>
-  <div class="ms">
-    <div class="mc"><div class="ml">Trades</div><div class="mv" id="mT">—</div></div>
-    <div class="mc"><div class="ml">Total PNL</div><div class="mv" id="mP">—</div></div>
-    <div class="mc"><div class="ml">Win Rate</div><div class="mv" id="mW">—</div></div>
-    <div class="mc"><div class="ml">Best Day</div><div class="mv pos" id="mB">—</div></div>
+  <div class="cal-hdr">
+    <h2><i class="fa-solid fa-calendar-days" style="color:var(--accent2)"></i> Trade Calendar</h2>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="prevMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="month-lbl" id="monthLbl">—</span>
+      <button class="nav-btn" onclick="nextMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+      <button class="nav-btn" onclick="goToday()" title="Today" style="width:auto;padding:0 10px;font-size:11px;font-weight:600;color:var(--muted)">Today</button>
+    </div>
+  </div>
+
+  <!-- Free plan 90-day limit banner -->
+  <div class="free-limit-banner" id="freeLimitBanner" style="display:none">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <span>Free plan shows the last 90 days only. <a href="/subscription">Upgrade to Pro</a> to view your full history.</span>
+  </div>
+
+  <!-- Monthly summary -->
+  <div class="sum-bar" id="sumBar" style="display:none">
+    <div class="sum-item"><div class="sum-lbl">Month PNL</div><div class="sum-val" id="sumPnl">—</div></div>
+    <div class="sum-item"><div class="sum-lbl">Trades</div><div class="sum-val" id="sumTrades">0</div></div>
+    <div class="sum-item"><div class="sum-lbl">Win Days</div><div class="sum-val pos" id="sumWinDays">0</div></div>
+    <div class="sum-item"><div class="sum-lbl">Loss Days</div><div class="sum-val neg" id="sumLossDays">0</div></div>
+    <div class="sum-item"><div class="sum-lbl">Win Rate</div><div class="sum-val" id="sumWR">—</div></div>
+    <div class="sum-item"><div class="sum-lbl">Best Day</div><div class="sum-val pos" id="sumBest">—</div></div>
+    <div class="sum-item"><div class="sum-lbl">Worst Day</div><div class="sum-val neg" id="sumWorst">—</div></div>
+  </div>
+
+  <!-- Skeleton -->
+  <div class="skel-cal" id="skelCal">
+    <div class="dow-hdr">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dow-cell">${d}</div>`).join('')}</div>
+    <div class="skel-row">${Array(35).fill('<div class="skel-cell"></div>').join('')}</div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="cal-wrap" id="calWrap">
+    <div class="dow-hdr">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="dow-cell">${d}</div>`).join('')}</div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <!-- Day detail panel -->
+  <div class="day-panel" id="dayPanel">
+    <div class="dp-hdr">
+      <h3 id="dpTitle">—</h3>
+      <button class="dp-close" onclick="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="dpTrades"></div>
+  </div>
+
+  <!-- Ad slot -->
+  <div class="ad-slot" id="calAdSlot">
+    <div class="ad-slot-label">Advertisement</div>
+    <div class="ad-slot-inner">
+      <ins class="adsbygoogle" style="display:block;width:100%;min-height:70px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+      <div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:8px"><i class="fa-solid fa-rectangle-ad" style="margin-right:5px;opacity:.4"></i>Ad · <a href="/subscription" style="color:var(--accent2);text-decoration:none">Upgrade to Pro</a> to remove</div>
+    </div>
   </div>
 </div>
-<div class="det" id="det"><div class="dh"><h3 id="detDate">—</h3><button class="dx" onclick="closeDet()">✕</button></div><div id="detTrades"></div></div>
+
 <script>
-function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f6faf8');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#d9e5df');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
+function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
 (()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
+
 const jid=sessionStorage.getItem('tz_current_journal')||parent?.sessionStorage?.getItem?.('tz_current_journal');
-const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-let now=new Date(),vy=now.getFullYear(),vm=now.getMonth(),allTrades=[];
-(async()=>{if(!jid)return;const raw=await getTrades(jid);allTrades=raw.map(dbToTrade);render();})();
-function fP(v){const n=parseFloat(v);if(isNaN(n))return'—';return(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2);}
-function render(){
-  document.getElementById('mlbl').textContent=MN[vm]+' '+vy;
-  const grid=document.getElementById('cgrid'),tod=now.toISOString().split('T')[0],dm={};
-  allTrades.forEach(t=>{if(!t.date)return;if(!dm[t.date])dm[t.date]=[];dm[t.date].push(t);});
-  const first=new Date(vy,vm,1).getDay(),days=new Date(vy,vm+1,0).getDate();
-  let cells='';for(let i=0;i<first;i++)cells+='<div class="cd empty"></div>';
-  let mT=0,mP=0,mW=0,mV=0,bP=-Infinity,bS='—';
-  for(let d=1;d<=days;d++){
-    const ds=vy+'-'+String(vm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),dt=dm[ds]||[],tot=dt.reduce((s,t)=>s+(parseFloat(t.pnl)||0),0),isT=ds===tod;
-    let ph='';if(dt.length){ph=`<div class="dp ${tot>=0?'pos':'neg'}">${fP(tot)}</div>`;mT+=dt.length;dt.forEach(t=>{const p=parseFloat(t.pnl);if(!isNaN(p)&&t.pnl!==''){mP+=p;mV++;if(p>0)mW++;}});if(tot>bP){bP=tot;bS=fP(tot);}}
-    cells+=`<div class="cd ${isT?'today':''} ${dt.length?(tot>=0?'profit':'loss'):''}" onclick="showDet('${ds}')"><div class="dn">${d}</div>${dt.length?`<div class="db"><div class="dc">${dt.length} trade${dt.length>1?'s':''}</div>${ph}</div>`:''}</div>`;
+let allTrades=[], curYear=new Date().getFullYear(), curMonth=new Date().getMonth();
+let userIsPro=false;
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fP(v){const n=parseFloat(v);if(isNaN(n))return null;return(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2);}
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+
+(async()=>{
+  if(!jid) return;
+  // Get plan
+  try { userIsPro = parent?._userIsPro || false; } catch(e){}
+  if (!userIsPro) {
+    const {data:{user}} = await db.auth.getUser();
+    if (user) { const p = await getProfile(user.id); userIsPro = p?.plan === 'pro'; }
   }
-  grid.innerHTML=cells;
-  const wr=mV?((mW/mV)*100):0;
-  document.getElementById('mT').textContent=mT;
-  const pEl=document.getElementById('mP');pEl.textContent=mV?fP(mP):'—';pEl.className='mv '+(mP>=0?'pos':'neg');
-  document.getElementById('mW').textContent=mV?('%'+wr.toFixed(1)):'—';
-  document.getElementById('mB').textContent=bP>-Infinity?bS:'—';
+  if (!userIsPro) {
+    document.getElementById('freeLimitBanner').style.display = 'flex';
+    document.getElementById('calAdSlot').classList.add('visible');
+    try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
+  }
+  const raw = await getTrades(jid);
+  allTrades = raw.map(dbToTrade);
+  document.getElementById('skelCal').style.display = 'none';
+  document.getElementById('calWrap').style.display = 'block';
+  renderMonth();
+  document.body.style.visibility = 'visible';
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'tz_settings_updated' || e.data?.type === 'tz_plan') {
+      if (e.data?.isPro !== undefined) { userIsPro = e.data.isPro; }
+    }
+  });
+})();
+
+function isDateLocked(dateStr) {
+  if (userIsPro) return false;
+  const d = new Date(dateStr + 'T12:00:00');
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 90);
+  return d < cutoff;
 }
-function showDet(ds){const dt=allTrades.filter(t=>t.date===ds);if(!dt.length)return;document.getElementById('detDate').textContent=ds;document.getElementById('detTrades').innerHTML=dt.map(t=>{const pnl=parseFloat(t.pnl)||0,cls=pnl>0?'pos':pnl<0?'neg':'',tags=[...(t.strategy||[]),...(t.timeframe||[])].join(' · ');return`<div class="ti"><div class="ti-top"><span class="ti-pair">${t.pair||'—'}</span><span class="ti-pnl ${cls}">${t.pnl!==''&&!isNaN(pnl)?fP(t.pnl):'—'}</span></div><div class="ti-sub">${t.position||''}${t.time?' · '+t.time:''}${tags?' · '+tags:''}</div></div>`;}).join('');document.getElementById('det').classList.add('open');}
-function closeDet(){document.getElementById('det').classList.remove('open');}
-function prev(){vm--;if(vm<0){vm=11;vy--;}closeDet();render();}
-function next(){vm++;if(vm>11){vm=0;vy++;}closeDet();render();}
-function goToday(){vy=now.getFullYear();vm=now.getMonth();closeDet();render();}
+
+function renderMonth() {
+  document.getElementById('monthLbl').textContent = `${MONTHS[curMonth]} ${curYear}`;
+  const firstDay = new Date(curYear, curMonth, 1);
+  const lastDay  = new Date(curYear, curMonth + 1, 0);
+  // Mon=0 … Sun=6
+  let startDow = firstDay.getDay() - 1; if (startDow < 0) startDow = 6;
+
+  // Build day→trades map
+  const dayMap = {};
+  allTrades.forEach(t => {
+    if (!t.date) return;
+    const [y,m,d] = t.date.split('-').map(Number);
+    if (y === curYear && m-1 === curMonth) {
+      if (!dayMap[d]) dayMap[d] = [];
+      dayMap[d].push(t);
+    }
+  });
+
+  const today = new Date();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  // Summary stats for this month
+  let monthPnl=0, tradeCnt=0, winDays=0, lossDays=0;
+  let bestDay=null, worstDay=null;
+  const dayPnls = {};
+  Object.entries(dayMap).forEach(([day, trades]) => {
+    const dayTotal = trades.filter(t => t.pnl!==''&&!isNaN(parseFloat(t.pnl))).reduce((s,t)=>s+parseFloat(t.pnl),0);
+    dayPnls[day] = dayTotal;
+    monthPnl += dayTotal;
+    tradeCnt += trades.length;
+    if (dayTotal > 0) winDays++;
+    else if (dayTotal < 0) lossDays++;
+    if (bestDay===null||dayTotal>bestDay) bestDay=dayTotal;
+    if (worstDay===null||dayTotal<worstDay) worstDay=dayTotal;
+  });
+
+  // Fill calendar cells
+  const totalCells = Math.ceil((startDow + lastDay.getDate()) / 7) * 7;
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - startDow + 1;
+    const inMonth = dayNum >= 1 && dayNum <= lastDay.getDate();
+    const cell = document.createElement('div');
+    const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const isToday = inMonth && dayNum===today.getDate() && curMonth===today.getMonth() && curYear===today.getFullYear();
+    const locked = inMonth && isDateLocked(dateStr);
+    const hasTrades = inMonth && dayMap[dayNum]?.length > 0;
+    const dayPnl = hasTrades ? dayPnls[dayNum] : null;
+
+    cell.className = `cal-day${!inMonth?' other-month':''}${isToday?' today':''}${locked?' locked':''}`;
+
+    if (inMonth) {
+      const pnlFmt = dayPnl !== null ? fP(dayPnl) : '';
+      const pnlClass = dayPnl > 0 ? 'pos' : dayPnl < 0 ? 'neg' : 'be';
+      const barClass = dayPnl > 0 ? 'pos' : dayPnl < 0 ? 'neg' : '';
+      cell.innerHTML = `
+        <span class="dn">${dayNum}</span>
+        ${locked ? `<span style="font-size:9px;color:var(--muted);opacity:.6"><i class="fa-solid fa-lock" style="font-size:8px"></i> Pro</span>` : ''}
+        ${hasTrades && !locked ? `<span class="day-pnl ${pnlClass}">${pnlFmt||'—'}</span><span class="day-cnt">${dayMap[dayNum].length} trade${dayMap[dayNum].length>1?'s':''}</span>` : ''}
+        ${hasTrades && !locked && barClass ? `<div class="day-bar ${barClass}"></div>` : ''}`;
+      if (hasTrades && !locked) {
+        cell.onclick = () => showDayPanel(dayNum, dateStr, dayMap[dayNum]);
+      } else if (locked) {
+        cell.onclick = () => {};
+      }
+    } else {
+      cell.innerHTML = `<span class="dn">${dayNum > 0 && dayNum <= 31 ? dayNum : ''}</span>`;
+    }
+    grid.appendChild(cell);
+  }
+
+  // Update summary
+  if (tradeCnt > 0) {
+    document.getElementById('sumBar').style.display = 'flex';
+    const wr = (winDays + lossDays) > 0 ? (winDays/(winDays+lossDays)*100).toFixed(0)+'%' : '—';
+    const p = document.getElementById('sumPnl');
+    p.textContent = fP(monthPnl) || '—';
+    p.className = 'sum-val ' + (monthPnl > 0 ? 'pos' : monthPnl < 0 ? 'neg' : '');
+    document.getElementById('sumTrades').textContent = tradeCnt;
+    document.getElementById('sumWinDays').textContent = winDays;
+    document.getElementById('sumLossDays').textContent = lossDays;
+    document.getElementById('sumWR').textContent = wr;
+    document.getElementById('sumBest').textContent = bestDay !== null ? fP(bestDay) : '—';
+    document.getElementById('sumWorst').textContent = worstDay !== null ? fP(worstDay) : '—';
+  } else {
+    document.getElementById('sumBar').style.display = 'none';
+  }
+  closePanel();
+}
+
+function showDayPanel(dayNum, dateStr, trades) {
+  const panel = document.getElementById('dayPanel');
+  const d = new Date(dateStr + 'T12:00:00');
+  document.getElementById('dpTitle').textContent = d.toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const dayPnl = trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))).reduce((s,t)=>s+parseFloat(t.pnl),0);
+  document.getElementById('dpTrades').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length>1?'s':''}</span>
+      <span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:${dayPnl>0?'var(--accent)':dayPnl<0?'#ff5f6d':'var(--muted)'}">${fP(dayPnl)||'—'}</span>
+    </div>
+    ${trades.map(t=>`
+    <div class="dp-trade">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="dp-pair">${esc(t.pair)||'—'}</span>
+        <span class="dp-pos ${(t.position||'Long').toLowerCase()}">${t.position||'Long'}</span>
+        ${(t.strategy||[]).map(s=>`<span style="font-size:10px;background:rgba(25,195,125,.1);color:var(--accent2);border-radius:4px;padding:1px 6px">${esc(s)}</span>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;color:var(--muted)">${t.time||''}</span>
+        <span class="dp-pnl ${parseFloat(t.pnl)>0?'pos':parseFloat(t.pnl)<0?'neg':''}">${fP(t.pnl)||'—'}</span>
+        ${t.r?`<span style="font-size:11px;color:${parseFloat(t.r)>0?'var(--accent2)':'#ff5f6d'}">${parseFloat(t.r)>0?'+':''}${parseFloat(t.r).toFixed(2)}R</span>`:''}
+      </div>
+    </div>`).join('')}`;
+  panel.classList.add('show');
+}
+function closePanel() { document.getElementById('dayPanel').classList.remove('show'); }
+
+function prevMonth() {
+  curMonth--; if (curMonth < 0) { curMonth=11; curYear--; }
+  renderMonth();
+}
+function nextMonth() {
+  curMonth++; if (curMonth > 11) { curMonth=0; curYear++; }
+  renderMonth();
+}
+function goToday() {
+  curYear=new Date().getFullYear(); curMonth=new Date().getMonth();
+  renderMonth();
+}
 </script>
 </body>
 </html>

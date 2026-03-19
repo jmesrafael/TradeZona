@@ -1,7 +1,9 @@
+<!-- gallery.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Gallery</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Gallery</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -10,7 +12,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
 .pw{max-width:1100px;margin:0 auto}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .ph h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
@@ -62,6 +64,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;paddi
     ${[1,2,3,4,5,6].map(()=>`<div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div><div class="skel-line short"></div></div></div>`).join('')}
   </div>
   <div class="grid" id="grid" style="display:none"></div>
+  <!-- Ad slot for free users -->
+  <div id="galAdSlot" style="display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:16px">
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6">Advertisement</div>
+    <div style="min-height:70px;display:flex;align-items:center;justify-content:center;padding:12px">
+      <ins class="adsbygoogle" style="display:block;width:100%;min-height:70px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+      <div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:8px"><i class="fa-solid fa-rectangle-ad" style="margin-right:5px;opacity:.4"></i>Ad · <a href="/subscription" style="color:var(--accent2);text-decoration:none">Upgrade to Pro</a> to remove</div>
+    </div>
+  </div>
 </div>
 
 <div class="lb" id="lb" onclick="closeLb(event)">
@@ -90,12 +100,28 @@ function fP(v){const n=parseFloat(v);if(isNaN(n))return'—';return(n>=0?'+':'-'
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 (async()=>{
   if(!jid){document.getElementById('skelGrid').style.display='none';document.getElementById('grid').style.display='';document.getElementById('grid').innerHTML='<div class="empty"><i class="fa-solid fa-images"></i>No journal selected.</div>';return;}
+  // Check plan
+  let isPro = false;
+  try { isPro = parent?._userIsPro || false; } catch(e){}
+  if (!isPro) {
+    const {data:{user}} = await db.auth.getUser();
+    if (user) { const p = await getProfile(user.id); isPro = p?.plan === 'pro'; }
+  }
+  if (!isPro) { document.getElementById('galAdSlot').style.display='block'; try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){} }
   const raw=await getTrades(jid);const trades=raw.map(dbToTrade);
   items=[];
-  trades.forEach((t,ti)=>{(t.images||[]).forEach(img=>{if(!img.data)return;items.push({imgData:img.data,pair:t.pair,date:t.date,pnl:t.pnl,position:t.position,notes:t.notes,strategy:t.strategy||[],timeframe:t.timeframe||[],r:t.r,tradeNum:ti+1});});});
+  // Resolve all image URLs (Storage signed URLs or legacy base64)
+  for(const t of trades){
+    for(const img of (t.images||[])){
+      const displayUrl = await getImageUrl(img);
+      if(!displayUrl) continue;
+      items.push({imgData:displayUrl,pair:t.pair,date:t.date,pnl:t.pnl,position:t.position,notes:t.notes,strategy:t.strategy||[],timeframe:t.timeframe||[],r:t.r,tradeNum:0});
+    }
+  }
   document.getElementById('skelGrid').style.display='none';
   document.getElementById('grid').style.display='';
   render();
+  document.body.style.visibility='visible';
 })();
 function render(){
   const g=document.getElementById('grid');

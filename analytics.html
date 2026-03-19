@@ -1,7 +1,9 @@
+<!-- analytics.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Analytics</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Analytics</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -10,7 +12,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
 .pw{max-width:1100px;margin:0 auto}
 /* skeleton */
 .skel-bar{height:20px;border-radius:6px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;margin-bottom:10px}
@@ -80,46 +82,62 @@ function fPct(v){return'%'+parseFloat(v).toFixed(1);}
   const raw=await getTrades(jid);const trades=raw.map(dbToTrade);const settings=await getJournalSettings(jid);const mc=settings?.mood_colors||{};
   document.getElementById('skelView').style.display='none';
   document.getElementById('root').style.display='';
-  // Check plan — show ads to Free users only
+  document.body.style.visibility='visible';
+  // Check plan
   const {data:{user:authUser}}=await db.auth.getUser();
   let isPro=false;
-  if(authUser){try{const p=await getProfile(authUser.id);isPro=p?.plan==='pro';}catch(e){}}
+  if(authUser){
+    try{
+      // Try parent first (faster)
+      isPro = parent?._userIsPro || false;
+      if(!isPro){ const p=await getProfile(authUser.id); isPro=p?.plan==='pro'; }
+    }catch(e){ const p=await getProfile(authUser.id); isPro=p?.plan==='pro'; }
+  }
   const isL=localStorage.getItem('tl_theme')==='light';const accent=isL?'#19c37d':'#00ff88';const tc=isL?'#6b8578':'#8fa39a';const gc=isL?'#dde8e3':'#1c2a25';
   Chart.defaults.color=tc;Chart.defaults.borderColor=gc;
   if(!trades.length){document.getElementById('root').innerHTML='<div class="empty"><i class="fa-solid fa-chart-line"></i>No trades yet.<br>Add trades in the Logs tab to see analytics.</div>';return;}
   document.getElementById('root').innerHTML=`
     <div class="sr" id="sr"></div><div class="stk" id="stk"></div>
     <div class="cb"><h3><i class="fa-solid fa-chart-area"></i> Equity Curve</h3><canvas id="eq"></canvas></div>
-
-    <!-- Ad slot between equity curve and strategy breakdown — Free users only -->
+    ${!isPro ? `
+    <!-- Ad slot for free users -->
+    <div class="ad-slot visible" style="margin-bottom:14px">
+      <div class="ad-slot-label">Advertisement</div>
+      <div class="ad-slot-inner">
+        <ins class="adsbygoogle" style="display:block;width:100%;min-height:70px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+        <div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:8px"><i class="fa-solid fa-rectangle-ad" style="margin-right:5px;opacity:.4"></i>Ad · <a href="/subscription" style="color:var(--accent2);text-decoration:none">Upgrade to Pro</a> to remove ads &amp; unlock full analytics</div>
+      </div>
+    </div>
+    <!-- Pro upgrade prompt for advanced charts -->
+    <div class="cb" style="border-color:rgba(0,255,136,.2);background:linear-gradient(135deg,rgba(0,255,136,.03),var(--panel))">
+      <div style="text-align:center;padding:20px 16px">
+        <i class="fa-solid fa-lock" style="font-size:28px;color:var(--muted);opacity:.4;display:block;margin-bottom:12px"></i>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:8px">Advanced Analytics — Pro</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:420px;margin:0 auto 16px">Unlock Strategy PNL, Mood heatmaps, Hour analysis, Day-of-week breakdown, Long vs Short, and more.</p>
+        <a href="/subscription" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <i class="fa-solid fa-arrow-up"></i> Upgrade to Pro — $5/mo
+        </a>
+      </div>
+    </div>` : `
     <div class="ad-slot ${isPro?'':'visible'}" id="analyticsAdSlot">
       <div class="ad-slot-label">Advertisement</div>
       <div class="ad-slot-inner">
-        <ins class="adsbygoogle"
-             style="display:block;width:100%;min-height:90px"
-             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-             data-ad-slot="XXXXXXXXXX"
-             data-ad-format="horizontal"
-             data-full-width-responsive="true"></ins>
-        <div style="width:100%;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-          <div style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-rectangle-ad" style="margin-right:6px;opacity:.4"></i>Ad — visible to Free users only</div>
-          <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,.04);border:1px dashed var(--border);border-radius:6px;padding:6px 12px">Responsive / 728×90</div>
-        </div>
+        <ins class="adsbygoogle" style="display:block;width:100%;min-height:70px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+        <div style="width:100%;text-align:center;font-size:12px;color:var(--muted);padding:8px"><i class="fa-solid fa-rectangle-ad" style="margin-right:5px;opacity:.4"></i>Ad — Free plan only</div>
       </div>
     </div>
     <div class="ad-upgrade-nudge ${isPro?'':'visible'}">
       <div class="ad-nudge-text"><strong><i class="fa-solid fa-lock-open" style="color:var(--accent2);margin-right:5px"></i>Unlock the full analytics suite</strong>Upgrade to Pro for mood heatmaps, hour analysis, day-of-week breakdown &amp; more — ad-free.</div>
-      <button class="ad-nudge-btn" onclick="window.location.href='subscription.html'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro</button>
+      <button class="ad-nudge-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro</button>
     </div>
-
     <div class="c2"><div class="cb"><h3><i class="fa-solid fa-circle-half-stroke"></i> Win / Loss</h3><canvas id="wl"></canvas></div><div class="cb"><h3><i class="fa-solid fa-chess"></i> Strategy PNL</h3><canvas id="st"></canvas></div></div>
     <div class="cb"><h3><i class="fa-solid fa-clock"></i> Timeframe Breakdown</h3><table class="bt"><thead><tr><th>Timeframe</th><th>Trades</th><th>Wins</th><th>Win Rate</th><th>Total PNL</th></tr></thead><tbody id="tfb"></tbody></table></div>
     <div class="c2"><div class="cb"><h3><i class="fa-solid fa-face-smile"></i> Mood Distribution</h3><canvas id="md"></canvas></div><div class="cb"><h3><i class="fa-solid fa-face-smile-beam"></i> Mood vs Performance</h3><table class="bt"><thead><tr><th>Mood</th><th>Trades</th><th>Win Rate</th><th>Avg PNL</th></tr></thead><tbody id="mdb"></tbody></table></div></div>
     <div class="cb"><h3><i class="fa-solid fa-fire-flame-curved"></i> Hour Heatmap</h3><canvas id="hh"></canvas></div>
     <div class="c2"><div class="cb"><h3><i class="fa-solid fa-trophy"></i> Best Hours (Avg PNL)</h3><canvas id="hp"></canvas></div><div class="cb"><h3><i class="fa-solid fa-table"></i> Time of Day</h3><table class="bt"><thead><tr><th>Hour</th><th>Trades</th><th>Wins</th><th>Win Rate</th><th>Avg PNL</th></tr></thead><tbody id="tb"></tbody></table></div></div>
     <div class="c2"><div class="cb"><h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Long vs Short</h3><canvas id="ls"></canvas></div><div class="cb"><h3><i class="fa-solid fa-ranking-star"></i> Most Traded Pair</h3><div id="pb"></div></div></div>
-    <div class="cb"><h3><i class="fa-solid fa-calendar-week"></i> Trades by Day of Week</h3><canvas id="dow"></canvas></div>`;
-  // Push AdSense for analytics slot
+    <div class="cb"><h3><i class="fa-solid fa-calendar-week"></i> Trades by Day of Week</h3><canvas id="dow"></canvas></div>`}`;
+  // Push AdSense
   if(!isPro){try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}}
   const vld=trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))),wins=vld.filter(t=>parseFloat(t.pnl)>0),losses=vld.filter(t=>parseFloat(t.pnl)<0),be=vld.filter(t=>parseFloat(t.pnl)===0),total=vld.reduce((s,t)=>s+parseFloat(t.pnl),0),rv=trades.filter(t=>t.r&&!isNaN(parseFloat(t.r))).map(t=>parseFloat(t.r)),avgR=rv.length?rv.reduce((a,b)=>a+b,0)/rv.length:0,wr=vld.length?wins.length/vld.length*100:0;
   let mxW=0,mxL=0,cW=0,cL=0;vld.forEach(t=>{const p=parseFloat(t.pnl);if(p>0){cW++;cL=0;if(cW>mxW)mxW=cW;}else if(p<0){cL++;cW=0;if(cL>mxL)mxL=cL;}else{cW=0;cL=0;}});

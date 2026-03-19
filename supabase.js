@@ -6,9 +6,14 @@
 const SUPABASE_URL  = 'https://oixrpuqylidbunbttftg.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho';
 
+// Storage bucket name — create this in Supabase Dashboard → Storage
+const IMAGE_BUCKET = 'trade-images';
+
+// Signed URL in-memory cache — avoids re-fetching for the same path within a session
+const _urlCache = new Map();
+
 const { createClient } = supabase;
 
-// JWT persists in localStorage; auto-refreshes before expiry
 const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     storage:            window.localStorage,
@@ -19,25 +24,31 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
 });
 
 // ── Auth state watcher ────────────────────────────────────
-// If the user signs out in another tab, redirect everywhere
 db.auth.onAuthStateChange((event) => {
+  const publicPaths = ['/', '/auth', '/confirm', '/reset-password'];
+  const path = window.location.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+
   if (event === 'SIGNED_OUT') {
-    if (!window.location.pathname.endsWith('auth.html') &&
-        !window.location.pathname.endsWith('index.html') &&
-        window.location.pathname !== '/') {
-      window.location.href = 'auth.html';
+    if (!publicPaths.includes(path)) {
+      window.location.href = '/auth';
+    }
+  }
+
+  // Redirect to reset-password page when magic link is clicked
+  if (event === 'PASSWORD_RECOVERY') {
+    if (!path.includes('reset-password')) {
+      window.location.href = '/reset-password';
     }
   }
 });
 
 // ── requireAuth ───────────────────────────────────────────
-// Verifies JWT server-side. Call at the top of every protected page.
+// Server-validates the JWT. Call at the top of every protected page.
 async function requireAuth() {
-  // getUser() hits the Supabase server to validate the JWT — not just localStorage
   const { data: { user }, error } = await db.auth.getUser();
   if (error || !user) {
     await db.auth.signOut();
-    window.location.href = 'auth.html';
+    window.location.href = '/auth';
     return null;
   }
   return user;
@@ -50,31 +61,44 @@ async function getUser() {
 
 // ── Profile ───────────────────────────────────────────────
 async function getProfile(userId) {
-  const { data } = await db.from('profiles').select('*').eq('id', userId).single();
+  const { data } = await db
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
   return data;
 }
 
 // ── Journals ──────────────────────────────────────────────
 async function getJournals(userId) {
   const { data, error } = await db
-    .from('journals').select('*').eq('user_id', userId)
+    .from('journals')
+    .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: true });
-  if (error) { console.error(error); return []; }
+  if (error) { console.error('getJournals:', error); return []; }
   return data || [];
 }
 
-async function createJournal(userId, { name, capital, pin_hash, show_pnl=true, show_capital=true }) {
-  const { data, error } = await db.from('journals')
-    .insert({ user_id:userId, name, capital:capital||null, pin_hash:pin_hash||null, show_pnl, show_capital })
-    .select().single();
+async function createJournal(userId, { name, capital, pin_hash, show_pnl = true, show_capital = true }) {
+  const { data, error } = await db
+    .from('journals')
+    .insert({ user_id: userId, name, capital: capital || null, pin_hash: pin_hash || null, show_pnl, show_capital })
+    .select()
+    .single();
   if (error) throw error;
+
   await db.from('journal_settings').insert({
-    journal_id: data.id, user_id: userId,
+    journal_id:  data.id,
+    user_id:     userId,
     strategies:  ['Breakout','Reversal','Trend Continuation','Liquidity Sweep','Scalp','Swing'],
     timeframes:  ['M1','M5','M15','M30','H1','H4','D1','W1'],
     pairs:       ['EURUSD','GBPUSD','BTCUSD','XAUUSD','USDJPY','GBPJPY','NASDAQ','US30'],
     moods:       ['Euphoric','Confident','Neutral','Doubtful','Anxious','Fearful','Revenge','Focused'],
-    mood_colors: { Euphoric:'#f59e0b',Confident:'#22c55e',Neutral:'#64748b',Doubtful:'#f97316',Anxious:'#ef4444',Fearful:'#dc2626',Revenge:'#a855f7',Focused:'#3b82f6' }
+    mood_colors: {
+      Euphoric:'#f59e0b', Confident:'#22c55e', Neutral:'#64748b', Doubtful:'#f97316',
+      Anxious:'#ef4444',  Fearful:'#dc2626',   Revenge:'#a855f7', Focused:'#3b82f6'
+    }
   });
   return data;
 }
@@ -85,24 +109,47 @@ async function updateJournal(journalId, updates) {
 }
 
 async function deleteJournal(journalId) {
+  // Clean up Storage images before deleting the journal
+  const { data: trades } = await db
+    .from('trades')
+    .select('id')
+    .eq('journal_id', journalId);
+
+  if (trades?.length) {
+    const tradeIds = trades.map(t => t.id);
+    const { data: images } = await db
+      .from('trade_images')
+      .select('storage_path')
+      .in('trade_id', tradeIds)
+      .not('storage_path', 'is', null);
+
+    if (images?.length) {
+      const paths = images.map(i => i.storage_path).filter(Boolean);
+      if (paths.length) await db.storage.from(IMAGE_BUCKET).remove(paths);
+    }
+  }
+
   const { error } = await db.from('journals').delete().eq('id', journalId);
   if (error) throw error;
 }
 
 // ── Trades ────────────────────────────────────────────────
 async function getTrades(journalId) {
-  const { data, error } = await db.from('trades')
-    .select('*, trade_images(id,data,storage_url)')
+  const { data, error } = await db
+    .from('trades')
+    .select('*, trade_images(id, data, storage_path)')
     .eq('journal_id', journalId)
     .order('created_at', { ascending: false });
-  if (error) { console.error(error); return []; }
+  if (error) { console.error('getTrades:', error); return []; }
   return data || [];
 }
 
 async function createTrade(userId, journalId, trade) {
-  const { data, error } = await db.from('trades')
-    .insert({ ...tradeToDb(trade), journal_id:journalId, user_id:userId })
-    .select().single();
+  const { data, error } = await db
+    .from('trades')
+    .insert({ ...tradeToDb(trade), journal_id: journalId, user_id: userId })
+    .select()
+    .single();
   if (error) throw error;
   return data;
 }
@@ -115,23 +162,39 @@ async function updateTrade(tradeId, updates) {
 }
 
 async function deleteTrade(tradeId) {
+  // Remove images from Storage first
+  const { data: images } = await db
+    .from('trade_images')
+    .select('storage_path')
+    .eq('trade_id', tradeId)
+    .not('storage_path', 'is', null);
+
+  if (images?.length) {
+    const paths = images.map(i => i.storage_path).filter(Boolean);
+    if (paths.length) {
+      await db.storage.from(IMAGE_BUCKET).remove(paths);
+      paths.forEach(p => _urlCache.delete(p));
+    }
+  }
+
   const { error } = await db.from('trades').delete().eq('id', tradeId);
   if (error) throw error;
 }
 
+// ── DB ↔ UI mapping ───────────────────────────────────────
 function tradeToDb(t) {
   const o = {};
-  if ('date'       in t) o.trade_date  = t.date || null;
-  if ('time'       in t) o.trade_time  = t.time || null;
-  if ('pair'       in t) o.pair        = t.pair || null;
-  if ('position'   in t) o.position    = t.position || null;
-  if ('strategy'   in t) o.strategy    = t.strategy  || [];
-  if ('timeframe'  in t) o.timeframe   = t.timeframe || [];
-  if ('pnl'        in t) { const n=parseFloat(t.pnl);  o.pnl      = (!isNaN(n)&&t.pnl!=null&&t.pnl!=='') ? n : null; }
-  if ('r'          in t) { const n=parseFloat(t.r);    o.r_factor = (!isNaN(n)&&t.r!=null&&t.r!=='')   ? n : null; }
-  if ('confidence' in t) o.confidence = t.confidence || null;
-  if ('mood'       in t) o.mood        = t.mood || [];
-  if ('notes'      in t) o.notes       = t.notes || null;
+  if ('date'       in t) o.trade_date  = t.date       || null;
+  if ('time'       in t) o.trade_time  = t.time       || null;
+  if ('pair'       in t) o.pair        = t.pair       || null;
+  if ('position'   in t) o.position    = t.position   || null;
+  if ('strategy'   in t) o.strategy    = t.strategy   || [];
+  if ('timeframe'  in t) o.timeframe   = t.timeframe  || [];
+  if ('pnl'        in t) { const n = parseFloat(t.pnl);      o.pnl      = (!isNaN(n) && t.pnl != null && t.pnl !== '')  ? n : null; }
+  if ('r'          in t) { const n = parseFloat(t.r);        o.r_factor = (!isNaN(n) && t.r  != null && t.r  !== '')    ? n : null; }
+  if ('confidence' in t) o.confidence  = t.confidence || null;
+  if ('mood'       in t) o.mood        = t.mood       || [];
+  if ('notes'      in t) o.notes       = t.notes      || null;
   return o;
 }
 
@@ -139,59 +202,160 @@ function dbToTrade(row) {
   return {
     id:         row.id,
     date:       row.trade_date  || '',
-    time:       row.trade_time  ? String(row.trade_time).slice(0,5) : '',
+    time:       row.trade_time  ? String(row.trade_time).slice(0, 5) : '',
     pair:       row.pair        || '',
     position:   row.position    || 'Long',
     strategy:   row.strategy    || [],
     timeframe:  row.timeframe   || [],
-    pnl:        row.pnl   != null ? String(row.pnl)      : '',
-    r:          row.r_factor != null ? String(row.r_factor) : '',
+    pnl:        row.pnl        != null ? String(row.pnl)      : '',
+    r:          row.r_factor   != null ? String(row.r_factor) : '',
     confidence: row.confidence  || 0,
     mood:       row.mood        || [],
     notes:      row.notes       || '',
-    images:     (row.trade_images||[]).map(img=>({ id:img.id, data:img.data||img.storage_url||'' }))
+    // Map image rows — storage_path is new, data is legacy base64
+    images: (row.trade_images || []).map(img => ({
+      id:           img.id,
+      storage_path: img.storage_path || null,
+      data:         img.storage_path ? null : (img.data || ''),
+    }))
   };
 }
 
-// ── Trade Images ──────────────────────────────────────────
-async function addTradeImage(userId, tradeId, base64Data) {
-  const { data, error } = await db.from('trade_images')
-    .insert({ trade_id:tradeId, user_id:userId, data:base64Data })
-    .select().single();
+// ── Trade Images — Supabase Storage ──────────────────────
+/**
+ * Upload a base64 image to Supabase Storage.
+ * Falls back to storing base64 in DB if the bucket is unavailable.
+ *
+ * @param {string} userId
+ * @param {string} tradeId
+ * @param {string} base64DataUrl  — "data:image/png;base64,..."
+ * @returns {Promise<{id, storage_path, data, _previewUrl}>}
+ */
+async function addTradeImage(userId, tradeId, base64DataUrl) {
+  let blob = null, ext = 'jpg', mimeType = 'image/jpeg';
+
+  try {
+    const [header, b64] = base64DataUrl.split(',');
+    mimeType  = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+    ext       = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+    const raw = atob(b64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+    blob = new Blob([buf], { type: mimeType });
+  } catch (e) {
+    console.warn('addTradeImage: base64 parse failed, using DB fallback', e);
+  }
+
+  if (blob) {
+    const path = `${userId}/${tradeId}/${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await db.storage
+      .from(IMAGE_BUCKET)
+      .upload(path, blob, { contentType: mimeType, upsert: false });
+
+    if (!uploadErr) {
+      const { data, error: dbErr } = await db
+        .from('trade_images')
+        .insert({ trade_id: tradeId, user_id: userId, storage_path: path, data: null })
+        .select()
+        .single();
+      if (dbErr) throw dbErr;
+      // Cache the base64 preview so we don't need to fetch a signed URL immediately
+      _urlCache.set(path, base64DataUrl);
+      return { ...data, _previewUrl: base64DataUrl };
+    }
+    console.warn('addTradeImage: Storage upload failed, falling back to DB base64', uploadErr);
+  }
+
+  // Fallback: store base64 in DB (legacy)
+  const { data, error } = await db
+    .from('trade_images')
+    .insert({ trade_id: tradeId, user_id: userId, data: base64DataUrl, storage_path: null })
+    .select()
+    .single();
   if (error) throw error;
   return data;
 }
 
-async function deleteTradeImage(imageId) {
+/**
+ * Resolve a displayable URL for an image row.
+ *
+ * Priority:
+ *  1. In-memory preview (_previewUrl set right after upload — zero latency)
+ *  2. Cached signed URL from this session
+ *  3. Fresh signed URL from Storage (cached for 1 hour)
+ *  4. Legacy base64 data field
+ */
+async function getImageUrl(img) {
+  if (!img) return '';
+  if (img._previewUrl) return img._previewUrl;
+
+  if (img.storage_path) {
+    // Check session cache first
+    if (_urlCache.has(img.storage_path)) return _urlCache.get(img.storage_path);
+
+    const { data, error } = await db.storage
+      .from(IMAGE_BUCKET)
+      .createSignedUrl(img.storage_path, 3600);
+
+    if (!error && data?.signedUrl) {
+      _urlCache.set(img.storage_path, data.signedUrl);
+      return data.signedUrl;
+    }
+    console.warn('getImageUrl: signed URL failed', error);
+    return '';
+  }
+
+  // Legacy base64
+  return img.data || '';
+}
+
+/**
+ * Delete an image from both Storage and the DB.
+ * Pass storage_path if known to clean up the bucket.
+ */
+async function deleteTradeImage(imageId, storagePath) {
+  if (storagePath) {
+    await db.storage.from(IMAGE_BUCKET).remove([storagePath]);
+    _urlCache.delete(storagePath);
+  }
   const { error } = await db.from('trade_images').delete().eq('id', imageId);
   if (error) throw error;
 }
 
 // ── Journal Settings ──────────────────────────────────────
 async function getJournalSettings(journalId) {
-  const { data } = await db.from('journal_settings').select('*').eq('journal_id', journalId).single();
+  const { data } = await db
+    .from('journal_settings')
+    .select('*')
+    .eq('journal_id', journalId)
+    .single();
   return data;
 }
 
 async function updateJournalSettings(journalId, updates) {
-  const { error } = await db.from('journal_settings').update(updates).eq('journal_id', journalId);
+  const { error } = await db
+    .from('journal_settings')
+    .update(updates)
+    .eq('journal_id', journalId);
   if (error) throw error;
 }
 
 // ── Realtime ──────────────────────────────────────────────
 function subscribeTrades(journalId, callback) {
-  return db.channel('trades:'+journalId)
+  return db.channel('trades:' + journalId)
     .on('postgres_changes',
-      { event:'*', schema:'public', table:'trades', filter:`journal_id=eq.${journalId}` },
+      { event: '*', schema: 'public', table: 'trades', filter: `journal_id=eq.${journalId}` },
       callback)
     .subscribe();
 }
 
-// ── PIN security (SHA-256) ────────────────────────────────
+// ── PIN security (SHA-256 via Web Crypto) ─────────────────
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
 async function verifyPin(pin, hash) {
   if (!hash) return true;
   return (await hashPin(pin)) === hash;

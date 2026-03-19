@@ -1,8 +1,11 @@
+
+<!-- auth.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>TradeZona — Sign In</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
@@ -87,8 +90,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="orb orb1"></div><div class="orb orb2"></div>
 
 <nav class="top-nav">
-  <a href="dashboard.html" class="logo">Trade<span>Zona</span></a>
-  <a href="index.html" class="back-link"><i class="fa-solid fa-chevron-left"></i> Back to Home</a>
+  <a href="/dashboard" class="logo">Trade<span>Zona</span></a>
+  <a href="/" class="back-link"><i class="fa-solid fa-chevron-left"></i> Back to Home</a>
 </nav>
 
 <div class="auth-wrap">
@@ -169,7 +172,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <script>
 (async () => {
   const user = await getUser();
-  if (user) { window.location.href = 'dashboard.html'; return; }
+  if (user) { window.location.href = '/dashboard'; return; }
   document.getElementById('pageLoader').classList.add('gone');
 })();
 
@@ -231,7 +234,7 @@ async function doLogin() {
     const { error } = await db.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
     showSuccess('Signed in! Redirecting…');
-    setTimeout(() => window.location.href = 'dashboard.html', 700);
+    setTimeout(() => window.location.href = '/dashboard', 700);
   } catch (err) {
     showError(err.message === 'Invalid login credentials' ? 'Incorrect email or password.' : (err.message || 'Login failed.'));
     setBtnLoading('loginBtn','loginBtnIcon','loginBtnText',false,'fa-solid fa-arrow-right-to-bracket','Sign In','');
@@ -252,11 +255,13 @@ async function doSignup() {
     if (error) throw error;
     if (data.session) {
       showSuccess('Account created! Redirecting…');
-      setTimeout(() => window.location.href = 'dashboard.html', 900);
+      setTimeout(() => window.location.href = '/dashboard', 900);
     } else {
-      showSuccess('Account created! Check your email to confirm, then sign in.');
-      setTimeout(() => switchTab('login'), 3500);
-      setBtnLoading('signupBtn','signupBtnIcon','signupBtnText',false,'fa-solid fa-user-plus','Create Account — Free','');
+      // Email confirmation required — store email so confirm.html can show it
+      sessionStorage.setItem('tz_pending_email', email);
+      localStorage.setItem('tz_pending_email', email);
+      showSuccess('Account created! Check your email for a confirmation link.');
+      setTimeout(() => window.location.href = '/confirm', 1800);
     }
   } catch (err) {
     showError(err.message || 'Could not create account. Please try again.');
@@ -268,8 +273,8 @@ async function showForgot(e) {
   e.preventDefault(); clearAlerts();
   const email = document.getElementById('loginEmail').value.trim();
   if (!email || !isValidEmail(email)) { showError('Enter your email address above first.'); return; }
-  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth.html' });
-  if (error) showError(error.message); else showSuccess(`Password reset link sent to ${email}.`);
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' });
+  if (error) showError(error.message); else showSuccess(`Password reset link sent to ${email}. Check your inbox.`);
 }
 
 document.addEventListener('keydown', e => {
