@@ -26,6 +26,9 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .save-ind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .3s}
 .save-ind.show{opacity:1}
 .save-ind .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2)}
+.save-ind.saved .dot{background:var(--accent)}
+.save-ind.saving .dot{animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .atoggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
 .tswitch{width:34px;height:18px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
 .tswitch.on{background:var(--accent2)}
@@ -169,7 +172,7 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
   <div class="topbar">
     <div class="tl">
       <button class="btn-primary" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Trade</button>
-      <div class="save-ind" id="saveInd"><div class="dot"></div> Saving…</div>
+      <div class="save-ind" id="saveInd"><div class="dot"></div> <span id="saveIndText">Saving…</span></div>
     </div>
     <label class="atoggle" onclick="toggleAnalytics()">
       <div class="tswitch" id="aToggle"></div>
@@ -276,11 +279,71 @@ function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='sys
 const jid=sessionStorage.getItem('tz_current_journal');
 let currentUser=null,trades=[],settings=null,userIsPro=false;
 let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
-let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null,saveTimer=null;
+let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null;
 const FREE_TAG_LIMIT=2, FREE_IMG_LIMIT=1;
-// Once we have DOM rows, suppress ALL realtime re-renders.
-// render() only runs on initial load. After that, all changes are DOM-patched directly.
+// Suppress realtime DOM wipeout after initial render
 let _suppressRerender=false;
+
+// ── Auto-save system ──────────────────────────────────────────────────────────
+// Per-trade debounce timers: { tradeId → timer }
+const _saveTimers={};
+// Dirty set: which tradeIds have unsaved changes
+const _dirty=new Set();
+
+// Mark a trade as dirty and schedule a debounced save (500ms)
+function scheduleSave(id){
+  _dirty.add(id);
+  clearTimeout(_saveTimers[id]);
+  _saveTimers[id]=setTimeout(()=>flushTrade(id),500);
+}
+
+// Immediately save a specific trade to Supabase
+async function flushTrade(id){
+  if(!_dirty.has(id))return;
+  const t=trades.find(x=>x.id===id);
+  if(!t)return;
+  clearTimeout(_saveTimers[id]);
+  delete _saveTimers[id];
+  showSaveInd(true);
+  try{
+    await updateTrade(id,t);
+    _dirty.delete(id);
+    // Show "Saved" only if nothing else is still dirty
+    if(!_dirty.size)showSaveInd(false);
+  }catch(e){
+    showToast('Auto-save failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+  }
+}
+
+// Flush ALL dirty trades immediately (call before any navigation)
+async function flushAll(){
+  const ids=[..._dirty];
+  if(!ids.length)return;
+  showSaveInd(true);
+  await Promise.all(ids.map(id=>flushTrade(id)));
+  showSaveInd(false);
+}
+
+// Flush on page hide / visibility change (user switching tabs in browser or navigating away)
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden')flushAll();
+});
+window.addEventListener('pagehide',()=>flushAll());
+
+let _savedTimer=null;
+function showSaveInd(saving){
+  const el=document.getElementById('saveInd');
+  const txt=document.getElementById('saveIndText');
+  clearTimeout(_savedTimer);
+  if(saving){
+    el.classList.add('show','saving');el.classList.remove('saved');
+    if(txt)txt.textContent='Saving…';
+  } else {
+    el.classList.remove('saving');el.classList.add('show','saved');
+    if(txt)txt.textContent='Saved';
+    _savedTimer=setTimeout(()=>{el.classList.remove('show','saved');},2000);
+  }
+}
 
 (async()=>{
   const{data:{user}}=await db.auth.getUser();
@@ -348,14 +411,26 @@ function buildRow(t, num){
     <td><div class="dtc"><input class="ci dti" type="date" value="${t.date||''}" onchange="updF('${t.id}','date',this.value)"><i class="fa-solid fa-pencil di"></i></div></td>
     <td><div class="dtc"><input class="ci dti" type="time" value="${t.time||''}" onchange="updF('${t.id}','time',this.value)" style="min-width:56px"><i class="fa-solid fa-pencil di"></i></div></td>
     <td class="pw-cell">
-      <input class="ci" value="${esc(t.pair||'')}" placeholder="EURUSD" oninput="showSug(this,'${t.id}')" onfocus="showSug(this,'${t.id}')" onblur="confirmPair('${t.id}',this);hideSug()" style="min-width:62px">
+      <input class="ci" value="${esc(t.pair||'')}" placeholder="EURUSD"
+        oninput="fieldInput('${t.id}','pair',this.value.toUpperCase());showSug(this,'${t.id}')"
+        onfocus="showSug(this,'${t.id}')"
+        onblur="confirmPair('${t.id}',this);hideSug()"
+        style="min-width:62px">
       <div class="sugs" id="sug_${t.id}" style="display:none"></div>
     </td>
     <td><select class="csel" onchange="updPos(this,'${t.id}')" style="min-width:50px;font-weight:600;color:${t.position==='Short'?'#ff5f6d':'var(--accent)'}"><option ${t.position==='Long'?'selected':''}>Long</option><option ${t.position==='Short'?'selected':''}>Short</option></select></td>
     <td><div class="tc" id="st_${t.id}" onclick="openPP(event,'${t.id}','strategy')">${buildPills(t.strategy,'strategy')}</div></td>
     <td><div class="tc" id="tf_${t.id}" onclick="openPP(event,'${t.id}','timeframe')">${buildPills(t.timeframe,'timeframe')}</div></td>
-    <td><input class="ci" id="pnl_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.pnl,'pnl')}" placeholder="0.00" onfocus="vFocus(this)" onblur="vBlur(this,'${t.id}','pnl')" oninput="localUpd('${t.id}','pnl',this.value)" style="min-width:62px;font-weight:600;color:${pnlCol(t.pnl)}"></td>
-    <td><input class="ci" id="r_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.r,'r')}" placeholder="+2R" onfocus="vFocus(this)" onblur="vBlur(this,'${t.id}','r')" oninput="localUpd('${t.id}','r',this.value)" style="min-width:44px;font-weight:600;color:${pnlCol(t.r)}"></td>
+    <td><input class="ci" id="pnl_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.pnl,'pnl')}" placeholder="0.00"
+      onfocus="vFocus(this)"
+      oninput="fieldInput('${t.id}','pnl',this.value)"
+      onblur="vBlur(this,'${t.id}','pnl')"
+      style="min-width:62px;font-weight:600;color:${pnlCol(t.pnl)}"></td>
+    <td><input class="ci" id="r_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.r,'r')}" placeholder="+2R"
+      onfocus="vFocus(this)"
+      oninput="fieldInput('${t.id}','r',this.value)"
+      onblur="vBlur(this,'${t.id}','r')"
+      style="min-width:44px;font-weight:600;color:${pnlCol(t.r)}"></td>
     <td><div class="stars" id="s_${t.id}">${[1,2,3,4,5].map(n=>`<span class="star${(t.confidence||0)>=n?' on':''}" onclick="setConf('${t.id}',${n})">★</span>`).join('')}</div></td>
     <td><div class="tc" id="md_${t.id}" onclick="openPP(event,'${t.id}','mood')">${buildMoodPills(t.mood)}</div></td>
     <td>
@@ -371,21 +446,55 @@ function buildRow(t, num){
 function buildPills(arr,type){const a=arr||[];if(!a.length)return'<span class="pill ep"><i class="fa-solid fa-plus" style="font-size:9px"></i></span>';return a.map(s=>`<span class="pill">${esc(s)}</span>`).join('');}
 function buildMoodPills(arr){const a=arr||[];if(!a.length)return'<span class="pill ep"><i class="fa-solid fa-plus" style="font-size:9px"></i></span>';return a.map(m=>`<span class="pill" style="${moodStyle(m)}">${esc(m)}</span>`).join('');}
 
-function vFocus(el){const n=parseFloat(el.value.replace(/[^0-9.+-]/g,''));el.value=isNaN(n)?'':n;el.style.color='var(--text)';el.select();}
-function vBlur(el,id,field){const raw=el.value.trim(),n=parseFloat(raw);if(!isNaN(n)&&raw!==''){el.value=fmtVal(n,field);el.style.color=pnlCol(n);}else{el.value='';el.style.color='var(--muted)';}debounceSave(id);}
-function localUpd(id,field,val){const t=trades.find(x=>x.id===id);if(t){t[field]=val;const el=document.getElementById((field==='pnl'?'pnl_':'r_')+id);if(el)el.style.color=pnlCol(val);}updateAnalytics();}
-function debounceSave(id){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveToDb(id),700);}
-async function saveToDb(id){const t=trades.find(x=>x.id===id);if(!t)return;showSaveInd(true);try{await updateTrade(id,t);}catch(e){showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');}showSaveInd(false);}
-function updF(id,f,v){localUpd(id,f,v);debounceSave(id);}
-function updPos(sel,id){updF(id,'position',sel.value);sel.style.color=sel.value==='Short'?'#ff5f6d':'var(--accent)';}
-async function setConf(id,n){const t=trades.find(x=>x.id===id);if(!t)return;t.confidence=n;document.querySelectorAll(`[data-id="${id}"] .star`).forEach((s,i)=>s.classList.toggle('on',i<n));await updateTrade(id,{confidence:n});}
-function showSaveInd(v){document.getElementById('saveInd').classList.toggle('show',v);}
+function vFocus(el){
+  const n=parseFloat(el.value.replace(/[^0-9.+-]/g,''));
+  el.value=isNaN(n)?'':n;
+  el.style.color='var(--text)';
+  el.select();
+}
+function vBlur(el,id,field){
+  const raw=el.value.trim(),n=parseFloat(raw);
+  if(!isNaN(n)&&raw!==''){el.value=fmtVal(n,field);el.style.color=pnlCol(n);}
+  else{el.value='';el.style.color='var(--muted)';}
+  // Always flush immediately on blur — user is done with this field
+  localUpd(id,field,raw);
+  flushTrade(id);
+}
+function localUpd(id,field,val){
+  const t=trades.find(x=>x.id===id);
+  if(!t)return;
+  t[field]=val;
+  if(field==='pnl'||field==='r'){
+    const el=document.getElementById((field==='pnl'?'pnl_':'r_')+id);
+    if(el)el.style.color=pnlCol(val);
+  }
+  updateAnalytics();
+  scheduleSave(id); // debounced 500ms
+}
+// Called by oninput on text/numeric fields — schedules a debounced save
+function fieldInput(id,field,val){
+  localUpd(id,field,val);
+}
+// Called by onchange on date/time/select fields — saves immediately
+function updF(id,f,v){
+  localUpd(id,f,v);
+  flushTrade(id);
+}
+function updPos(sel,id){
+  localUpd(id,'position',sel.value);
+  sel.style.color=sel.value==='Short'?'#ff5f6d':'var(--accent)';
+  flushTrade(id);
+}
+async function setConf(id,n){
+  const t=trades.find(x=>x.id===id);if(!t)return;
+  t.confidence=n;
+  document.querySelectorAll(`[data-id="${id}"] .star`).forEach((s,i)=>s.classList.toggle('on',i<n));
+  scheduleSave(id);
+}
 
-// ── ADD TRADE — row is permanent in DOM; realtime never wipes it ──
+// ── ADD TRADE — row is permanent in DOM; auto-save handles persistence ──
 async function addRow(){
   showSaveInd(true);
-  // Once we insert a row, suppress realtime re-renders forever
-  // (DOM is the source of truth; realtime only syncs the trades[] array silently)
   _suppressRerender=true;
   const now=new Date();
   const date=now.toISOString().split('T')[0];
@@ -432,8 +541,18 @@ async function confirmDelete(){
 function allPairs(){return[...new Set([...getTags('pair'),...trades.map(t=>(t.pair||'').toUpperCase()).filter(Boolean)])].sort();}
 function showSug(el,id){const v=el.value.toUpperCase().trim(),box=document.getElementById('sug_'+id),all=allPairs(),m=v?all.filter(p=>p.includes(v)&&p!==v):all.filter(p=>p!==v);if(!m.length){box.style.display='none';return;}box.innerHTML=m.slice(0,8).map(p=>`<div class="sug" onmousedown="pickPair('${id}','${p}')">${p}</div>`).join('');box.style.display='block';}
 function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>s.style.display='none'),180);}
-function confirmPair(id,el){const v=el.value.trim().toUpperCase();if(!v)return;el.value=v;updF(id,'pair',v);}
-function pickPair(id,p){updF(id,'pair',p);const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;document.getElementById('sug_'+id).style.display='none';}
+function confirmPair(id,el){
+  const v=el.value.trim().toUpperCase();
+  el.value=v;
+  if(v){localUpd(id,'pair',v);flushTrade(id);}
+}
+function pickPair(id,p){
+  localUpd(id,'pair',p);
+  const inp=document.getElementById('sug_'+id)?.previousElementSibling;
+  if(inp)inp.value=p;
+  document.getElementById('sug_'+id).style.display='none';
+  flushTrade(id);
+}
 
 // ── Pill popup ──────────────────────────────────────────
 function openPP(e,id,field){e.stopPropagation();const rect=e.currentTarget.getBoundingClientRect(),pop=document.getElementById('pp');activePill={id,field};renderPP(id,field,'');pop.style.display='block';let t=rect.bottom+window.scrollY+4,l=rect.left,pw=pop.offsetWidth||200;if(l+pw>window.innerWidth-8)l=window.innerWidth-pw-8;pop.style.top=t+'px';pop.style.left=Math.max(4,l)+'px';pop.querySelector('.pps')?.focus();}
@@ -449,7 +568,9 @@ async function toggleTag(id,field,val){
   if(!userIsPro&&idx===-1&&t[field].length>=FREE_TAG_LIMIT){showToast(`Free plan: max ${FREE_TAG_LIMIT} tags per trade.`,'fa-solid fa-lock','red');return;}
   if(idx>-1)t[field].splice(idx,1);else t[field].push(val);
   if(activePill){const f=document.querySelector('#pp .pps')?.value||'';renderPP(id,field,f);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}});}
-  updateTagCell(id,field,t[field]);await updateTrade(id,{[field]:t[field]});
+  updateTagCell(id,field,t[field]);
+  // Flush immediately — tag changes are discrete actions, not debounced
+  await flushTrade(id);
 }
 async function createTagAndAdd(id,field,val){const v=val.trim();if(!v||!settings)return;const k={strategy:'strategies',timeframe:'timeframes',pair:'pairs',mood:'moods'}[field];if(!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){settings[k]=[...settings[k],v];await updateJournalSettings(jid,{[k]:settings[k]});}toggleTag(id,field,v);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.value='';i.focus();renderPP(id,field,'');}});}
 function updateTagCell(id,field,sel){const pre={strategy:'st_',timeframe:'tf_',mood:'md_'}[field]||'st_';const c=document.getElementById(pre+id);if(!c)return;c.innerHTML=field==='mood'?buildMoodPills(sel):buildPills(sel,field);}
