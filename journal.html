@@ -124,16 +124,17 @@ iframe.ready{opacity:1}
 .btn-upgrade:hover{opacity:.85}
 
 /* ── Export / Import buttons ── */
-.io-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-@media(max-width:480px){.io-grid{grid-template-columns:1fr}}
-.io-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;text-align:center}
+.io-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:540px){.io-grid{grid-template-columns:1fr 1fr}}
+.io-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;text-align:center}
 .io-btn:hover{border-color:var(--accent2);background:rgba(25,195,125,.04);transform:translateY(-1px)}
 .io-btn.export-btn{border-color:rgba(25,195,125,.3)}
-.io-btn .io-icon{font-size:24px;color:var(--muted);line-height:1}
-.io-btn.export-btn .io-icon{color:var(--accent2)}
-.io-btn .io-label{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
-.io-btn.export-btn .io-label{color:var(--accent2)}
-.io-btn .io-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.io-btn.csv-btn{border-color:rgba(25,195,125,.2)}
+.io-btn .io-icon{font-size:22px;color:var(--muted);line-height:1}
+.io-btn.export-btn .io-icon,.io-btn.csv-btn .io-icon{color:var(--accent2)}
+.io-btn .io-label{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--text)}
+.io-btn.export-btn .io-label,.io-btn.csv-btn .io-label{color:var(--accent2)}
+.io-btn .io-desc{font-size:10px;color:var(--muted);line-height:1.4}
 .io-note{font-size:11px;color:var(--muted);line-height:1.6;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;display:flex;align-items:flex-start;gap:8px}
 .io-note i{color:var(--accent2);flex-shrink:0;margin-top:1px}
 
@@ -143,6 +144,8 @@ iframe.ready{opacity:1}
 .danger-zone .ssec-title i{color:#ff5f6d}
 .btn-danger{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,95,109,.4);color:#ff5f6d;border-radius:8px;padding:9px 15px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
 .btn-danger:hover{background:rgba(255,95,109,.1);border-color:#ff5f6d}
+.danger-actions{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.danger-actions .right{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
 
 /* ── Unsaved bar ── */
 .unsaved-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:2px solid rgba(245,158,11,.5);padding:12px 20px;z-index:500;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
@@ -172,7 +175,7 @@ iframe.ready{opacity:1}
 .btn-primary:hover{opacity:.85}
 .btn-primary:disabled{opacity:.35;cursor:not-allowed}
 
-/* ── Export modal specifics ── */
+/* ── Export modal ── */
 .scope-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .scope-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .18s}
 .scope-opt:hover{border-color:rgba(0,255,136,.3)}
@@ -191,7 +194,7 @@ iframe.ready{opacity:1}
 .es-row.included{color:var(--text)}
 .es-row.included i{color:var(--accent2)}
 
-/* ── Import modal specifics ── */
+/* ── Import modal ── */
 .dropzone{border:2px dashed var(--border);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:14px}
 .dropzone:hover,.dropzone.over{border-color:var(--accent2);background:rgba(0,255,136,.03)}
 .dropzone .dz-icon{font-size:28px;color:var(--muted);margin-bottom:8px;display:block}
@@ -223,16 +226,27 @@ iframe.ready{opacity:1}
 .restore-chk-label{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text)}
 .restore-chk-label input{accent-color:var(--accent2);width:15px;height:15px;cursor:pointer;flex-shrink:0}
 .restore-chk-label span{color:var(--muted)}
-
-/* ── Import progress ── */
 .import-progress{display:none;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;text-align:center}
 .import-progress.show{display:block}
 .progress-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:10px 0 6px}
 .progress-bar{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
 .progress-label{font-size:12px;color:var(--muted)}
 
-/* ── Delete modal ── */
+/* ── Delete Journal modal ── */
 .del-modal-inner{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:400px;padding:26px}
+
+/* ── Delete Account modal ── */
+.del-account-inner{background:var(--panel);border:1px solid rgba(255,95,109,.4);border-radius:14px;width:100%;max-width:440px;padding:28px}
+.del-account-inner .warning-icon{width:56px;height:56px;background:rgba(255,95,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#ff5f6d}
+.del-account-inner h3{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:#ff5f6d}
+.del-account-inner .sub{font-size:13px;color:var(--muted);line-height:1.7;text-align:center;margin-bottom:16px}
+.del-account-inner .warn-list{background:rgba(255,95,109,.06);border:1px solid rgba(255,95,109,.2);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:7px}
+.warn-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.warn-item i{color:#ff5f6d;flex-shrink:0;width:14px;text-align:center}
+.del-progress{display:none;text-align:center;padding:16px 0}
+.del-progress.show{display:block}
+.del-spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:#ff5f6d;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.del-progress p{font-size:13px;color:var(--muted)}
 
 /* ── Toast ── */
 #toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
@@ -260,12 +274,13 @@ iframe.ready{opacity:1}
 </header>
 
 <nav>
-  <button class="tab active" data-tab="logs"      onclick="switchTab('logs')"><i class="fa-solid fa-table-list"></i>Logs</button>
-  <button class="tab"        data-tab="calendar"  onclick="switchTab('calendar')"><i class="fa-solid fa-calendar-days"></i>Calendar</button>
-  <button class="tab"        data-tab="gallery"   onclick="switchTab('gallery')"><i class="fa-solid fa-images"></i>Gallery</button>
-  <button class="tab"        data-tab="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i>Analytics</button>
+  <button class="tab active" data-tab="logs"        onclick="switchTab('logs')"><i class="fa-solid fa-table-list"></i>Logs</button>
+  <button class="tab"        data-tab="calendar"    onclick="switchTab('calendar')"><i class="fa-solid fa-calendar-days"></i>Calendar</button>
+  <button class="tab"        data-tab="gallery"     onclick="switchTab('gallery')"><i class="fa-solid fa-images"></i>Gallery</button>
+  <button class="tab"        data-tab="analytics"   onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i>Analytics</button>
+  <button class="tab"        data-tab="calculator"  onclick="switchTab('calculator')"><i class="fa-solid fa-calculator"></i>Calculator</button>
   <div class="tab-spacer"></div>
-  <button class="tab"        data-tab="settings"  onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
+  <button class="tab"        data-tab="settings"    onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
 </nav>
 
 <div class="tab-content active" id="tab-logs">
@@ -283,6 +298,10 @@ iframe.ready{opacity:1}
 <div class="tab-content" id="tab-analytics">
   <div class="tab-loader" id="loader-analytics"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading analytics…</span></div>
   <iframe id="analyticsFrame" onload="frameReady('analytics')"></iframe>
+</div>
+<div class="tab-content" id="tab-calculator">
+  <div class="tab-loader" id="loader-calculator"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading calculator…</span></div>
+  <iframe id="calcFrame" onload="frameReady('calculator')"></iframe>
 </div>
 
 <!-- ── Settings Panel ── -->
@@ -329,17 +348,11 @@ iframe.ready{opacity:1}
       <div class="ssec">
         <div class="ssec-title"><i class="fa-solid fa-eye"></i>Display Options</div>
         <div class="toggle-row">
-          <div class="tinfo">
-            <div class="tname">Show PNL on Dashboard</div>
-            <div class="tdesc">Running PNL is visible on your journal card</div>
-          </div>
+          <div class="tinfo"><div class="tname">Show PNL on Dashboard</div><div class="tdesc">Running PNL is visible on your journal card</div></div>
           <div class="tswitch on" id="showPnlToggle" onclick="toggleFlag('show_pnl')"></div>
         </div>
         <div class="toggle-row">
-          <div class="tinfo">
-            <div class="tname">Show Capital on Dashboard</div>
-            <div class="tdesc">Account capital shown on your journal card</div>
-          </div>
+          <div class="tinfo"><div class="tname">Show Capital on Dashboard</div><div class="tdesc">Account capital shown on your journal card</div></div>
           <div class="tswitch on" id="showCapToggle" onclick="toggleFlag('show_capital')"></div>
         </div>
       </div>
@@ -398,12 +411,15 @@ iframe.ready{opacity:1}
       <!-- Danger Zone -->
       <div class="ssec full danger-zone">
         <div class="ssec-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div class="danger-actions">
           <div style="font-size:13px;color:var(--muted);flex:1;line-height:1.7">
             <strong style="display:block;font-size:14px;color:var(--text);margin-bottom:3px">Delete This Journal</strong>
             Permanently removes this journal and all its trades, notes, and images. This cannot be undone.
           </div>
-          <button class="btn-danger" onclick="openDelJournal()"><i class="fa-solid fa-trash"></i>Delete Journal</button>
+          <div class="right">
+            <button class="btn-danger" onclick="openDelJournal()"><i class="fa-solid fa-trash"></i>Delete Journal</button>
+            <button class="btn-danger" onclick="openDelAccount()" style="border-color:rgba(255,95,109,.6);background:rgba(255,95,109,.06)"><i class="fa-solid fa-user-xmark"></i>Delete Account</button>
+          </div>
         </div>
       </div>
 
@@ -420,9 +436,7 @@ iframe.ready{opacity:1}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     EXPORT MODAL
-═══════════════════════════════════════════════════ -->
+<!-- ══ EXPORT MODAL ══ -->
 <div class="overlay" id="exportOverlay">
   <div class="modal-box">
     <div class="modal-hdr">
@@ -430,46 +444,29 @@ iframe.ready{opacity:1}
       <button class="modal-close" onclick="closeExport()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <p class="sub">Choose what to include in your export file. The file will be saved as <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px">.json</code> to your downloads folder.</p>
-
+      <p class="sub">Choose what to include in your export file.</p>
       <div class="scope-grid">
-        <!-- Full Backup -->
         <div class="scope-opt active" id="scopeFull" onclick="setScope('full')">
           <div class="sco-icon"><i class="fa-solid fa-database"></i></div>
-          <div class="sco-info">
-            <div class="sco-title">Full Backup</div>
-            <div class="sco-desc">Trades + settings (tags, moods, colors, capital, journal name)</div>
-          </div>
+          <div class="sco-info"><div class="sco-title">Full Backup</div><div class="sco-desc">Trades + settings (tags, moods, colors, capital, journal name)</div></div>
           <div class="sco-check"><i class="fa-solid fa-circle-check"></i></div>
         </div>
-        <!-- Trades Only -->
         <div class="scope-opt" id="scopeTrades" onclick="setScope('trades')">
           <div class="sco-icon"><i class="fa-solid fa-table-list"></i></div>
-          <div class="sco-info">
-            <div class="sco-title">Trades Only</div>
-            <div class="sco-desc">Just trade data — no settings, tags, or configuration</div>
-          </div>
+          <div class="sco-info"><div class="sco-title">Trades Only</div><div class="sco-desc">Just trade data — no settings, tags, or configuration</div></div>
           <div class="sco-check"><i class="fa-regular fa-circle"></i></div>
         </div>
       </div>
-
-      <!-- What's included summary -->
-      <div class="export-summary" id="exportSummary">
-        <div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>
-      </div>
+      <div class="export-summary" id="exportSummary"><div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div></div>
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeExport()">Cancel</button>
-      <button class="btn-primary" id="exportConfirmBtn" onclick="confirmExport()">
-        <i class="fa-solid fa-download"></i>Download .json
-      </button>
+      <button class="btn-primary" id="exportConfirmBtn" onclick="confirmExport()"><i class="fa-solid fa-download"></i>Download .json</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     IMPORT MODAL
-═══════════════════════════════════════════════════ -->
+<!-- ══ IMPORT MODAL ══ -->
 <div class="overlay" id="importOverlay">
   <div class="modal-box">
     <div class="modal-hdr">
@@ -478,57 +475,32 @@ iframe.ready{opacity:1}
     </div>
     <div class="modal-body">
       <p class="sub">Restore trades from a previously exported TradeZona <code style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px">.json</code> file.</p>
-
-      <!-- Drop zone -->
-      <div class="dropzone" id="importDropzone"
-           ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+      <div class="dropzone" id="importDropzone" ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
         <span class="dz-icon"><i class="fa-solid fa-folder-open"></i></span>
         <div class="dz-label">Drop your file here or <strong>click to browse</strong></div>
         <input type="file" id="importFile" accept=".json,application/json" onchange="onFileSelect(event)">
       </div>
-
-      <!-- File badge (shown once file selected) -->
       <div class="file-badge" id="fileBadge">
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-          <i class="fa-solid fa-file-code" style="color:var(--accent2);flex-shrink:0"></i>
-          <span class="fn" id="fileNameLabel">—</span>
-        </div>
-        <button class="clr" onclick="clearFile()" title="Remove file"><i class="fa-solid fa-xmark"></i></button>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0"><i class="fa-solid fa-file-code" style="color:var(--accent2);flex-shrink:0"></i><span class="fn" id="fileNameLabel">—</span></div>
+        <button class="clr" onclick="clearFile()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <!-- Import mode -->
       <div class="mode-lbl">Import Mode</div>
       <div class="mode-grid">
-        <div class="mode-opt active" id="modeReplace" onclick="setMode('replace')">
-          <div class="mt">Replace</div>
-          <div class="md">Delete all current trades and replace with imported data</div>
-        </div>
-        <div class="mode-opt" id="modeMerge" onclick="setMode('merge')">
-          <div class="mt">Merge</div>
-          <div class="md">Keep current trades, add only new ones (skip duplicates)</div>
-        </div>
+        <div class="mode-opt active" id="modeReplace" onclick="setMode('replace')"><div class="mt">Replace</div><div class="md">Delete all current trades and replace</div></div>
+        <div class="mode-opt" id="modeMerge" onclick="setMode('merge')"><div class="mt">Merge</div><div class="md">Keep current trades, add new ones only</div></div>
       </div>
-
-      <!-- Preview (shown once file is parsed) -->
       <div class="preview-box" id="previewBox">
-        <div class="pv-row"><span class="pv-lbl">Trades in file</span>     <span class="pv-val ok"   id="pvTotal">0</span></div>
-        <div class="pv-row" id="pvNewRow"    style="display:none"><span class="pv-lbl">New trades to add</span>  <span class="pv-val ok"   id="pvNew">0</span></div>
-        <div class="pv-row" id="pvDupRow"    style="display:none"><span class="pv-lbl">Already exist (skip)</span><span class="pv-val warn" id="pvDup">0</span></div>
-        <div class="pv-row" id="pvCurRow"                        ><span class="pv-lbl">Current trades (will be replaced)</span><span class="pv-val warn" id="pvCur">0</span></div>
-        <div class="pv-row"><span class="pv-lbl">Contains settings</span>  <span class="pv-val info" id="pvHasSettings">No</span></div>
-        <div class="pv-row"><span class="pv-lbl">Journal in file</span>    <span class="pv-val info" id="pvJournal">—</span></div>
-        <div class="pv-row"><span class="pv-lbl">Exported on</span>        <span class="pv-val info" id="pvDate">—</span></div>
+        <div class="pv-row"><span class="pv-lbl">Trades in file</span><span class="pv-val ok" id="pvTotal">0</span></div>
+        <div class="pv-row" id="pvNewRow" style="display:none"><span class="pv-lbl">New trades to add</span><span class="pv-val ok" id="pvNew">0</span></div>
+        <div class="pv-row" id="pvDupRow" style="display:none"><span class="pv-lbl">Already exist (skip)</span><span class="pv-val warn" id="pvDup">0</span></div>
+        <div class="pv-row" id="pvCurRow"><span class="pv-lbl">Current trades (will be replaced)</span><span class="pv-val warn" id="pvCur">0</span></div>
+        <div class="pv-row"><span class="pv-lbl">Contains settings</span><span class="pv-val info" id="pvHasSettings">No</span></div>
+        <div class="pv-row"><span class="pv-lbl">Journal in file</span><span class="pv-val info" id="pvJournal">—</span></div>
+        <div class="pv-row"><span class="pv-lbl">Exported on</span><span class="pv-val info" id="pvDate">—</span></div>
       </div>
-
-      <!-- Restore settings checkbox (shown only if file has settings) -->
       <div class="settings-restore-row" id="settingsRestoreRow">
-        <label class="restore-chk-label">
-          <input type="checkbox" id="restoreSettingsChk" checked>
-          Restore settings too <span>(tags, moods, colors, capital, journal name)</span>
-        </label>
+        <label class="restore-chk-label"><input type="checkbox" id="restoreSettingsChk" checked>Restore settings too <span>(tags, moods, colors, capital, journal name)</span></label>
       </div>
-
-      <!-- Import progress -->
       <div class="import-progress" id="importProgressBox">
         <div style="font-size:13px;font-weight:500;margin-bottom:4px" id="importProgressLabel">Importing…</div>
         <div class="progress-bar-wrap"><div class="progress-bar" id="importProgressBar"></div></div>
@@ -537,9 +509,7 @@ iframe.ready{opacity:1}
     </div>
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeImport()" id="importCancelBtn">Cancel</button>
-      <button class="btn-primary" id="importConfirmBtn" onclick="confirmImport()" disabled>
-        <i class="fa-solid fa-file-import"></i>Import
-      </button>
+      <button class="btn-primary" id="importConfirmBtn" onclick="confirmImport()" disabled><i class="fa-solid fa-file-import"></i>Import</button>
     </div>
   </div>
 </div>
@@ -558,8 +528,35 @@ iframe.ready{opacity:1}
       <input type="text" id="delConfirmInput" class="field-input" placeholder="Journal name…" oninput="checkDel()">
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="closeDelJournal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s">Cancel</button>
+      <button onclick="closeDelJournal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
       <button id="delConfirmBtn" onclick="executeDelete()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-trash" style="margin-right:6px"></i>Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Account Modal ── -->
+<div class="overlay" id="delAccountOverlay">
+  <div class="del-account-inner">
+    <div class="warning-icon"><i class="fa-solid fa-user-xmark"></i></div>
+    <h3>Delete Your Account?</h3>
+    <p class="sub">This will <strong style="color:#ff5f6d">permanently and irreversibly</strong> delete your entire account. There is no recovery.</p>
+    <div class="warn-list">
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All journals and trade history</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All images and screenshots</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All settings, tags, and moods</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>Your login credentials</div>
+    </div>
+    <div id="delAccFormSection">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Type <strong style="color:var(--text)">DELETE</strong> to confirm:</div>
+      <input type="text" id="delAccConfirm" class="field-input" placeholder="DELETE" oninput="checkDelAcc()" style="margin-bottom:14px">
+      <div style="display:flex;gap:8px">
+        <button onclick="closeDelAccount()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+        <button id="delAccBtn" onclick="executeDeleteAccount()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-user-xmark" style="margin-right:6px"></i>Delete Forever</button>
+      </div>
+    </div>
+    <div class="del-progress" id="delAccProgress">
+      <div class="del-spin"></div>
+      <p id="delAccProgressMsg">Deleting your account…</p>
     </div>
   </div>
 </div>
@@ -570,7 +567,7 @@ iframe.ready{opacity:1}
 // ════════════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════════════
-const TAB_NAMES = ['logs','calendar','gallery','analytics','settings'];
+const TAB_NAMES = ['logs','calendar','gallery','analytics','calculator','settings'];
 let activeTab   = 'logs';
 let journalId   = sessionStorage.getItem('tz_current_journal');
 let journalObj  = null;
@@ -578,12 +575,9 @@ let settings    = null;
 let currentUser = null;
 let userIsPro   = false;
 let isDirty     = false;
-
-// Export/Import state
-let exportScope  = 'full';
-let importMode   = 'replace';
+let exportScope = 'full';
+let importMode  = 'replace';
 let importPayload = null;
-
 const FREE_TAG_LIMIT = 5;
 
 // ── Theme ──────────────────────────────────────────────────
@@ -607,41 +601,22 @@ applyTheme(localStorage.getItem('tl_theme') || 'dark');
   currentUser = await requireAuth();
   if (!currentUser) return;
   if (!journalId) { window.location.href = '/dashboard'; return; }
-
   const profile = await getProfile(currentUser.id);
   userIsPro = profile?.plan === 'pro';
   window._userIsPro = userIsPro;
-
-  // Header
   document.getElementById('hUserName').textContent = profile?.name || currentUser.email;
-  if (userIsPro) {
-    document.getElementById('hPlanBadge').textContent = 'Pro';
-    document.getElementById('hPlanBadge').className = 'plan-badge badge-pro';
-  }
-
-  // Load journal + settings
+  if (userIsPro) { document.getElementById('hPlanBadge').textContent = 'Pro'; document.getElementById('hPlanBadge').className = 'plan-badge badge-pro'; }
   const journals = await getJournals(currentUser.id);
   journalObj = journals.find(j => j.id === journalId);
   if (!journalObj) { window.location.href = '/dashboard'; return; }
   document.getElementById('jnameHdr').textContent = journalObj.name;
   document.title = 'TradeZona — ' + journalObj.name;
   settings = await getJournalSettings(journalId);
-
-  // Broadcast plan to iframes
   broadcastToFrames({ type: 'tz_plan', isPro: userIsPro });
-
-  // Dismiss page loader
   document.getElementById('pageLoader').classList.add('gone');
-  setTimeout(() => {
-    const pl = document.getElementById('pageLoader');
-    if (pl) pl.style.display = 'none';
-  }, 400);
-
-  // If logs frame already loaded before boot finished, hide its loader
+  setTimeout(() => { const pl = document.getElementById('pageLoader'); if (pl) pl.style.display = 'none'; }, 400);
   const logsFrame = document.getElementById('logsFrame');
-  if (logsFrame?.contentDocument?.readyState === 'complete') {
-    frameReady('logs');
-  }
+  if (logsFrame?.contentDocument?.readyState === 'complete') frameReady('logs');
 })();
 
 // ════════════════════════════════════════════════════════
@@ -652,8 +627,7 @@ function goBack() {
   window.location.href = '/dashboard';
 }
 
-// Track which tabs have been loaded
-const loadedTabs = new Set(['logs']); // logs loads on boot
+const loadedTabs = new Set(['logs']);
 
 function switchTab(name) {
   if (activeTab === 'settings' && isDirty && name !== 'settings') {
@@ -666,52 +640,46 @@ function switchTab(name) {
   });
   activeTab = name;
 
-  // Lazy load iframes — only load when first visited, reload on revisit
   const frameMap = {
-    calendar:  { id: 'calFrame',       src: 'calendar.html' },
-    gallery:   { id: 'galFrame',       src: 'gallery.html' },
-    analytics: { id: 'analyticsFrame', src: 'analytics.html' },
+    calendar:   { id: 'calFrame',       src: 'calendar.html' },
+    gallery:    { id: 'galFrame',       src: 'gallery.html' },
+    analytics:  { id: 'analyticsFrame', src: 'analytics.html' },
+    calculator: { id: 'calcFrame',      src: 'calculator.html' },
   };
   if (frameMap[name]) {
     const { id, src } = frameMap[name];
     const frame = document.getElementById(id);
-    // Show loader, hide iframe
     showTabLoader(name);
     frame.classList.remove('ready');
     frame.src = src + '?t=' + Date.now();
     loadedTabs.add(name);
   }
-
   if (name === 'settings') populateSettings();
   document.getElementById('unsavedBar').classList.remove('show');
+
+  // Track calculator usage
+  if (name === 'calculator' && window.posthog) posthog.capture('calculator_tab_opened');
 }
 
 function showTabLoader(name) {
   const loader = document.getElementById('loader-' + name);
-  if (loader) { loader.classList.remove('hidden'); }
+  if (loader) { loader.style.display = ''; loader.classList.remove('hidden'); }
 }
 
 function frameReady(name) {
-  const map = { logs:'logsFrame', calendar:'calFrame', gallery:'galFrame', analytics:'analyticsFrame' };
-  const loaderId = 'loader-' + name;
+  const map = { logs:'logsFrame', calendar:'calFrame', gallery:'galFrame', analytics:'analyticsFrame', calculator:'calcFrame' };
   const f = document.getElementById(map[name]);
-  // Apply theme to iframe
   try { if (f?.contentWindow?.applyTheme) f.contentWindow.applyTheme(localStorage.getItem('tl_theme') || 'dark'); } catch(e){}
-  // Broadcast plan
   try { if (f?.contentWindow) f.contentWindow.postMessage({ type:'tz_plan', isPro: userIsPro }, '*'); } catch(e){}
-  // Fade in iframe, hide loader
   if (f) {
     f.classList.add('ready');
-    const loader = document.getElementById(loaderId);
-    if (loader) {
-      loader.classList.add('hidden');
-      setTimeout(() => { if (loader.classList.contains('hidden')) loader.style.display = 'none'; }, 350);
-    }
+    const loader = document.getElementById('loader-' + name);
+    if (loader) { loader.classList.add('hidden'); setTimeout(() => { if (loader.classList.contains('hidden')) loader.style.display = 'none'; }, 350); }
   }
 }
 
 function broadcastToFrames(msg) {
-  ['logsFrame','calFrame','galFrame','analyticsFrame'].forEach(id => {
+  ['logsFrame','calFrame','galFrame','analyticsFrame','calcFrame'].forEach(id => {
     const f = document.getElementById(id);
     try { if (f?.contentWindow) f.contentWindow.postMessage(msg, '*'); } catch(e){}
   });
@@ -720,111 +688,79 @@ function broadcastToFrames(msg) {
 // ════════════════════════════════════════════════════════
 //  DIRTY TRACKING
 // ════════════════════════════════════════════════════════
-function markDirty()    { isDirty = true;  document.getElementById('unsavedBar').classList.add('show'); }
-function clearDirty()   { isDirty = false; document.getElementById('unsavedBar').classList.remove('show'); }
-function discardChanges() {
-  isDirty = false;
-  document.getElementById('unsavedBar').classList.remove('show');
-  populateSettings();
-}
+function markDirty()  { isDirty = true;  document.getElementById('unsavedBar').classList.add('show'); }
+function clearDirty() { isDirty = false; document.getElementById('unsavedBar').classList.remove('show'); }
+function discardChanges() { isDirty = false; document.getElementById('unsavedBar').classList.remove('show'); populateSettings(); }
 
 // ════════════════════════════════════════════════════════
-//  SETTINGS — POPULATE
+//  SETTINGS
 // ════════════════════════════════════════════════════════
 function populateSettings() {
   if (!journalObj || !settings) return;
   document.getElementById('js-name').value    = journalObj.name    || '';
   document.getElementById('js-capital').value = journalObj.capital || '';
-  document.getElementById('showPnlToggle').classList.toggle('on', journalObj.show_pnl     !== false);
+  document.getElementById('showPnlToggle').classList.toggle('on', journalObj.show_pnl !== false);
   document.getElementById('showCapToggle').classList.toggle('on', journalObj.show_capital !== false);
-  // PIN note for Pro
   document.getElementById('pinProNote').textContent = userIsPro ? '' : '(Pro plan)';
-  renderPinSection();
-  renderTagLists();
-  renderMoodGrid();
-  renderExportImport();
+  renderPinSection(); renderTagLists(); renderMoodGrid(); renderExportImport();
   clearDirty();
 }
 
-// ════════════════════════════════════════════════════════
-//  PIN
-// ════════════════════════════════════════════════════════
+// ── PIN ───────────────────────────────────────────────
 function renderPinSection() {
   const hasPin = !!(journalObj?.pin_hash);
   const badge  = document.getElementById('pinBadge');
   const actRow = document.getElementById('pinActionsRow');
   const fields = document.getElementById('pinFields');
-
   if (!userIsPro) {
     badge.className = 'pin-none-badge';
     badge.innerHTML = '<i class="fa-solid fa-lock"></i> Pro only';
     actRow.innerHTML = `<button class="btn-pin" onclick="window.location.href='/subscription'" style="font-size:11px"><i class="fa-solid fa-arrow-up"></i> Upgrade</button>`;
-    fields.classList.remove('show');
-    return;
+    fields.classList.remove('show'); return;
   }
-
   if (hasPin) {
     badge.className = 'pin-active-badge';
     badge.innerHTML = '<i class="fa-solid fa-lock"></i> PIN Active';
-    actRow.innerHTML = `
-      <button class="btn-pin" onclick="showPinFields()" id="pinChangeBtn"><i class="fa-solid fa-pen"></i> Change</button>
-      <button class="btn-pin btn-pin-remove" onclick="removePin()"><i class="fa-solid fa-lock-open"></i> Remove</button>`;
+    actRow.innerHTML = `<button class="btn-pin" onclick="showPinFields()"><i class="fa-solid fa-pen"></i> Change</button><button class="btn-pin btn-pin-remove" onclick="removePin()"><i class="fa-solid fa-lock-open"></i> Remove</button>`;
   } else {
     badge.className = 'pin-none-badge';
     badge.innerHTML = '<i class="fa-solid fa-lock-open"></i> No PIN set';
     actRow.innerHTML = `<button class="btn-pin" onclick="showPinFields()"><i class="fa-solid fa-plus"></i> Add PIN</button>`;
   }
   fields.classList.remove('show');
-  document.getElementById('pinNew').value     = '';
+  document.getElementById('pinNew').value = '';
   document.getElementById('pinConfirm').value = '';
   document.getElementById('pinMismatch').style.display = 'none';
 }
 
-function showPinFields() {
-  document.getElementById('pinFields').classList.add('show');
-  document.getElementById('pinNew').focus();
-}
+function showPinFields() { document.getElementById('pinFields').classList.add('show'); document.getElementById('pinNew').focus(); }
 
 async function removePin() {
   if (!confirm('Remove the PIN from this journal?')) return;
-  try {
-    await updateJournal(journalId, { pin_hash: null });
-    journalObj.pin_hash = null;
-    renderPinSection();
-    showToast('PIN removed.', 'fa-solid fa-lock-open');
-  } catch(e) { showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation'); }
+  try { await updateJournal(journalId, { pin_hash: null }); journalObj.pin_hash = null; renderPinSection(); showToast('PIN removed.', 'fa-solid fa-lock-open'); }
+  catch(e) { showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation'); }
 }
 
-// ════════════════════════════════════════════════════════
-//  SAVE JOURNAL SETTINGS
-// ════════════════════════════════════════════════════════
+// ── Save journal settings ─────────────────────────────
 async function saveJournalSettings() {
   const name    = document.getElementById('js-name').value.trim();
   const capital = document.getElementById('js-capital').value.trim();
   const pinNew  = document.getElementById('pinNew').value.trim();
   const pinConf = document.getElementById('pinConfirm').value.trim();
   const updates = {};
-
-  if (name)              updates.name    = name;
-  if (capital !== '')    updates.capital = parseFloat(capital) || null;
-
-  // PIN update only for Pro
+  if (name)           updates.name    = name;
+  if (capital !== '') updates.capital = parseFloat(capital) || null;
   if (userIsPro && document.getElementById('pinFields').classList.contains('show') && pinNew) {
     if (pinNew.length < 4) { showToast('PIN must be at least 4 digits.', 'fa-solid fa-circle-exclamation'); return; }
     if (pinNew !== pinConf) { document.getElementById('pinMismatch').style.display = 'block'; return; }
     updates.pin_hash = await hashPin(pinNew);
     document.getElementById('pinMismatch').style.display = 'none';
   }
-
   try {
     await updateJournal(journalId, updates);
     Object.assign(journalObj, updates);
-    if (name) {
-      document.getElementById('jnameHdr').textContent = name;
-      document.title = 'TradeZona — ' + name;
-    }
-    renderPinSection();
-    clearDirty();
+    if (name) { document.getElementById('jnameHdr').textContent = name; document.title = 'TradeZona — ' + name; }
+    renderPinSection(); clearDirty();
     const m = document.getElementById('savedMsg');
     m.classList.add('show'); setTimeout(() => m.classList.remove('show'), 2500);
   } catch(e) { showToast('Save failed: ' + e.message, 'fa-solid fa-circle-exclamation'); }
@@ -838,33 +774,26 @@ async function toggleFlag(field) {
   await updateJournal(journalId, { [field]: !cur });
 }
 
-// ════════════════════════════════════════════════════════
-//  TAGS
-// ════════════════════════════════════════════════════════
+// ── Tags ──────────────────────────────────────────────
 function renderTagLists() {
-  renderTagList('strategies', 'stratList', 'stratHint');
-  renderTagList('timeframes',  'tfList',   'tfHint');
-  renderTagList('pairs',       'pairList', 'pairHint');
+  renderTagList('strategies','stratList','stratHint');
+  renderTagList('timeframes','tfList','tfHint');
+  renderTagList('pairs','pairList','pairHint');
 }
 
 function renderTagList(key, listId, hintId) {
   const list  = settings?.[key] || [];
-  const limit = FREE_TAG_LIMIT;
-  const atLim = !userIsPro && list.length >= limit;
-
+  const atLim = !userIsPro && list.length >= FREE_TAG_LIMIT;
   document.getElementById(listId).innerHTML = list.map(t =>
-    `<span class="stag">${esc(t)}<button class="rm" onclick="removeTag('${key}','${esc(t)}')" title="Remove"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></span>`
+    `<span class="stag">${esc(t)}<button class="rm" onclick="removeTag('${key}','${esc(t)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></span>`
   ).join('');
-
   const hint = document.getElementById(hintId);
   if (!userIsPro) {
-    hint.style.cssText = `display:flex;color:${atLim ? '#f59e0b' : 'var(--muted)'}`;
+    hint.style.cssText = `display:flex;color:${atLim?'#f59e0b':'var(--muted)'}`;
     hint.innerHTML = atLim
-      ? `<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached (${limit} tags on Free). <a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade for 10</a>`
-      : `<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${list.length}/${limit} tags used on Free plan`;
-  } else {
-    hint.style.display = 'none';
-  }
+      ? `<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached (${FREE_TAG_LIMIT} on Free). <a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade for 10</a>`
+      : `<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${list.length}/${FREE_TAG_LIMIT} tags used`;
+  } else { hint.style.display = 'none'; }
 }
 
 async function addTag(key, inputId) {
@@ -872,10 +801,7 @@ async function addTag(key, inputId) {
   let val = inp.value.trim(); if (!val) return;
   if (key === 'pairs') val = val.toUpperCase();
   const list = settings[key] || [];
-  if (!userIsPro && list.length >= FREE_TAG_LIMIT) {
-    showToast(`Free plan: max ${FREE_TAG_LIMIT} tags. Upgrade to Pro for 10.`, 'fa-solid fa-lock');
-    return;
-  }
+  if (!userIsPro && list.length >= FREE_TAG_LIMIT) { showToast(`Free plan: max ${FREE_TAG_LIMIT} tags.`, 'fa-solid fa-lock'); return; }
   if (!list.find(x => x.toLowerCase() === val.toLowerCase())) {
     settings[key] = [...list, val];
     await updateJournalSettings(journalId, { [key]: settings[key] });
@@ -890,436 +816,219 @@ async function removeTag(key, val) {
   renderTagLists();
 }
 
-// ════════════════════════════════════════════════════════
-//  MOODS
-// ════════════════════════════════════════════════════════
+// ── Moods ─────────────────────────────────────────────
 function renderMoodGrid() {
-  const moods  = settings?.moods || [];
-  const colors = settings?.mood_colors || {};
-  const grid   = document.getElementById('moodGrid');
-  const hint   = document.getElementById('moodHint');
-
+  const moods = settings?.moods || [], colors = settings?.mood_colors || {};
+  const grid = document.getElementById('moodGrid'), hint = document.getElementById('moodHint');
   grid.innerHTML = moods.length
-    ? moods.map(m => {
-        const col = colors[m] || '#8fa39a';
-        const [r,g,b] = [col.slice(1,3), col.slice(3,5), col.slice(5,7)].map(x => parseInt(x,16));
-        return `<div class="mtag" style="background:rgba(${r},${g},${b},.15);color:${col};border-color:rgba(${r},${g},${b},.35)">
-          <input type="color" class="mtag-color" value="${col}" style="background:${col}" oninput="updateMoodColor('${esc(m)}',this.value)" title="Change color">
-          <span>${esc(m)}</span>
-          <button class="mtag-rm" onclick="removeMoodTag('${esc(m)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button>
-        </div>`;
+    ? moods.map(m => { const col = colors[m] || '#8fa39a'; const [r,g,b] = [col.slice(1,3),col.slice(3,5),col.slice(5,7)].map(x=>parseInt(x,16));
+        return `<div class="mtag" style="background:rgba(${r},${g},${b},.15);color:${col};border-color:rgba(${r},${g},${b},.35)"><input type="color" class="mtag-color" value="${col}" style="background:${col}" oninput="updateMoodColor('${esc(m)}',this.value)"><span>${esc(m)}</span><button class="mtag-rm" onclick="removeMoodTag('${esc(m)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></div>`;
       }).join('')
-    : '<span style="font-size:12px;color:var(--muted)">No moods yet. Add one below.</span>';
-
+    : '<span style="font-size:12px;color:var(--muted)">No moods yet.</span>';
   const atLim = !userIsPro && moods.length >= FREE_TAG_LIMIT;
-  if (!userIsPro) {
-    hint.style.cssText = `display:flex;color:${atLim ? '#f59e0b' : 'var(--muted)'}`;
-    hint.innerHTML = atLim
-      ? `<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached (${FREE_TAG_LIMIT} moods on Free). <a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade</a>`
-      : `<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${moods.length}/${FREE_TAG_LIMIT} moods used on Free plan`;
-  } else { hint.style.display = 'none'; }
+  if (!userIsPro) { hint.style.cssText=`display:flex;color:${atLim?'#f59e0b':'var(--muted)'}`;hint.innerHTML=atLim?`<i class="fa-solid fa-lock" style="margin-right:5px;color:#f59e0b"></i>Limit reached.<a href="/subscription" style="color:var(--accent2);text-decoration:none;margin-left:4px;font-weight:600">Upgrade</a>`:`<i class="fa-solid fa-info-circle" style="margin-right:5px"></i>${moods.length}/${FREE_TAG_LIMIT} moods`; }
+  else { hint.style.display='none'; }
 }
 
 async function addMoodTag() {
-  const inp = document.getElementById('moodInput');
-  const col = document.getElementById('moodColor').value;
-  const val = inp.value.trim(); if (!val) return;
-  const moods = settings.moods || [];
-  if (!userIsPro && moods.length >= FREE_TAG_LIMIT) {
-    showToast(`Free plan: max ${FREE_TAG_LIMIT} moods. Upgrade for more.`, 'fa-solid fa-lock');
-    return;
-  }
-  if (!moods.find(m => m.toLowerCase() === val.toLowerCase())) {
-    settings.moods = [...moods, val];
-    settings.mood_colors = { ...settings.mood_colors, [val]: col };
-    await updateJournalSettings(journalId, { moods: settings.moods, mood_colors: settings.mood_colors });
-    renderMoodGrid(); broadcastSettings();
-  }
-  inp.value = ''; document.getElementById('moodColor').value = '#8fa39a';
+  const inp=document.getElementById('moodInput'), col=document.getElementById('moodColor').value, val=inp.value.trim(); if(!val)return;
+  const moods=settings.moods||[];
+  if(!userIsPro&&moods.length>=FREE_TAG_LIMIT){showToast(`Free plan: max ${FREE_TAG_LIMIT} moods.`,'fa-solid fa-lock');return;}
+  if(!moods.find(m=>m.toLowerCase()===val.toLowerCase())){settings.moods=[...moods,val];settings.mood_colors={...settings.mood_colors,[val]:col};await updateJournalSettings(journalId,{moods:settings.moods,mood_colors:settings.mood_colors});renderMoodGrid();broadcastSettings();}
+  inp.value='';document.getElementById('moodColor').value='#8fa39a';
 }
 
 async function removeMoodTag(val) {
-  settings.moods = settings.moods.filter(m => m !== val);
-  const c = { ...settings.mood_colors }; delete c[val]; settings.mood_colors = c;
-  await updateJournalSettings(journalId, { moods: settings.moods, mood_colors: settings.mood_colors });
-  renderMoodGrid(); broadcastSettings();
+  settings.moods=settings.moods.filter(m=>m!==val);const c={...settings.mood_colors};delete c[val];settings.mood_colors=c;
+  await updateJournalSettings(journalId,{moods:settings.moods,mood_colors:settings.mood_colors});renderMoodGrid();broadcastSettings();
 }
 
-async function updateMoodColor(mood, color) {
-  settings.mood_colors = { ...settings.mood_colors, [mood]: color };
-  await updateJournalSettings(journalId, { mood_colors: settings.mood_colors });
-  renderMoodGrid(); broadcastSettings();
+async function updateMoodColor(mood,color) {
+  settings.mood_colors={...settings.mood_colors,[mood]:color};
+  await updateJournalSettings(journalId,{mood_colors:settings.mood_colors});renderMoodGrid();broadcastSettings();
 }
 
-function broadcastSettings() { broadcastToFrames({ type: 'tz_settings_updated' }); }
+function broadcastSettings(){broadcastToFrames({type:'tz_settings_updated'});}
 
 // ════════════════════════════════════════════════════════
-//  EXPORT / IMPORT SECTION RENDER
+//  EXPORT / IMPORT SECTION
 // ════════════════════════════════════════════════════════
 function renderExportImport() {
   const el = document.getElementById('exportImportContent');
   if (!userIsPro) {
-    el.innerHTML = `
-      <div class="pro-lock-section">
-        <i class="fa-solid fa-lock lock-icon"></i>
-        <h4>Pro Feature — Export &amp; Import</h4>
-        <p>Back up your entire journal as a <strong>.json</strong> file — trades, settings, tags, moods and more. Restore it on any device. Available exclusively on the Pro plan.</p>
-        <button class="btn-upgrade" onclick="window.location.href='/subscription'">
-          <i class="fa-solid fa-arrow-up"></i> Upgrade to Pro
-        </button>
-      </div>`;
+    el.innerHTML=`<div class="pro-lock-section"><i class="fa-solid fa-lock lock-icon"></i><h4>Pro Feature — Export &amp; Import</h4><p>Back up your entire journal as a <strong>.json</strong> file or export to <strong>.csv</strong> for Excel. Available on the Pro plan.</p><button class="btn-upgrade" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button></div>`;
     return;
   }
-  el.innerHTML = `
+  el.innerHTML=`
     <div class="io-grid">
-      <button class="io-btn export-btn" onclick="openExport()">
-        <div class="io-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
-        <div class="io-label">Export Journal</div>
-        <div class="io-desc">Download all trades and/or settings as a .json backup file</div>
-      </button>
-      <button class="io-btn" onclick="openImport()">
-        <div class="io-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
-        <div class="io-label">Import Journal</div>
-        <div class="io-desc">Restore trades from a previously exported .json backup file</div>
-      </button>
+      <button class="io-btn export-btn" onclick="openExport()"><div class="io-icon"><i class="fa-solid fa-file-arrow-down"></i></div><div class="io-label">JSON Backup</div><div class="io-desc">Full backup with settings</div></button>
+      <button class="io-btn csv-btn" onclick="exportCSV()"><div class="io-icon"><i class="fa-solid fa-file-csv"></i></div><div class="io-label">CSV Export</div><div class="io-desc">Open in Excel / Sheets</div></button>
+      <button class="io-btn" onclick="openImport()"><div class="io-icon"><i class="fa-solid fa-file-arrow-up"></i></div><div class="io-label">Import</div><div class="io-desc">Restore from .json file</div></button>
     </div>
-    <div class="io-note">
-      <i class="fa-solid fa-circle-info"></i>
-      <span>Export regularly to back up your trades. Use <strong>Full Backup</strong> to include all settings, or <strong>Trades Only</strong> for just trade data. Import supports <strong>Replace</strong> (overwrite) and <strong>Merge</strong> (append new only) modes.</span>
-    </div>`;
+    <div class="io-note"><i class="fa-solid fa-circle-info"></i><span>CSV exports all trade fields for use in Excel or Google Sheets. JSON export is for full backup &amp; restore.</span></div>`;
 }
 
-// ════════════════════════════════════════════════════════
-//  EXPORT LOGIC
-// ════════════════════════════════════════════════════════
-function openExport() {
-  exportScope = 'full';
-  setScope('full');
-  document.getElementById('exportOverlay').classList.add('open');
+// ── CSV Export ────────────────────────────────────────
+async function exportCSV() {
+  if (window.posthog) posthog.capture('csv_exported');
+  try {
+    const trades = await getTrades(journalId);
+    const rows = trades.map(dbToTrade);
+    const headers = ['Date','Time','Pair','Position','Strategy','Timeframe','PnL','R Factor','Confidence','Mood','Notes'];
+    const escape = v => {
+      const s = String(v == null ? '' : v);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+    };
+    const lines = [
+      headers.join(','),
+      ...rows.map(t => [
+        t.date, t.time, t.pair, t.position,
+        (t.strategy||[]).join(';'), (t.timeframe||[]).join(';'),
+        t.pnl, t.r, t.confidence,
+        (t.mood||[]).join(';'), t.notes
+      ].map(escape).join(','))
+    ];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const fname = `${(journalObj.name||'trades').replace(/[^a-z0-9]/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+    const a = Object.assign(document.createElement('a'), { href: url, download: fname });
+    a.click(); URL.revokeObjectURL(url);
+    showToast(`Exported ${rows.length} trades as CSV`, 'fa-solid fa-circle-check');
+  } catch(e) { showToast('CSV export failed: ' + e.message, 'fa-solid fa-circle-exclamation'); }
 }
-function closeExport() { document.getElementById('exportOverlay').classList.remove('open'); }
 
-function setScope(scope) {
-  exportScope = scope;
-  ['full','trades'].forEach(s => {
-    const opt = document.getElementById('scope' + (s === 'full' ? 'Full' : 'Trades'));
-    const isActive = s === scope;
-    opt.classList.toggle('active', isActive);
-    opt.querySelector('.sco-check').innerHTML = isActive
-      ? '<i class="fa-solid fa-circle-check"></i>'
-      : '<i class="fa-regular fa-circle"></i>';
-  });
+// ── JSON Export ───────────────────────────────────────
+function openExport(){exportScope='full';setScope('full');document.getElementById('exportOverlay').classList.add('open');}
+function closeExport(){document.getElementById('exportOverlay').classList.remove('open');}
+
+function setScope(scope){
+  exportScope=scope;
+  ['full','trades'].forEach(s=>{const opt=document.getElementById('scope'+(s==='full'?'Full':'Trades'));const a=s===scope;opt.classList.toggle('active',a);opt.querySelector('.sco-check').innerHTML=a?'<i class="fa-solid fa-circle-check"></i>':'<i class="fa-regular fa-circle"></i>';});
   refreshExportSummary();
 }
 
-async function refreshExportSummary() {
-  const el = document.getElementById('exportSummary');
-  el.innerHTML = '<div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading trade count…</div>';
-  const trades = await getTrades(journalId);
-  const s = settings || {};
-  const isFull = exportScope === 'full';
-  el.innerHTML = `
-    <div class="es-row included"><i class="fa-solid fa-check"></i> ${trades.length} trade${trades.length !== 1 ? 's' : ''} (with notes &amp; images)</div>
-    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.strategies||[]).length} strategy tags</div>
-    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.timeframes||[]).length} timeframe tags</div>
-    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.pairs||[]).length} pair suggestions</div>
-    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> ${(s.moods||[]).length} mood tags &amp; colors</div>
-    <div class="es-row ${isFull ? 'included' : ''}"><i class="fa-solid fa-${isFull ? 'check' : 'xmark'}"></i> Capital ($${journalObj.capital || 0}) &amp; journal name</div>`;
+async function refreshExportSummary(){
+  const el=document.getElementById('exportSummary');el.innerHTML='<div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>';
+  const trades=await getTrades(journalId);const s=settings||{};const isFull=exportScope==='full';
+  el.innerHTML=`<div class="es-row included"><i class="fa-solid fa-check"></i> ${trades.length} trade${trades.length!==1?'s':''}</div>
+<div class="es-row ${isFull?'included':''}"><i class="fa-solid fa-${isFull?'check':'xmark'}"></i> ${(s.strategies||[]).length} strategy tags</div>
+<div class="es-row ${isFull?'included':''}"><i class="fa-solid fa-${isFull?'check':'xmark'}"></i> ${(s.moods||[]).length} mood tags</div>
+<div class="es-row ${isFull?'included':''}"><i class="fa-solid fa-${isFull?'check':'xmark'}"></i> Capital &amp; journal name</div>`;
 }
 
-async function confirmExport() {
-  const btn = document.getElementById('exportConfirmBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
-  try {
-    const trades  = await getTrades(journalId);
-    const isFull  = exportScope === 'full';
-    const payload = {
-      _meta: {
-        version:     '2.0',
-        app:         'TradeZona',
-        journalName: journalObj.name,
-        exportedAt:  new Date().toISOString(),
-        exportScope: exportScope,
-        tradeCount:  trades.length,
-      },
-      trades: trades.map(dbToTrade),
-      ...(isFull && settings ? {
-        settings: {
-          strategies:  settings.strategies  || [],
-          timeframes:  settings.timeframes  || [],
-          pairs:       settings.pairs       || [],
-          moods:       settings.moods       || [],
-          mood_colors: settings.mood_colors || {},
-          capital:     journalObj.capital,
-          journalName: journalObj.name,
-        }
-      } : {})
-    };
-
-    const json  = JSON.stringify(payload, null, 2);
-    const blob  = new Blob([json], { type: 'application/json' });
-    const url   = URL.createObjectURL(blob);
-    const fname = `${journalObj.name.replace(/[^a-z0-9]/gi,'_')}_${exportScope}_${new Date().toISOString().slice(0,10)}.json`;
-    const a     = Object.assign(document.createElement('a'), { href: url, download: fname });
-    a.click();
-    URL.revokeObjectURL(url);
-    closeExport();
-    showToast(`Exported ${trades.length} trades!`, 'fa-solid fa-circle-check');
-  } catch(e) {
-    showToast('Export failed: ' + e.message, 'fa-solid fa-circle-exclamation');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-download"></i>Download .json';
-  }
+async function confirmExport(){
+  const btn=document.getElementById('exportConfirmBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
+  if (window.posthog) posthog.capture('json_exported', { scope: exportScope });
+  try{
+    const trades=await getTrades(journalId);const isFull=exportScope==='full';
+    const payload={_meta:{version:'2.0',app:'TradeZona',journalName:journalObj.name,exportedAt:new Date().toISOString(),exportScope:exportScope,tradeCount:trades.length},trades:trades.map(dbToTrade),...(isFull&&settings?{settings:{strategies:settings.strategies||[],timeframes:settings.timeframes||[],pairs:settings.pairs||[],moods:settings.moods||[],mood_colors:settings.mood_colors||{},capital:journalObj.capital,journalName:journalObj.name}}:{})};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const fname=`${journalObj.name.replace(/[^a-z0-9]/gi,'_')}_${exportScope}_${new Date().toISOString().slice(0,10)}.json`;
+    Object.assign(document.createElement('a'),{href:url,download:fname}).click();URL.revokeObjectURL(url);
+    closeExport();showToast(`Exported ${trades.length} trades!`,'fa-solid fa-circle-check');
+  }catch(e){showToast('Export failed: '+e.message,'fa-solid fa-circle-exclamation');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-download"></i>Download .json';}
 }
 
-// ════════════════════════════════════════════════════════
-//  IMPORT LOGIC
-// ════════════════════════════════════════════════════════
-function openImport() {
-  importPayload = null;
-  clearFile();
-  setMode('replace');
-  document.getElementById('previewBox').classList.remove('show');
-  document.getElementById('settingsRestoreRow').classList.remove('show');
-  document.getElementById('importProgressBox').classList.remove('show');
-  document.getElementById('importConfirmBtn').disabled = true;
-  document.getElementById('importOverlay').classList.add('open');
-}
-function closeImport() { document.getElementById('importOverlay').classList.remove('open'); }
+// ── Import ────────────────────────────────────────────
+function openImport(){importPayload=null;clearFile();setMode('replace');document.getElementById('previewBox').classList.remove('show');document.getElementById('settingsRestoreRow').classList.remove('show');document.getElementById('importProgressBox').classList.remove('show');document.getElementById('importConfirmBtn').disabled=true;document.getElementById('importOverlay').classList.add('open');}
+function closeImport(){document.getElementById('importOverlay').classList.remove('open');}
+function setMode(m){importMode=m;document.getElementById('modeReplace').classList.toggle('active',m==='replace');document.getElementById('modeMerge').classList.toggle('active',m==='merge');if(importPayload)refreshImportPreview();}
+function dzOver(e){e.preventDefault();document.getElementById('importDropzone').classList.add('over');}
+function dzLeave(){document.getElementById('importDropzone').classList.remove('over');}
+function dzDrop(e){e.preventDefault();dzLeave();const f=e.dataTransfer.files[0];if(f)loadFile(f);}
+function onFileSelect(e){const f=e.target.files[0];if(f)loadFile(f);}
+function clearFile(){importPayload=null;document.getElementById('fileBadge').classList.remove('show');document.getElementById('fileNameLabel').textContent='—';document.getElementById('previewBox').classList.remove('show');document.getElementById('settingsRestoreRow').classList.remove('show');document.getElementById('importFile').value='';document.getElementById('importConfirmBtn').disabled=true;}
 
-function setMode(mode) {
-  importMode = mode;
-  document.getElementById('modeReplace').classList.toggle('active', mode === 'replace');
-  document.getElementById('modeMerge').classList.toggle('active',  mode === 'merge');
-  if (importPayload) refreshImportPreview();
+function loadFile(file){
+  const r=new FileReader();
+  r.onload=e=>{try{const p=JSON.parse(e.target.result);importPayload=Array.isArray(p)?{_meta:{journalName:'Unknown',exportedAt:null,tradeCount:p.length},trades:p}:p.trades&&Array.isArray(p.trades)?p:null;if(!importPayload){showToast('Invalid file.','fa-solid fa-circle-exclamation');return;}document.getElementById('fileNameLabel').textContent=file.name;document.getElementById('fileBadge').classList.add('show');refreshImportPreview();document.getElementById('importConfirmBtn').disabled=false;}catch{showToast('Could not parse file.','fa-solid fa-circle-exclamation');}};r.readAsText(file);
 }
 
-// Drag/drop
-function dzOver(e)  { e.preventDefault(); document.getElementById('importDropzone').classList.add('over'); }
-function dzLeave()  { document.getElementById('importDropzone').classList.remove('over'); }
-function dzDrop(e)  { e.preventDefault(); dzLeave(); const f = e.dataTransfer.files[0]; if (f) loadFile(f); }
-function onFileSelect(e) { const f = e.target.files[0]; if (f) loadFile(f); }
-
-function clearFile() {
-  importPayload = null;
-  document.getElementById('fileBadge').classList.remove('show');
-  document.getElementById('fileNameLabel').textContent = '—';
-  document.getElementById('previewBox').classList.remove('show');
-  document.getElementById('settingsRestoreRow').classList.remove('show');
-  document.getElementById('importFile').value = '';
-  setImportBtnState(false);
+async function refreshImportPreview(){
+  if(!importPayload)return;document.getElementById('previewBox').classList.add('show');
+  const incoming=importPayload.trades||[];const current=await getTrades(journalId);const currentIds=new Set(current.map(t=>t.id));
+  const dups=incoming.filter(t=>currentIds.has(t.id)).length;const newCount=incoming.length-dups;const hasSettings=!!(importPayload.settings);
+  document.getElementById('pvTotal').textContent=incoming.length;document.getElementById('pvJournal').textContent=importPayload._meta?.journalName||'—';
+  const rd=importPayload._meta?.exportedAt;document.getElementById('pvDate').textContent=rd?new Date(rd).toLocaleString():'—';
+  document.getElementById('pvHasSettings').textContent=hasSettings?'Yes':'No';
+  if(importMode==='merge'){document.getElementById('pvNewRow').style.display='';document.getElementById('pvDupRow').style.display=dups>0?'':'none';document.getElementById('pvCurRow').style.display='none';document.getElementById('pvNew').textContent=newCount;document.getElementById('pvDup').textContent=dups;}
+  else{document.getElementById('pvNewRow').style.display='none';document.getElementById('pvDupRow').style.display='none';document.getElementById('pvCurRow').style.display='';document.getElementById('pvCur').textContent=current.length;}
+  document.getElementById('settingsRestoreRow').classList.toggle('show',hasSettings);
 }
 
-function setImportBtnState(enabled) {
-  const btn = document.getElementById('importConfirmBtn');
-  btn.disabled = !enabled;
-}
-
-function loadFile(file) {
-  if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json') {
-    showToast('Please select a valid .json export file.', 'fa-solid fa-circle-exclamation');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      // Support both plain array and wrapped format
-      if (Array.isArray(parsed)) {
-        importPayload = {
-          _meta:  { journalName: 'Unknown', exportedAt: null, tradeCount: parsed.length, exportScope: 'trades' },
-          trades: parsed,
-        };
-      } else if (parsed.trades && Array.isArray(parsed.trades)) {
-        importPayload = parsed;
-      } else {
-        showToast('Invalid file — expected a TradeZona export.', 'fa-solid fa-circle-exclamation');
-        return;
-      }
-      document.getElementById('fileNameLabel').textContent = file.name;
-      document.getElementById('fileBadge').classList.add('show');
-      refreshImportPreview();
-      setImportBtnState(true);
-    } catch(err) {
-      showToast('Could not parse file. Make sure it is a valid JSON file.', 'fa-solid fa-circle-exclamation');
-    }
-  };
-  reader.readAsText(file);
-}
-
-async function refreshImportPreview() {
-  if (!importPayload) return;
-  const previewBox = document.getElementById('previewBox');
-  previewBox.classList.add('show');
-
-  const incoming   = importPayload.trades || [];
-  const current    = await getTrades(journalId);
-  const currentIds = new Set(current.map(t => t.id));
-  const dups       = incoming.filter(t => currentIds.has(t.id)).length;
-  const newCount   = incoming.length - dups;
-  const hasSettings = !!(importPayload.settings);
-
-  document.getElementById('pvTotal').textContent  = incoming.length;
-  document.getElementById('pvJournal').textContent = importPayload._meta?.journalName || '—';
-  const rawDate = importPayload._meta?.exportedAt;
-  document.getElementById('pvDate').textContent = rawDate ? new Date(rawDate).toLocaleString() : '—';
-  document.getElementById('pvHasSettings').textContent = hasSettings ? 'Yes' : 'No';
-
-  if (importMode === 'merge') {
-    document.getElementById('pvNewRow').style.display = '';
-    document.getElementById('pvDupRow').style.display = dups > 0 ? '' : 'none';
-    document.getElementById('pvCurRow').style.display = 'none';
-    document.getElementById('pvNew').textContent = newCount;
-    document.getElementById('pvDup').textContent = dups;
-  } else {
-    document.getElementById('pvNewRow').style.display = 'none';
-    document.getElementById('pvDupRow').style.display = 'none';
-    document.getElementById('pvCurRow').style.display = '';
-    document.getElementById('pvCur').textContent = current.length;
-  }
-
-  // Show "restore settings" checkbox only if file has settings
-  const restoreRow = document.getElementById('settingsRestoreRow');
-  restoreRow.classList.toggle('show', hasSettings);
-}
-
-async function confirmImport() {
-  if (!importPayload) return;
-
-  const incoming = importPayload.trades || [];
-  const confirmBtn = document.getElementById('importConfirmBtn');
-  const cancelBtn  = document.getElementById('importCancelBtn');
-
-  // Lock UI
-  confirmBtn.disabled = true;
-  cancelBtn.disabled  = true;
-  document.getElementById('importProgressBox').classList.add('show');
-
-  const setProgress = (pct, label) => {
-    document.getElementById('importProgressBar').style.width  = pct + '%';
-    document.getElementById('importProgressSub').textContent  = label;
-  };
-
-  try {
-    const current    = await getTrades(journalId);
-    const currentIds = new Set(current.map(t => t.id));
-    let finalCount   = 0;
-
-    if (importMode === 'replace') {
-      // Step 1 — delete existing
-      document.getElementById('importProgressLabel').textContent = 'Deleting existing trades…';
-      setProgress(5, `0 / ${current.length} deleted`);
-      for (let i = 0; i < current.length; i++) {
-        await deleteTrade(current[i].id);
-        setProgress(5 + Math.round((i+1)/current.length * 35), `${i+1} / ${current.length} deleted`);
-      }
-      // Step 2 — insert all incoming
-      document.getElementById('importProgressLabel').textContent = 'Importing trades…';
-      for (let i = 0; i < incoming.length; i++) {
-        const t = incoming[i];
-        // Strip old ID — let DB create a new one
-        const { id: _id, ...tradeData } = t;
-        await createTrade(currentUser.id, journalId, tradeData);
-        finalCount++;
-        setProgress(40 + Math.round((i+1)/incoming.length * 50), `${i+1} / ${incoming.length} imported`);
-      }
-    } else {
-      // Merge — only add trades not already in DB
-      const newTrades = incoming.filter(t => !currentIds.has(t.id));
-      document.getElementById('importProgressLabel').textContent = 'Merging trades…';
-      for (let i = 0; i < newTrades.length; i++) {
-        const { id: _id, ...tradeData } = newTrades[i];
-        await createTrade(currentUser.id, journalId, tradeData);
-        finalCount++;
-        setProgress(10 + Math.round((i+1)/newTrades.length * 80), `${i+1} / ${newTrades.length} added`);
-      }
-      finalCount = current.length + newTrades.length;
-    }
-
-    // Step 3 — restore settings if requested
-    const hasSettings  = !!(importPayload.settings);
-    const shouldRestore = hasSettings && document.getElementById('restoreSettingsChk')?.checked;
-    if (shouldRestore) {
-      setProgress(95, 'Restoring settings…');
-      const s = importPayload.settings;
-      const settingsUpdate = {};
-      if (s.strategies)  settingsUpdate.strategies  = s.strategies;
-      if (s.timeframes)  settingsUpdate.timeframes  = s.timeframes;
-      if (s.pairs)       settingsUpdate.pairs       = s.pairs;
-      if (s.moods)       settingsUpdate.moods       = s.moods;
-      if (s.mood_colors) settingsUpdate.mood_colors = s.mood_colors;
-      await updateJournalSettings(journalId, settingsUpdate);
-      settings = { ...settings, ...settingsUpdate };
-
-      const jUpdates = {};
-      if (s.capital)     jUpdates.capital = s.capital;
-      if (s.journalName) jUpdates.name    = s.journalName;
-      if (Object.keys(jUpdates).length) {
-        await updateJournal(journalId, jUpdates);
-        Object.assign(journalObj, jUpdates);
-        if (s.journalName) {
-          document.getElementById('jnameHdr').textContent = s.journalName;
-          document.title = 'TradeZona — ' + s.journalName;
-        }
-      }
-    }
-
-    setProgress(100, 'Done!');
-    await new Promise(r => setTimeout(r, 600));
-
-    closeImport();
-    // Reload logs iframe
-    document.getElementById('logsFrame').src = 'logs.html?t=' + Date.now();
-    if (activeTab === 'settings') populateSettings();
-    showToast(
-      `Import complete — ${finalCount} trade${finalCount !== 1 ? 's' : ''}${shouldRestore ? ' + settings restored' : ''}`,
-      'fa-solid fa-circle-check'
-    );
-  } catch(e) {
-    showToast('Import failed: ' + e.message, 'fa-solid fa-circle-exclamation');
-    document.getElementById('importProgressBox').classList.remove('show');
-    confirmBtn.disabled = false;
-    cancelBtn.disabled  = false;
-  }
+async function confirmImport(){
+  if(!importPayload)return;
+  const confirmBtn=document.getElementById('importConfirmBtn'),cancelBtn=document.getElementById('importCancelBtn');
+  confirmBtn.disabled=true;cancelBtn.disabled=true;document.getElementById('importProgressBox').classList.add('show');
+  const setP=(pct,lbl)=>{document.getElementById('importProgressBar').style.width=pct+'%';document.getElementById('importProgressSub').textContent=lbl;};
+  try{
+    const incoming=importPayload.trades||[];const current=await getTrades(journalId);const currentIds=new Set(current.map(t=>t.id));let finalCount=0;
+    if(importMode==='replace'){document.getElementById('importProgressLabel').textContent='Deleting existing trades…';setP(5,`0/${current.length} deleted`);for(let i=0;i<current.length;i++){await deleteTrade(current[i].id);setP(5+Math.round((i+1)/current.length*35),`${i+1}/${current.length} deleted`);}document.getElementById('importProgressLabel').textContent='Importing trades…';for(let i=0;i<incoming.length;i++){const{id:_,...d}=incoming[i];await createTrade(currentUser.id,journalId,d);finalCount++;setP(40+Math.round((i+1)/incoming.length*50),`${i+1}/${incoming.length} imported`);}}
+    else{const nt=incoming.filter(t=>!currentIds.has(t.id));document.getElementById('importProgressLabel').textContent='Merging trades…';for(let i=0;i<nt.length;i++){const{id:_,...d}=nt[i];await createTrade(currentUser.id,journalId,d);finalCount++;setP(10+Math.round((i+1)/nt.length*80),`${i+1}/${nt.length} added`);}finalCount=current.length+nt.length;}
+    const hasSettings=!!(importPayload.settings),shouldRestore=hasSettings&&document.getElementById('restoreSettingsChk')?.checked;
+    if(shouldRestore){setP(95,'Restoring settings…');const s=importPayload.settings;const su={};if(s.strategies)su.strategies=s.strategies;if(s.timeframes)su.timeframes=s.timeframes;if(s.pairs)su.pairs=s.pairs;if(s.moods)su.moods=s.moods;if(s.mood_colors)su.mood_colors=s.mood_colors;await updateJournalSettings(journalId,su);settings={...settings,...su};const ju={};if(s.capital)ju.capital=s.capital;if(s.journalName)ju.name=s.journalName;if(Object.keys(ju).length){await updateJournal(journalId,ju);Object.assign(journalObj,ju);if(s.journalName){document.getElementById('jnameHdr').textContent=s.journalName;document.title='TradeZona — '+s.journalName;}}}
+    setP(100,'Done!');await new Promise(r=>setTimeout(r,600));
+    closeImport();document.getElementById('logsFrame').src='logs.html?t='+Date.now();if(activeTab==='settings')populateSettings();
+    showToast(`Import complete — ${finalCount} trade${finalCount!==1?'s':''}${shouldRestore?' + settings restored':''}`,'fa-solid fa-circle-check');
+  }catch(e){showToast('Import failed: '+e.message,'fa-solid fa-circle-exclamation');document.getElementById('importProgressBox').classList.remove('show');confirmBtn.disabled=false;cancelBtn.disabled=false;}
 }
 
 // ════════════════════════════════════════════════════════
 //  DELETE JOURNAL
 // ════════════════════════════════════════════════════════
-function openDelJournal() {
-  document.getElementById('delJournalName').textContent = journalObj?.name || 'this journal';
-  document.getElementById('delConfirmInput').value = '';
-  checkDel();
-  document.getElementById('delOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('delConfirmInput').focus(), 120);
+function openDelJournal(){document.getElementById('delJournalName').textContent=journalObj?.name||'this journal';document.getElementById('delConfirmInput').value='';checkDel();document.getElementById('delOverlay').classList.add('open');setTimeout(()=>document.getElementById('delConfirmInput').focus(),120);}
+function closeDelJournal(){document.getElementById('delOverlay').classList.remove('open');}
+function checkDel(){const exp=(journalObj?.name||'').trim().toLowerCase(),typ=document.getElementById('delConfirmInput').value.trim().toLowerCase(),ok=typ===exp&&exp!=='';const btn=document.getElementById('delConfirmBtn');btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';}
+async function executeDelete(){try{await deleteJournal(journalId);sessionStorage.removeItem('tz_current_journal');window.location.href='/dashboard';}catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation');}}
+
+// ════════════════════════════════════════════════════════
+//  DELETE ACCOUNT (real implementation)
+// ════════════════════════════════════════════════════════
+function openDelAccount(){
+  document.getElementById('delAccConfirm').value='';
+  document.getElementById('delAccFormSection').style.display='block';
+  document.getElementById('delAccProgress').classList.remove('show');
+  checkDelAcc();
+  document.getElementById('delAccountOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('delAccConfirm').focus(),120);
 }
-function closeDelJournal() { document.getElementById('delOverlay').classList.remove('open'); }
-function checkDel() {
-  const expected = (journalObj?.name || '').trim().toLowerCase();
-  const typed    = document.getElementById('delConfirmInput').value.trim().toLowerCase();
-  const ok       = typed === expected && expected !== '';
-  const btn      = document.getElementById('delConfirmBtn');
-  btn.disabled          = !ok;
-  btn.style.opacity     = ok ? '1' : '.4';
-  btn.style.cursor      = ok ? 'pointer' : 'not-allowed';
-}
-async function executeDelete() {
-  try {
-    await deleteJournal(journalId);
-    sessionStorage.removeItem('tz_current_journal');
-    window.location.href = '/dashboard';
-  } catch(e) { showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation'); }
+function closeDelAccount(){document.getElementById('delAccountOverlay').classList.remove('open');}
+function checkDelAcc(){const ok=document.getElementById('delAccConfirm').value.trim()==='DELETE';const btn=document.getElementById('delAccBtn');btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';}
+
+async function executeDeleteAccount(){
+  document.getElementById('delAccFormSection').style.display='none';
+  document.getElementById('delAccProgress').classList.add('show');
+  if (window.posthog) posthog.capture('account_deleted');
+  try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session)throw new Error('Not authenticated');
+    const res=await fetch(
+      `${SUPABASE_URL}/functions/v1/delete-account`,
+      {method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'}}
+    );
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Deletion failed');
+    document.getElementById('delAccProgressMsg').textContent='Account deleted. Signing out…';
+    await db.auth.signOut();
+    sessionStorage.clear();localStorage.clear();
+    setTimeout(()=>window.location.href='/',1500);
+  }catch(e){
+    showToast('Deletion failed: '+e.message,'fa-solid fa-circle-exclamation');
+    document.getElementById('delAccFormSection').style.display='block';
+    document.getElementById('delAccProgress').classList.remove('show');
+  }
 }
 
-// ── Backdrop closes ────────────────────────────────────
-['delOverlay','exportOverlay','importOverlay'].forEach(id => {
-  document.getElementById(id).addEventListener('click', function(e) {
-    if (e.target === this) {
-      if (id === 'delOverlay')    closeDelJournal();
-      if (id === 'exportOverlay') closeExport();
-      if (id === 'importOverlay') closeImport();
+// Backdrop clicks
+['delOverlay','exportOverlay','importOverlay','delAccountOverlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target===this){
+      if(id==='delOverlay')closeDelJournal();
+      if(id==='exportOverlay')closeExport();
+      if(id==='importOverlay')closeImport();
+      if(id==='delAccountOverlay')closeDelAccount();
     }
   });
 });
@@ -1328,29 +1037,12 @@ async function executeDelete() {
 //  TOAST
 // ════════════════════════════════════════════════════════
 let _tt;
-function showToast(msg, icon = 'fa-solid fa-circle-check') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastIcon').className = icon;
-  document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
-  clearTimeout(_tt);
-  _tt = setTimeout(() => t.classList.remove('show'), 3800);
-}
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function showToast(msg,icon='fa-solid fa-circle-check'){const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3800);}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-// ── Enter keys ────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  const a = document.activeElement;
-  if (a.id === 'stratInput') addTag('strategies', 'stratInput');
-  if (a.id === 'tfInput')    addTag('timeframes',  'tfInput');
-  if (a.id === 'pairInput')  addTag('pairs',       'pairInput');
-  if (a.id === 'moodInput')  addMoodTag();
-});
-
-window.addEventListener('beforeunload', e => {
-  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
-});
+// Enter keys
+document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const a=document.activeElement;if(a.id==='stratInput')addTag('strategies','stratInput');if(a.id==='tfInput')addTag('timeframes','tfInput');if(a.id==='pairInput')addTag('pairs','pairInput');if(a.id==='moodInput')addMoodTag();});
+window.addEventListener('beforeunload',e=>{if(isDirty){e.preventDefault();e.returnValue='';}});
 </script>
 </body>
 </html>

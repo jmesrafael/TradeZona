@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- PostHog Analytics — replace YOUR_POSTHOG_KEY with your real key from app.posthog.com -->
+<script>
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+posthog.init('YOUR_POSTHOG_KEY',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -14,14 +19,12 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
-/* page loader */
 @keyframes spin{to{transform:rotate(360deg)}}
 .page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
 .page-loader.gone{opacity:0;pointer-events:none}
 .pl-logo{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center}
 .pl-logo span{color:var(--accent)}
 .pl-spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-/* header */
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--panel)}
 .logo{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;cursor:pointer;user-select:none}
 .logo span{color:var(--accent)}
@@ -39,12 +42,10 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .sec-hdr h2{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
 .btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:7px}
 .btn-primary:hover{opacity:.85}
-/* skeleton loaders */
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skel{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:8px}
 .skel-card{height:140px;border-radius:12px;border:1px solid var(--border)}
 .skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
-/* journal grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
 .jcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,transform .15s;position:relative;cursor:default}
 .jcard:hover{border-color:var(--accent2);transform:translateY(-1px)}
@@ -58,10 +59,8 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .open-btn:hover{background:var(--accent);color:#0b0f0c}
 .empty-state{color:var(--muted);font-size:14px;padding:56px 0;text-align:center;grid-column:1/-1;line-height:1.9}
 .empty-state i{display:block;font-size:36px;margin-bottom:12px;opacity:.3}
-/* overlay */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
 .overlay.open{display:flex}
-/* modal shared */
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:0;width:100%;max-width:460px;margin:20px;overflow:hidden}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
 .modal-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600}
@@ -97,20 +96,29 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .link-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:var(--text)}
 .link-item:hover{background:rgba(255,255,255,.04)}
 .link-item i.arr{color:var(--muted);font-size:11px}
-/* toast */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
-#toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+/* Delete account in settings */
+.del-account-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,95,109,.06);border:1px solid rgba(255,95,109,.35);color:#ff5f6d;border-radius:8px;padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;width:100%;justify-content:center}
+.del-account-btn:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
+/* Delete account modal */
+.del-acc-modal{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:440px;padding:28px;margin:20px}
+.del-acc-icon{width:52px;height:52px;background:rgba(255,95,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:#ff5f6d}
+.warn-list{background:rgba(255,95,109,.05);border:1px solid rgba(255,95,109,.18);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:7px}
+.warn-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.warn-item i{color:#ff5f6d;width:14px;text-align:center;flex-shrink:0}
+.del-acc-progress{display:none;text-align:center;padding:14px 0}
+.del-acc-progress.show{display:block}
+.del-acc-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:#ff5f6d;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 /* ad slots */
 .ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
 .ad-slot.visible{display:block}
-.ad-slot-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6}
-.ad-slot-inner{min-height:90px;display:flex;align-items:center;justify-content:center}
 .ad-upgrade-nudge{margin-top:12px;padding:12px 16px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .ad-upgrade-nudge.visible{display:flex}
 .ad-nudge-text{font-size:12px;color:var(--muted);line-height:1.5}
 .ad-nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
 .ad-nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
 .ad-nudge-btn:hover{opacity:.85}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+#toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -137,94 +145,44 @@ main{padding:32px;max-width:1100px;margin:0 auto}
     <button class="btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> New Journal</button>
   </div>
   <div id="loadingState" class="skel-grid">
-    <div class="skel skel-card"></div>
-    <div class="skel skel-card"></div>
-    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
   </div>
   <div class="grid" id="grid" style="display:none"></div>
 
-  <!-- ── Ad Slot (Free users only) ────────────────────────
-       HOW TO GO LIVE:
-       1. Sign up at https://adsense.google.com
-       2. Get approved and copy your Publisher ID (ca-pub-XXXXXX)
-       3. Create an ad unit → copy the Ad Slot ID
-       4. Replace ca-pub-XXXXXXXXXXXXXXXX and XXXXXXXXXX below
-       5. Add the AdSense <script> tag to your <head>:
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"><\/script>
-       6. Remove the #dashAdPlaceholder div (it's just for dev preview)
-  ────────────────────────────────────────────────────── -->
   <div class="ad-slot" id="dashAdSlot" style="margin-top:28px">
-    <div class="ad-slot-label">Advertisement</div>
-    <div class="ad-slot-inner">
-      <ins class="adsbygoogle"
-           style="display:block;width:100%;min-height:90px"
-           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-           data-ad-slot="XXXXXXXXXX"
-           data-ad-format="horizontal"
-           data-full-width-responsive="true"></ins>
-      <!-- DEV PLACEHOLDER — remove once AdSense is live -->
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6">Advertisement</div>
+    <div style="min-height:90px;display:flex;align-items:center;justify-content:center">
+      <ins class="adsbygoogle" style="display:block;width:100%;min-height:90px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
       <div id="dashAdPlaceholder" style="width:100%;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Ad will appear here (Free users)</div>
-          <div style="font-size:12px;color:var(--muted)">Replace <code style="font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px">ca-pub-XXXXXXXXXXXXXXXX</code> with your real AdSense publisher ID</div>
-        </div>
-        <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,.04);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;text-align:center">
-          <i class="fa-solid fa-rectangle-ad" style="display:block;font-size:22px;margin-bottom:5px;opacity:.3"></i>728×90
-        </div>
+        <div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Ad will appear here (Free users)</div><div style="font-size:12px;color:var(--muted)">Replace publisher ID with your real AdSense ID</div></div>
+        <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,.04);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;text-align:center"><i class="fa-solid fa-rectangle-ad" style="display:block;font-size:22px;margin-bottom:5px;opacity:.3"></i>728×90</div>
       </div>
     </div>
   </div>
-
-  <!-- Upgrade nudge below ad -->
   <div class="ad-upgrade-nudge" id="dashUpgradeNudge">
-    <div class="ad-nudge-text">
-      <strong><i class="fa-solid fa-circle-xmark" style="color:#ff5f6d;margin-right:5px"></i>Remove ads &amp; unlock everything</strong>
-      Unlimited journals · Full analytics · Gallery · PIN journals · No ads. Ever.
-    </div>
-    <button class="ad-nudge-btn" onclick="window.location.href='/subscription'">
-      <i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro — $5/mo
-    </button>
+    <div class="ad-nudge-text"><strong><i class="fa-solid fa-circle-xmark" style="color:#ff5f6d;margin-right:5px"></i>Remove ads &amp; unlock everything</strong>Unlimited journals · Full analytics · Gallery · PIN journals · No ads.</div>
+    <button class="ad-nudge-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro — $5/mo</button>
   </div>
 </main>
 
 <!-- Create Journal Modal -->
 <div class="overlay" id="createModal">
   <div class="modal">
-    <div class="modal-hdr">
-      <h3><i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px"></i>New Journal</h3>
-      <button class="modal-close" onclick="closeCreate()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
+    <div class="modal-hdr"><h3><i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px"></i>New Journal</h3><button class="modal-close" onclick="closeCreate()"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Give your journal a name and optionally set a starting capital amount.</p>
-      <div class="field">
-        <label>Journal Name</label>
-        <input type="text" id="jName" placeholder="e.g. Forex, Crypto, Prop Firm…" maxlength="60" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>Starting Capital <span style="color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <div style="position:relative">
-          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none">$</span>
-          <input type="number" id="jCapital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px">
-        </div>
-      </div>
+      <div class="field"><label>Journal Name</label><input type="text" id="jName" placeholder="e.g. Forex, Crypto, Prop Firm…" maxlength="60" autocomplete="off" oninput="clearAlerts()"></div>
+      <div class="field"><label>Starting Capital <span style="color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0">(optional)</span></label><div style="position:relative"><span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none">$</span><input type="number" id="jCapital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px"></div></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
-      <button class="btn-primary" id="createBtn" onclick="createJournalAction()"><i class="fa-solid fa-check"></i> Create Journal</button>
-    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeCreate()">Cancel</button><button class="btn-primary" id="createBtn" onclick="createJournalAction()"><i class="fa-solid fa-check"></i> Create Journal</button></div>
   </div>
 </div>
 
 <!-- Settings Modal -->
 <div class="overlay" id="settingsModal">
   <div class="modal settings-modal" style="max-height:90vh;overflow-y:auto">
-    <div class="modal-hdr">
-      <h3><i class="fa-solid fa-gear" style="color:var(--accent2);margin-right:8px"></i>Settings</h3>
-      <button class="modal-close" onclick="closeSettings()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
+    <div class="modal-hdr"><h3><i class="fa-solid fa-gear" style="color:var(--accent2);margin-right:8px"></i>Settings</h3><button class="modal-close" onclick="closeSettings()"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
-
-      <!-- Theme -->
       <div class="set-section">
         <div class="set-title"><i class="fa-solid fa-palette"></i> Appearance</div>
         <div class="theme-grid">
@@ -233,62 +191,55 @@ main{padding:32px;max-width:1100px;margin:0 auto}
           <div class="theme-opt" id="themeLight"  onclick="setTheme('light')"><i class="fa-solid fa-sun"></i>Light</div>
         </div>
       </div>
-
-      <!-- Account -->
       <div class="set-section">
         <div class="set-title"><i class="fa-solid fa-user-circle"></i> Account</div>
-        <div class="field">
-          <label>Update Email</label>
-          <input type="email" id="setEmail" placeholder="New email address" autocomplete="email">
-        </div>
-        <div class="field" style="margin-bottom:10px">
-          <label>New Password</label>
-          <input type="password" id="setPassword" placeholder="Leave blank to keep current">
-        </div>
+        <div class="field"><label>Update Email</label><input type="email" id="setEmail" placeholder="New email address" autocomplete="email"></div>
+        <div class="field" style="margin-bottom:10px"><label>New Password</label><input type="password" id="setPassword" placeholder="Leave blank to keep current"></div>
         <button class="btn-primary" onclick="updateAccount()" style="width:100%;justify-content:center"><i class="fa-solid fa-save"></i> Save Account Changes</button>
       </div>
-
-      <!-- Plan -->
       <div class="set-section">
         <div class="set-title"><i class="fa-solid fa-star"></i> Subscription</div>
-        <div class="plan-row">
-          <div>
-            <div class="plan-lbl">Current Plan</div>
-            <div class="plan-val" id="settingsPlanLabel">Free</div>
-          </div>
-          <button class="upgrade-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
-        </div>
-        <div class="plan-row">
-          <div>
-            <div class="plan-lbl">Pro Features</div>
-            <div class="plan-val">Unlimited journals, full analytics, advanced themes</div>
-          </div>
-          <i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i>
-        </div>
+        <div class="plan-row"><div><div class="plan-lbl">Current Plan</div><div class="plan-val" id="settingsPlanLabel">Free</div></div><button class="upgrade-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button></div>
+        <div class="plan-row"><div><div class="plan-lbl">Pro Features</div><div class="plan-val">Unlimited journals, full analytics, advanced themes</div></div><i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i></div>
       </div>
-
-      <!-- Legal -->
       <div class="set-section">
         <div class="set-title"><i class="fa-solid fa-file-lines"></i> Legal</div>
         <div class="links-row">
-          <div class="link-item" onclick="window.open('terms.html')">
-            <span><i class="fa-solid fa-file-contract" style="margin-right:9px;color:var(--muted)"></i>Terms of Service</span>
-            <i class="fa-solid fa-chevron-right arr"></i>
-          </div>
-          <div class="link-item" onclick="window.open('privacy.html')">
-            <span><i class="fa-solid fa-shield-halved" style="margin-right:9px;color:var(--muted)"></i>Privacy Policy</span>
-            <i class="fa-solid fa-chevron-right arr"></i>
-          </div>
+          <div class="link-item" onclick="window.open('/terms')"><span><i class="fa-solid fa-file-contract" style="margin-right:9px;color:var(--muted)"></i>Terms of Service</span><i class="fa-solid fa-chevron-right arr"></i></div>
+          <div class="link-item" onclick="window.open('/privacy')"><span><i class="fa-solid fa-shield-halved" style="margin-right:9px;color:var(--muted)"></i>Privacy Policy</span><i class="fa-solid fa-chevron-right arr"></i></div>
         </div>
       </div>
-
-      <!-- Danger -->
       <div class="set-section">
         <div class="set-title" style="color:#ff5f6d"><i class="fa-solid fa-triangle-exclamation" style="color:#ff5f6d"></i> Danger Zone</div>
-        <button onclick="confirmDeleteAccount()" style="width:100%;background:rgba(255,95,109,.08);border:1px solid rgba(255,95,109,.3);color:#ff5f6d;border-radius:8px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s">
-          <i class="fa-solid fa-user-xmark" style="margin-right:7px"></i>Delete My Account
-        </button>
+        <button class="del-account-btn" onclick="openDelAccount()"><i class="fa-solid fa-user-xmark"></i>Delete My Account Permanently</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="overlay" id="delAccountOverlay">
+  <div class="del-acc-modal">
+    <div class="del-acc-icon"><i class="fa-solid fa-user-xmark"></i></div>
+    <h3 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:#ff5f6d">Delete Your Account?</h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;text-align:center;margin-bottom:16px">This will <strong style="color:#ff5f6d">permanently and irreversibly</strong> delete your entire account.</p>
+    <div class="warn-list">
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All journals and trade history</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All images and screenshots</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>All settings, tags, and moods</div>
+      <div class="warn-item"><i class="fa-solid fa-xmark"></i>Your login credentials</div>
+    </div>
+    <div id="delAccFormSection">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Type <strong style="color:var(--text)">DELETE</strong> to confirm:</div>
+      <input type="text" id="delAccConfirmDash" placeholder="DELETE" oninput="checkDelAccDash()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:14px;transition:border-color .2s">
+      <div style="display:flex;gap:8px">
+        <button onclick="closeDelAccount()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+        <button id="delAccBtnDash" onclick="executeDeleteAccount()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-user-xmark" style="margin-right:6px"></i>Delete Forever</button>
+      </div>
+    </div>
+    <div class="del-acc-progress" id="delAccProgressDash">
+      <div class="del-acc-spin"></div>
+      <p id="delAccProgressMsgDash" style="font-size:13px;color:var(--muted)">Deleting your account…</p>
     </div>
   </div>
 </div>
@@ -299,19 +250,11 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 let currentUser = null, journals = [], pnlMap = {};
 let curTheme = localStorage.getItem('tl_theme') || 'dark';
 
-// ── Theme ──────────────────────────────────────────────────
 function applyTheme(t) {
   const r = document.documentElement;
   const dark = t === 'dark' || (t === 'system' && !window.matchMedia('(prefers-color-scheme:light)').matches);
-  if (!dark) {
-    r.style.setProperty('--bg','#f4f7f5'); r.style.setProperty('--panel','#ffffff');
-    r.style.setProperty('--accent','#19c37d'); r.style.setProperty('--accent2','#0fa86a');
-    r.style.setProperty('--border','#dde8e3'); r.style.setProperty('--text','#0f1c17'); r.style.setProperty('--muted','#6b8578');
-  } else {
-    r.style.setProperty('--bg','#0b0f0c'); r.style.setProperty('--panel','#111816');
-    r.style.setProperty('--accent','#00ff88'); r.style.setProperty('--accent2','#19c37d');
-    r.style.setProperty('--border','#1c2a25'); r.style.setProperty('--text','#e6f2ec'); r.style.setProperty('--muted','#8fa39a');
-  }
+  if (!dark) { r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578'); }
+  else { r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a'); }
 }
 applyTheme(curTheme);
 
@@ -321,7 +264,6 @@ function setTheme(t) {
   document.getElementById('theme' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.add('active');
 }
 
-// ── Boot ──────────────────────────────────────────────────
 (async () => {
   currentUser = await requireAuth(); if (!currentUser) return;
   const profile = await getProfile(currentUser.id);
@@ -329,20 +271,17 @@ function setTheme(t) {
   const badge = document.getElementById('planBadge');
   const isPro = profile?.plan === 'pro';
   window._userIsPro = isPro;
-  window._userName = profile?.name || currentUser.email;
+  window._userName  = profile?.name || currentUser.email;
   if (isPro) { badge.textContent = 'Pro'; badge.className = 'plan-badge badge-pro'; }
   document.getElementById('settingsPlanLabel').textContent = isPro ? 'Pro' : 'Free';
   document.getElementById('proLockIcon').style.display = isPro ? 'none' : '';
-  if (!isPro) {
-    document.getElementById('dashAdSlot').classList.add('visible');
-    document.getElementById('dashUpgradeNudge').classList.add('visible');
-    try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
-  }
+  if (!isPro) { document.getElementById('dashAdSlot').classList.add('visible');document.getElementById('dashUpgradeNudge').classList.add('visible');try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){} }
+  // Identify user in PostHog
+  if (window.posthog) { posthog.identify(currentUser.id, { email: currentUser.email, plan: isPro ? 'pro' : 'free', name: profile?.name }); }
   await loadJournals();
   document.getElementById('pageLoader').classList.add('gone');
 })();
 
-// ── Journals ──────────────────────────────────────────────
 async function loadJournals() {
   journals = await getJournals(currentUser.id);
   pnlMap = {};
@@ -356,69 +295,46 @@ async function loadJournals() {
 }
 
 function renderJournals() {
-  const grid = document.getElementById('grid');
-  grid.style.display = '';
-  if (!journals.length) {
-    grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>`;
-    return;
-  }
+  const grid = document.getElementById('grid'); grid.style.display = '';
+  if (!journals.length) { grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>`; return; }
   grid.innerHTML = journals.map(j => {
     const pnl = pnlMap[j.id];
     const capHtml = j.capital ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
     let pnlHtml = '';
-    if (pnl != null) {
-      const cls = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-      const fmt = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2);
-      pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
-    }
-    return `<div class="jcard">
-      <h3>${esc(j.name)}</h3>
-      ${capHtml}${pnlHtml}
-      <button class="open-btn" onclick="goToJournal('${j.id}')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
-      </button>
-    </div>`;
+    if (pnl != null) { const cls = pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; const fmt = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2); pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`; }
+    return `<div class="jcard"><h3>${esc(j.name)}</h3>${capHtml}${pnlHtml}<button class="open-btn" onclick="goToJournal('${j.id}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal</button></div>`;
   }).join('');
 }
 
-function goToJournal(id) { sessionStorage.setItem('tz_current_journal', id); window.location.href = '/journal'; }
+function goToJournal(id) {
+  sessionStorage.setItem('tz_current_journal', id);
+  if (window.posthog) posthog.capture('journal_opened', { journal_id: id });
+  window.location.href = '/journal';
+}
 
-// ── Create Journal ────────────────────────────────────────
 function openCreate() {
-  // Free users limited to 1 journal
-  if (!window._userIsPro && journals.length >= 1) {
-    showToast('Free plan allows 1 journal. Upgrade to Pro for unlimited journals.', 'fa-solid fa-lock');
-    setTimeout(() => window.location.href = '/subscription', 2000);
-    return;
-  }
+  if (!window._userIsPro && journals.length >= 1) { showToast('Free plan allows 1 journal. Upgrade to Pro for unlimited.', 'fa-solid fa-lock'); setTimeout(() => window.location.href = '/subscription', 2000); return; }
   document.getElementById('createModal').classList.add('open');
   setTimeout(() => document.getElementById('jName').focus(), 100);
 }
-function closeCreate() {
-  document.getElementById('createModal').classList.remove('open');
-  document.getElementById('jName').value = '';
-  document.getElementById('jCapital').value = '';
-}
+function closeCreate() { document.getElementById('createModal').classList.remove('open'); document.getElementById('jName').value = ''; document.getElementById('jCapital').value = ''; }
+function clearAlerts() {}
+
 async function createJournalAction() {
   const name = document.getElementById('jName').value.trim();
   const capital = document.getElementById('jCapital').value.trim();
-  if (!name) {
-    document.getElementById('jName').style.borderColor = '#ff5f6d';
-    setTimeout(() => document.getElementById('jName').style.borderColor = '', 1500);
-    return;
-  }
-  const btn = document.getElementById('createBtn');
-  btn.disabled = true; btn.innerHTML = '<div class="spin-sm"></div> Creating…';
+  if (!name) { document.getElementById('jName').style.borderColor = '#ff5f6d'; setTimeout(() => document.getElementById('jName').style.borderColor = '', 1500); return; }
+  const btn = document.getElementById('createBtn'); btn.disabled = true; btn.innerHTML = '<div class="spin-sm"></div> Creating…';
   try {
     await createJournal(currentUser.id, { name, capital: capital ? parseFloat(capital) : null, pin_hash: null });
     closeCreate(); showToast('Journal created!', 'fa-solid fa-circle-check');
+    if (window.posthog) posthog.capture('journal_created');
     await loadJournals();
   } catch (err) { showToast('Error: ' + err.message, 'fa-solid fa-circle-exclamation'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Create Journal'; }
 }
 document.getElementById('createModal').addEventListener('click', function(e) { if(e.target===this)closeCreate(); });
 
-// ── Settings ──────────────────────────────────────────────
 function openSettings() {
   const t = localStorage.getItem('tl_theme') || 'dark';
   document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
@@ -444,27 +360,55 @@ async function updateAccount() {
   } catch (err) { showToast('Error: ' + err.message, 'fa-solid fa-circle-exclamation'); }
 }
 
-function confirmDeleteAccount() {
-  if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-    showToast('Contact support to delete your account.', 'fa-solid fa-info-circle');
+// ── Delete Account ────────────────────────────────────
+function openDelAccount() {
+  document.getElementById('delAccConfirmDash').value = '';
+  document.getElementById('delAccFormSection').style.display = 'block';
+  document.getElementById('delAccProgressDash').classList.remove('show');
+  checkDelAccDash();
+  document.getElementById('delAccountOverlay').classList.add('open');
+  closeSettings();
+  setTimeout(() => document.getElementById('delAccConfirmDash').focus(), 150);
+}
+function closeDelAccount() { document.getElementById('delAccountOverlay').classList.remove('open'); }
+function checkDelAccDash() {
+  const ok = document.getElementById('delAccConfirmDash').value.trim() === 'DELETE';
+  const btn = document.getElementById('delAccBtnDash');
+  btn.disabled = !ok; btn.style.opacity = ok ? '1' : '.4'; btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+}
+
+async function executeDeleteAccount() {
+  document.getElementById('delAccFormSection').style.display = 'none';
+  document.getElementById('delAccProgressDash').classList.add('show');
+  if (window.posthog) posthog.capture('account_delete_initiated');
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+    const res = await fetch(
+      `${SUPABASE_URL}/functions/v1/delete-account`,
+      { method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' } }
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Deletion failed');
+    document.getElementById('delAccProgressMsgDash').textContent = 'Account deleted. Redirecting…';
+    await db.auth.signOut();
+    sessionStorage.clear(); localStorage.clear();
+    setTimeout(() => window.location.href = '/', 1500);
+  } catch(e) {
+    showToast('Deletion failed: ' + e.message, 'fa-solid fa-circle-exclamation');
+    document.getElementById('delAccFormSection').style.display = 'block';
+    document.getElementById('delAccProgressDash').classList.remove('show');
   }
 }
 
-// ── Logout ────────────────────────────────────────────────
+document.getElementById('delAccountOverlay').addEventListener('click', function(e) { if(e.target===this)closeDelAccount(); });
+
 async function logout() { await db.auth.signOut(); sessionStorage.clear(); window.location.href = '/auth'; }
 
-// ── Toast ──────────────────────────────────────────────────
 let _tt;
-function showToast(msg, icon='fa-solid fa-circle-check') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastIcon').className = icon;
-  document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
-  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 3200);
-}
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function showToast(msg, icon='fa-solid fa-circle-check') { const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3200); }
+function esc(s) { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
-// ── Spin style for button ─────────────────────────────────
 const style = document.createElement('style');
 style.textContent = `.spin-sm{width:14px;height:14px;border:2px solid rgba(7,10,8,.3);border-top-color:#0b0f0c;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}`;
 document.head.appendChild(style);

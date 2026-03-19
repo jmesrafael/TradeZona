@@ -1,0 +1,450 @@
+<!-- calculator.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px;min-height:100vh}
+.pw{max-width:1000px;margin:0 auto}
+
+/* Hero banner */
+.calc-hero{background:linear-gradient(135deg,rgba(0,255,136,.06),rgba(25,195,125,.03));border:1px solid rgba(0,255,136,.15);border-radius:12px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:flex-start;gap:14px}
+.calc-hero-icon{width:42px;height:42px;background:rgba(0,255,136,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:18px;flex-shrink:0;margin-top:2px}
+.calc-hero-text h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:5px}
+.calc-hero-text p{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* Two-column layout */
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.calc-layout{grid-template-columns:1fr}}
+
+/* Panels */
+.cpanel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
+.cpanel-title{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.cpanel-title i{color:var(--accent2)}
+
+/* Input rows */
+.field{margin-bottom:14px}
+.field-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.field-label .tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--muted);font-size:9px;cursor:help;position:relative}
+.field-label .tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#000;color:#e6f2ec;font-size:10px;padding:5px 8px;border-radius:6px;white-space:nowrap;z-index:99;max-width:200px;white-space:normal;text-align:center;width:180px;line-height:1.4;pointer-events:none;border:1px solid var(--border)}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-prefix,.input-suffix{position:absolute;font-size:12px;color:var(--muted);pointer-events:none;z-index:1}
+.input-prefix{left:12px}
+.input-suffix{right:12px}
+.calc-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.calc-input::-webkit-outer-spin-button,.calc-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.calc-input:focus{border-color:var(--accent2)}
+.calc-input.has-prefix{padding-left:26px}
+.calc-input.has-suffix{padding-right:26px}
+.calc-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color .2s}
+.calc-select:focus{border-color:var(--accent2)}
+.calc-select option{background:var(--panel)}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:12px;color:var(--muted)}
+.tswitch{width:32px;height:18px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
+.tswitch.on{background:var(--accent2)}
+.tswitch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s}
+.tswitch.on::after{transform:translateX(14px)}
+
+/* Results */
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+@media(max-width:400px){.results-grid{grid-template-columns:1fr}}
+.result-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px}
+.result-card.highlight{border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.04)}
+.result-card.danger{border-color:rgba(255,95,109,.25);background:rgba(255,95,109,.04)}
+.result-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.result-label i{font-size:9px}
+.result-value{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1}
+.result-value.pos{color:var(--accent)}
+.result-value.neg{color:#ff5f6d}
+.result-value.warn{color:#f59e0b}
+.result-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* PnL section */
+.pnl-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.pnl-section-title{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.pnl-section-title i{color:var(--accent2)}
+.pnl-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.pnl-bar{height:100%;border-radius:3px;transition:width .4s ease,background .3s}
+
+/* Divider */
+.cdivider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* Lot mode pill */
+.lot-mode-row{display:flex;gap:6px;margin-bottom:14px}
+.lot-mode-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:7px;background:none;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;text-align:center}
+.lot-mode-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(25,195,125,.07)}
+
+/* Disclaimer */
+.disclaimer{font-size:11px;color:var(--muted);line-height:1.6;padding:10px 13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-top:16px;opacity:.7}
+.disclaimer i{color:var(--accent2);margin-right:4px}
+
+/* Responsive full-width panel */
+.cpanel.full{grid-column:1/-1}
+@media(max-width:720px){.cpanel.full{grid-column:1}}
+</style>
+</head>
+<body>
+<div class="pw">
+  <!-- Hero -->
+  <div class="calc-hero">
+    <div class="calc-hero-icon"><i class="fa-solid fa-calculator"></i></div>
+    <div class="calc-hero-text">
+      <h2>Trading Risk Calculator</h2>
+      <p>Manage risk, calculate position size, and estimate profit or loss before placing a trade. All calculations update in real-time as you type.</p>
+    </div>
+  </div>
+
+  <div class="calc-layout">
+    <!-- LEFT: Inputs -->
+    <div class="cpanel">
+      <div class="cpanel-title"><i class="fa-solid fa-sliders"></i> Trade Inputs</div>
+
+      <!-- Account -->
+      <div class="field">
+        <div class="field-label">
+          Account Balance
+          <span class="tip" data-tip="Your total trading account balance in USD">?</span>
+        </div>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input class="calc-input has-prefix" type="number" id="balance" placeholder="10000" value="10000" min="0" oninput="calc()">
+        </div>
+      </div>
+
+      <!-- Risk % -->
+      <div class="field">
+        <div class="field-label">
+          Risk Per Trade
+          <span class="tip" data-tip="% of your account balance you're willing to lose on this trade. Most pros risk 1-2%">?</span>
+        </div>
+        <div class="input-wrap">
+          <input class="calc-input has-suffix" type="number" id="riskPct" placeholder="1" value="1" min="0.01" max="100" step="0.1" oninput="calc()">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <!-- Asset type -->
+      <div class="field">
+        <div class="field-label">Asset Type
+          <span class="tip" data-tip="Choose the instrument type to get accurate pip/tick values">?</span>
+        </div>
+        <select class="calc-select" id="assetType" onchange="onAssetChange()">
+          <option value="forex_major">Forex Major (EUR/USD, GBP/USD…)</option>
+          <option value="forex_jpy">Forex JPY Pair (USD/JPY, EUR/JPY…)</option>
+          <option value="gold">Gold (XAU/USD)</option>
+          <option value="indices">Indices (US30, NAS100…)</option>
+          <option value="crypto">Crypto (BTC, ETH…)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
+      <!-- Lot mode toggle -->
+      <div class="field-label" style="margin-bottom:7px">
+        Lot Size Mode
+        <span class="tip" data-tip="Auto: we calculate optimal lot size. Manual: enter your own lot size">?</span>
+      </div>
+      <div class="lot-mode-row">
+        <button class="lot-mode-btn active" id="btnAuto" onclick="setLotMode('auto')"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:5px"></i>Auto</button>
+        <button class="lot-mode-btn" id="btnManual" onclick="setLotMode('manual')"><i class="fa-solid fa-pencil" style="margin-right:5px"></i>Manual</button>
+      </div>
+
+      <!-- Manual lot size (hidden by default) -->
+      <div class="field" id="lotField" style="display:none">
+        <div class="field-label">Lot Size <span class="tip" data-tip="Standard lot = 100,000 units. Mini lot = 10,000. Micro lot = 1,000">?</span></div>
+        <input class="calc-input" type="number" id="lotSize" placeholder="0.10" value="0.10" min="0.01" step="0.01" oninput="calc()">
+      </div>
+
+      <hr class="cdivider">
+
+      <!-- Entry -->
+      <div class="field">
+        <div class="field-label">Entry Price <span class="tip" data-tip="The price at which you plan to enter the trade">?</span></div>
+        <input class="calc-input" type="number" id="entry" placeholder="1.08500" value="" step="any" oninput="calc()">
+      </div>
+
+      <!-- Stop Loss -->
+      <div class="field">
+        <div class="field-label">Stop Loss Price <span class="tip" data-tip="The price at which you'll exit to limit your loss">?</span></div>
+        <input class="calc-input" type="number" id="stopLoss" placeholder="1.08000" value="" step="any" oninput="calc()">
+      </div>
+
+      <!-- Take Profit -->
+      <div class="field">
+        <div class="field-label">Take Profit Price <span class="tip" data-tip="Optional: your target exit price for profit calculation">?</span></div>
+        <input class="calc-input" type="number" id="takeProfit" placeholder="1.09500" value="" step="any" oninput="calc()">
+      </div>
+
+      <!-- Leverage -->
+      <div class="field">
+        <div class="field-label">Leverage <span class="tip" data-tip="Your broker's leverage ratio. Used to calculate required margin">?</span></div>
+        <div class="input-wrap">
+          <input class="calc-input has-prefix" type="number" id="leverage" placeholder="100" value="100" min="1" max="3000" oninput="calc()">
+          <span class="input-prefix" style="left:auto;right:12px;font-size:11px">:1</span>
+        </div>
+      </div>
+
+      <!-- Direction -->
+      <div class="field">
+        <div class="field-label">Direction</div>
+        <div class="lot-mode-row">
+          <button class="lot-mode-btn active" id="btnLong" onclick="setDir('long')"><i class="fa-solid fa-arrow-up" style="margin-right:5px;color:var(--accent2)"></i>Long / Buy</button>
+          <button class="lot-mode-btn" id="btnShort" onclick="setDir('short')"><i class="fa-solid fa-arrow-down" style="margin-right:5px;color:#ff5f6d"></i>Short / Sell</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="cpanel">
+      <div class="cpanel-title"><i class="fa-solid fa-chart-bar"></i> Live Results</div>
+
+      <div class="results-grid">
+        <div class="result-card highlight">
+          <div class="result-label"><i class="fa-solid fa-circle-dollar-to-slot"></i> Risk Amount</div>
+          <div class="result-value pos" id="rRiskAmt">—</div>
+          <div class="result-sub" id="rRiskPct">—% of account</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label"><i class="fa-solid fa-layer-group"></i> Position Size</div>
+          <div class="result-value" id="rLotSize">—</div>
+          <div class="result-sub" id="rUnits">— units</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label"><i class="fa-solid fa-arrows-left-right"></i> Stop Loss Pips</div>
+          <div class="result-value" id="rSLPips">—</div>
+          <div class="result-sub">pips distance</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label"><i class="fa-solid fa-coins"></i> Pip Value</div>
+          <div class="result-value" id="rPipVal">—</div>
+          <div class="result-sub" id="rPipValSub">per pip</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label"><i class="fa-solid fa-landmark"></i> Margin Required</div>
+          <div class="result-value" id="rMargin">—</div>
+          <div class="result-sub" id="rMarginSub">at current leverage</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label"><i class="fa-solid fa-percent"></i> Margin Used</div>
+          <div class="result-value" id="rMarginPct">—</div>
+          <div class="result-sub">of account</div>
+        </div>
+      </div>
+
+      <!-- PnL section -->
+      <div class="pnl-section">
+        <div class="pnl-section-title"><i class="fa-solid fa-chart-line"></i> Profit / Loss Estimate</div>
+        <div class="results-grid">
+          <div class="result-card danger">
+            <div class="result-label"><i class="fa-solid fa-arrow-trend-down"></i> Max Loss</div>
+            <div class="result-value neg" id="rMaxLoss">—</div>
+            <div class="result-sub" id="rMaxLossSub">if SL hit</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
+            <div class="result-value pos" id="rTP">—</div>
+            <div class="result-sub" id="rTPSub">if TP hit</div>
+          </div>
+        </div>
+
+        <!-- R:R bar -->
+        <div id="rrSection" style="display:none;margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:11px;color:var(--muted)">Risk/Reward Ratio</span>
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700" id="rRR">—</span>
+          </div>
+          <div class="pnl-bar-wrap">
+            <div class="pnl-bar" id="rrBar" style="width:0%;background:var(--accent2)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px">
+            <span>Poor (&lt;1R)</span><span>Good (2R+)</span><span>Great (3R+)</span>
+          </div>
+        </div>
+
+        <!-- Break-even -->
+        <div id="beSection" style="display:none;margin-top:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Break-even Move Required</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600" id="rBE">—</div>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        For educational purposes only. Always verify calculations with your broker. Pip values vary by broker, pair, and account currency.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
+(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
+window.addEventListener('message',e=>{if(e.data?.theme)applyTheme(e.data.theme);});
+
+let lotMode = 'auto';
+let direction = 'long';
+
+// Asset pip configs: { pipSize, pipValuePerLot (in USD for std lot), unitLabel }
+const ASSETS = {
+  forex_major: { pipSize: 0.0001, pipValuePerLot: 10,    unitLabel: 'Standard Lots' },
+  forex_jpy:   { pipSize: 0.01,   pipValuePerLot: 9.09,  unitLabel: 'Standard Lots' },
+  gold:        { pipSize: 0.1,    pipValuePerLot: 1,     unitLabel: 'Oz' },
+  indices:     { pipSize: 1,      pipValuePerLot: 1,     unitLabel: 'Contracts' },
+  crypto:      { pipSize: 1,      pipValuePerLot: 1,     unitLabel: 'Units' },
+  custom:      { pipSize: 0.0001, pipValuePerLot: 10,    unitLabel: 'Lots' },
+};
+
+function setLotMode(m){
+  lotMode=m;
+  document.getElementById('btnAuto').classList.toggle('active',m==='auto');
+  document.getElementById('btnManual').classList.toggle('active',m==='manual');
+  document.getElementById('lotField').style.display=m==='manual'?'block':'none';
+  calc();
+}
+
+function setDir(d){
+  direction=d;
+  document.getElementById('btnLong').classList.toggle('active',d==='long');
+  document.getElementById('btnShort').classList.toggle('active',d==='short');
+  calc();
+}
+
+function onAssetChange(){ calc(); }
+
+function fmt(n,decimals=2){if(n===null||isNaN(n))return'—';return n.toLocaleString('en-US',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});}
+function fmtDollar(n){if(n===null||isNaN(n))return'—';return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function calc(){
+  const balance  = parseFloat(document.getElementById('balance').value) || 0;
+  const riskPct  = parseFloat(document.getElementById('riskPct').value)  || 0;
+  const entry    = parseFloat(document.getElementById('entry').value);
+  const sl       = parseFloat(document.getElementById('stopLoss').value);
+  const tp       = parseFloat(document.getElementById('takeProfit').value);
+  const leverage = parseFloat(document.getElementById('leverage').value) || 100;
+  const assetKey = document.getElementById('assetType').value;
+  const asset    = ASSETS[assetKey];
+
+  const riskAmt = balance * (riskPct / 100);
+
+  // Track for analytics
+  if(window._calcTracked===undefined){window._calcTracked=true;if(window.posthog)posthog.capture('calculator_used',{asset:assetKey});}
+
+  // Risk amount display
+  document.getElementById('rRiskAmt').textContent = fmtDollar(riskAmt);
+  document.getElementById('rRiskPct').textContent  = fmt(riskPct,1) + '% of account';
+
+  if (!entry || !sl || isNaN(entry) || isNaN(sl)) {
+    // Show partial results only
+    ['rLotSize','rUnits','rSLPips','rPipVal','rMargin','rMarginPct','rMaxLoss','rTP'].forEach(id=>{ const el=document.getElementById(id); if(el)el.textContent='—'; });
+    document.getElementById('rrSection').style.display='none';
+    document.getElementById('beSection').style.display='none';
+    return;
+  }
+
+  // Pip calculations
+  const slDiff     = Math.abs(entry - sl);
+  const slPips     = slDiff / asset.pipSize;
+  const pipValStd  = asset.pipValuePerLot; // $ per pip per standard lot
+
+  // Position sizing
+  let lots, units;
+  if (lotMode === 'auto') {
+    // lots = riskAmt / (slPips * pipValPerLot)
+    lots = slPips > 0 ? riskAmt / (slPips * pipValStd) : 0;
+    document.getElementById('lotSize').value = lots.toFixed(4);
+  } else {
+    lots = parseFloat(document.getElementById('lotSize').value) || 0;
+  }
+
+  // For gold/indices/crypto, "lots" means contracts/oz/units
+  const standardUnitMultiplier = (assetKey === 'forex_major' || assetKey === 'forex_jpy') ? 100000 : 1;
+  units = lots * standardUnitMultiplier;
+
+  // Pip value for this position
+  const positionPipVal = lots * pipValStd;
+
+  // Margin
+  const notionalValue = (assetKey === 'forex_major' || assetKey === 'forex_jpy')
+    ? units * entry
+    : lots * entry;
+  const marginRequired = notionalValue / leverage;
+  const marginPct = balance > 0 ? (marginRequired / balance) * 100 : 0;
+
+  // PnL
+  const maxLoss   = slPips * positionPipVal;
+  let targetProfit = null, rrRatio = null;
+  if (!isNaN(tp) && tp) {
+    const tpDiff  = Math.abs(tp - entry);
+    const tpPips  = tpDiff / asset.pipSize;
+    targetProfit  = tpPips * positionPipVal;
+    rrRatio       = maxLoss > 0 ? targetProfit / maxLoss : null;
+  }
+
+  // Break-even (spread + commission proxy — show pips needed to break even)
+  // We show SL pips needed to cover the position
+  const bePips = maxLoss / positionPipVal;
+
+  // Update UI
+  document.getElementById('rLotSize').textContent = lots < 0.001 ? '< 0.001' : fmt(lots, 2);
+  document.getElementById('rUnits').textContent   = (assetKey === 'forex_major'||assetKey==='forex_jpy') ? units.toLocaleString('en-US',{maximumFractionDigits:0}) + ' units' : lots.toFixed(4) + ' ' + asset.unitLabel;
+  document.getElementById('rSLPips').textContent  = fmt(slPips, 1);
+  document.getElementById('rPipVal').textContent  = fmtDollar(positionPipVal);
+  document.getElementById('rPipValSub').textContent = 'per pip';
+  document.getElementById('rMargin').textContent  = fmtDollar(marginRequired);
+  document.getElementById('rMarginSub').textContent = `at ${leverage}:1 leverage`;
+
+  const marginPctEl = document.getElementById('rMarginPct');
+  marginPctEl.textContent = fmt(marginPct, 1) + '%';
+  marginPctEl.className   = 'result-value' + (marginPct > 30 ? ' neg' : marginPct > 15 ? ' warn' : ' pos');
+
+  // Loss (always negative direction)
+  document.getElementById('rMaxLoss').textContent = fmtDollar(maxLoss);
+  document.getElementById('rMaxLossSub').textContent = 'if SL hit';
+
+  // Profit
+  if (targetProfit !== null) {
+    document.getElementById('rTP').textContent  = fmtDollar(targetProfit);
+    document.getElementById('rTPSub').textContent = 'if TP hit';
+  } else {
+    document.getElementById('rTP').textContent  = '—';
+    document.getElementById('rTPSub').textContent = 'Set TP above';
+  }
+
+  // R:R section
+  if (rrRatio !== null) {
+    document.getElementById('rrSection').style.display = 'block';
+    const rrColor = rrRatio >= 3 ? 'var(--accent)' : rrRatio >= 2 ? 'var(--accent2)' : rrRatio >= 1 ? '#f59e0b' : '#ff5f6d';
+    const rrEl = document.getElementById('rRR');
+    rrEl.textContent = '1 : ' + fmt(rrRatio, 2);
+    rrEl.style.color = rrColor;
+    // Bar: 0-100% mapped to 0-3+ R
+    const barPct = Math.min((rrRatio / 3) * 100, 100);
+    const bar = document.getElementById('rrBar');
+    bar.style.width = barPct + '%';
+    bar.style.background = rrColor;
+  } else {
+    document.getElementById('rrSection').style.display = 'none';
+  }
+
+  // Break-even
+  if (bePips > 0) {
+    document.getElementById('beSection').style.display = 'block';
+    document.getElementById('rBE').textContent = fmt(bePips, 1) + ' pips (' + fmtDollar(maxLoss) + ')';
+  } else {
+    document.getElementById('beSection').style.display = 'none';
+  }
+}
+
+// Init
+calc();
+</script>
+</body>
+</html>
