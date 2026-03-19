@@ -200,17 +200,24 @@ async function startCheckout(){
   btn.classList.add('loading');
   btn.innerHTML='<i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>Redirecting to checkout…';
   try{
+    // Use SUPABASE_URL from supabase.js, with explicit fallback so fetch never goes to "undefined/..."
+    const fnUrl = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'https://oixrpuqylidbunbttftg.supabase.co') + '/functions/v1/create-checkout';
+    console.log('Calling:', fnUrl);
+
     const{data:{session}}=await db.auth.getSession();
+    console.log('Session:', session ? 'ok' : 'MISSING');
     if(!session)throw new Error('Please sign in first');
-    const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`,{
+
+    const res=await fetch(fnUrl,{
       method:'POST',
       headers:{
         'Authorization':'Bearer '+session.access_token,
         'Content-Type':'application/json'
       }
-      // No body — price ID and redirect URLs are configured in edge function env vars
     });
+    console.log('Response status:', res.status);
     const data=await res.json();
+    console.log('Response body:', JSON.stringify(data));
     if(!res.ok){
       if(res.status===400&&data.error==='Already on Pro'){
         document.getElementById('proActiveBanner').classList.add('show');
@@ -226,6 +233,7 @@ async function startCheckout(){
       throw new Error('No checkout URL returned');
     }
   }catch(e){
+    console.error('startCheckout error:', e);
     showToast(e.message,'fa-solid fa-circle-exclamation','red');
     btn.classList.remove('loading');
     btn.innerHTML='<i class="fa-solid fa-rocket" style="margin-right:7px"></i>Upgrade to Pro — $5/mo';
