@@ -1,64 +1,90 @@
 // supabase/functions/delete-account/index.ts
 // Deploy: supabase functions deploy delete-account
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Content-Type": "application/json",
+};
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return new Response(
-      JSON.stringify({ error: 'Missing authorization header' }),
-      { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
-    )
-
-    // Validate caller JWT
-    const userClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
-    const { data: { user }, error: authErr } = await userClient.auth.getUser()
-    if (authErr || !user) return new Response(
-      JSON.stringify({ error: 'Invalid or expired token' }),
-      { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
-    )
-
-    // Service-role client for privileged operations
-    const admin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    )
-
-    // Delete user data — ON DELETE CASCADE handles most of it,
-    // but explicit order avoids FK constraint errors
-    for (const table of ['trade_images','trades','journal_settings','journals','profiles']) {
-      const { error } = await admin.from(table).delete().eq('user_id', user.id)
-      if (error) console.error(`delete ${table}:`, error.message)
+    // ── 1. Authenticate ──────────────────────────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "No auth header" }), { status: 401, headers: CORS });
     }
 
-    // Delete auth user last
-    const { error: delErr } = await admin.auth.admin.deleteUser(user.id)
-    if (delErr) return new Response(
-      JSON.stringify({ error: delErr.message }),
-      { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
-    )
+    const token = authHeader.replace("Bearer ", "").trim();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200, headers: { ...CORS, 'Content-Type': 'application/json' }
-    })
+    // Verify JWT via raw fetch — same approach as create-checkout (proven to work)
+    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "apikey": serviceKey,
+      },
+    });
+    const userData = await userRes.json();
 
-  } catch (err) {
-    console.error(err)
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500, headers: { ...CORS, 'Content-Type': 'application/json' }
-    })
+    if (!userData?.id) {
+      console.error("Auth failed:", JSON.stringify(userData));
+      return new Response(JSON.stringify({ error: "Invalid or expired session. Please sign in again." }), {
+        status: 401, headers: CORS,
+      });
+    }
+
+    const userId = userData.id;
+    console.log("Deleting account for user:", userId);
+
+    // ── 2. Delete all user data via REST API (service role) ──
+    // Explicit delete in order — CASCADE handles it but this is safer
+    const tables = ["trade_images", "trades", "journal_settings", "journals", "profiles"];
+    for (const table of tables) {
+      const res = await fetch(`${supabaseUrl}/rest/v1/${table}?user_id=eq.${userId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${serviceKey}`,
+          "apikey": serviceKey,
+          "Prefer": "return=minimal",
+        },
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`Failed to delete from ${table}:`, err);
+        // Continue — partial cleanup is better than stopping
+      } else {
+        console.log(`Deleted from ${table}`);
+      }
+    }
+
+    // ── 3. Delete the auth user (must be last) ───────────────
+    const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${serviceKey}`,
+        "apikey": serviceKey,
+      },
+    });
+
+    if (!deleteRes.ok) {
+      const err = await deleteRes.json().catch(() => ({ message: deleteRes.statusText }));
+      console.error("Auth user deletion failed:", JSON.stringify(err));
+      return new Response(JSON.stringify({ error: "Failed to delete auth user: " + (err.message || deleteRes.statusText) }), {
+        status: 500, headers: CORS,
+      });
+    }
+
+    console.log("Account successfully deleted for user:", userId);
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: CORS });
+
+  } catch (err: any) {
+    console.error("FATAL:", err.message);
+    return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
+      status: 500, headers: CORS,
+    });
   }
-})
+});
