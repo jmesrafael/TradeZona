@@ -8,16 +8,14 @@
 //    supabase secrets set STRIPE_SECRET_KEY=sk_live_XXXX
 // 4. Deploy: supabase functions deploy stripe-webhook
 // 5. In Stripe Dashboard → Webhooks → Add endpoint:
-//    URL: https://<your-project-ref>.supabase.co/functions/v1/stripe-webhook
+//    URL: https://oixrpuqylidbunbttftg.supabase.co/functions/v1/stripe-webhook
 //    Events to listen for:
 //      - checkout.session.completed
 //      - customer.subscription.deleted
 //      - customer.subscription.updated
 //    Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET
 //
-// DB requirement: Run this in Supabase SQL Editor:
-//   ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_customer_id text;
-//   ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_subscription_id text;
+// DB requirement: Run migration_stripe.sql in Supabase SQL Editor first
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.18.0?target=deno&no-check";
@@ -38,7 +36,7 @@ serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
 
-  // 1. Verify webhook came from Stripe (not a fake request)
+  // 1. Verify webhook came from Stripe
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(
@@ -57,7 +55,7 @@ serve(async (req) => {
   try {
     switch (event.type) {
 
-      // ── Payment succeeded → upgrade user to Pro ──────────
+      // ── Payment succeeded → upgrade user to Pro ──────────────
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.CheckoutSession;
         const userId = session.metadata?.supabase_user_id;

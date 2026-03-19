@@ -526,20 +526,38 @@ async function saveNotes(){
   try{
     await updateTrade(activeNotesId,{notes:newNotes});t.notes=newNotes;
     const keepIds=new Set(imgBuffer.filter(i=>i.id).map(i=>i.id));
-    for(const img of(t.images||[])){if(img.id&&!keepIds.has(img.id))await deleteTradeImage(img.id,img.storage_path||null);}
+    for(const img of(t.images||[])){if(img.id&&!keepIds.has(img.id))await deleteTradeImage(img.id);}
     const final=[];
-    for(const img of imgBuffer){if(img.id){final.push(img);}else{const saved=await addTradeImage(currentUser.id,activeNotesId,img._previewUrl||img.data);final.push({id:saved.id,storage_path:saved.storage_path||null,data:saved.data||null,_previewUrl:img._previewUrl||img.data});}}
+    for(const img of imgBuffer){
+      if(img.id){final.push(img);}
+      else{
+        const saved=await addTradeImage(currentUser.id,activeNotesId,img._previewUrl||img.data);
+        final.push({id:saved.id,data:saved.data||img._previewUrl||img.data,_previewUrl:img._previewUrl||img.data});
+      }
+    }
     t.images=final;
     const tr=document.querySelector(`tr[data-id="${activeNotesId}"]`);
     if(tr){const btn=tr.querySelector('.notes-btn');if(btn){const hasN=(newNotes&&newNotes.trim())||final.length>0;btn.className=`notes-btn${hasN?' hc':''}`;btn.innerHTML=hasN?`<i class="fa-solid fa-note-sticky"></i> View${final.length?`<span style="font-size:10px;background:var(--accent2);color:#0b0f0c;border-radius:10px;padding:1px 5px;font-weight:700">${final.length}</span>`:''}`:`<i class="fa-regular fa-note-sticky"></i> Add`;}}
     closeNotes();setSaveInd('saved');
   }catch(e){showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
-function renderImgs(){const box=document.getElementById('nmImgs'),cnt=document.getElementById('imgCntLbl');cnt.textContent=imgBuffer.length?`(${imgBuffer.length})`:'';if(!imgBuffer.length){box.innerHTML='<div class="no-imgs"><i class="fa-solid fa-image" style="margin-right:5px;opacity:.4"></i>No images attached.</div>';return;}box.innerHTML=imgBuffer.map((img,i)=>{const src=img._previewUrl||img.data||'';return`<div class="img-thumb"><img src="${src}" alt="" onclick="openLb('${src.startsWith('data')?src:''}','${img.storage_path||''}')" loading="lazy"><button class="del-img" onclick="rmImg(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;}).join('');}
+function renderImgs(){
+  const box=document.getElementById('nmImgs'),cnt=document.getElementById('imgCntLbl');
+  cnt.textContent=imgBuffer.length?`(${imgBuffer.length})`:'';
+  if(!imgBuffer.length){box.innerHTML='<div class="no-imgs"><i class="fa-solid fa-image" style="margin-right:5px;opacity:.4"></i>No images attached.</div>';return;}
+  box.innerHTML=imgBuffer.map((img,i)=>{
+    const src=img._previewUrl||img.data||'';
+    return`<div class="img-thumb"><img src="${src}" alt="" onclick="openLb('${src}')" loading="lazy"><button class="del-img" onclick="rmImg(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
+  }).join('');
+}
 function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
 function handleUpload(e){[...e.target.files].forEach(f=>{if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(f);});e.target.value='';}
 document.addEventListener('paste',e=>{if(!document.getElementById('nOverlay').classList.contains('open'))return;if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}[...e.clipboardData.items].forEach(item=>{if(item.type.startsWith('image/')){const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(item.getAsFile());}});});
-async function openLb(src,storagePath){const lbImg=document.getElementById('lbImg');lbImg.src='';document.getElementById('lb').classList.add('open');if(src){lbImg.src=src;}else if(storagePath){const url=await getImageUrl({storage_path:storagePath});lbImg.src=url;}}
+function openLb(src){
+  const lbImg=document.getElementById('lbImg');
+  lbImg.src=src||'';
+  document.getElementById('lb').classList.add('open');
+}
 
 // ── Analytics ──────────────────────────────────────────────────
 function toggleAnalytics(){analyticsOn=!analyticsOn;localStorage.setItem('tl_analytics_on',analyticsOn);applyAnalyticsState();updateAnalytics();}

@@ -202,21 +202,24 @@ async function startCheckout(){
   try{
     const{data:{session}}=await db.auth.getSession();
     if(!session)throw new Error('Please sign in first');
-    // Uses SUPABASE_URL from supabase.js — no hardcoded placeholder
     const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`,{
       method:'POST',
       headers:{
         'Authorization':'Bearer '+session.access_token,
         'Content-Type':'application/json'
-      },
-      body:JSON.stringify({
-        price_id:'price_REPLACE_WITH_YOUR_STRIPE_PRICE_ID',
-        success_url:window.location.origin+'/dashboard?upgraded=1',
-        cancel_url:window.location.origin+'/subscription'
-      })
+      }
+      // No body — price ID and redirect URLs are configured in edge function env vars
     });
     const data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Checkout failed');
+    if(!res.ok){
+      if(res.status===400&&data.error==='Already on Pro'){
+        document.getElementById('proActiveBanner').classList.add('show');
+        btn.textContent='Manage Subscription';btn.classList.remove('loading');
+        btn.onclick=()=>openBillingPortal();
+        return;
+      }
+      throw new Error(data.error||'Checkout failed');
+    }
     if(data.url){
       window.location.href=data.url;
     }else{
@@ -251,9 +254,14 @@ async function openBillingPortal(){
   }
 }
 
-// Handle ?upgraded=1 redirect from Stripe
-if(new URLSearchParams(location.search).get('upgraded')==='1'){
-  showToast('Welcome to Pro! 🎉','fa-solid fa-star','green');
+// Handle redirects back from Stripe checkout
+const _params=new URLSearchParams(location.search);
+if(_params.get('upgraded')==='1'){
+  showToast('Welcome to Pro! 🎉 Your account has been upgraded.','fa-solid fa-star','green');
+  history.replaceState({},'','/subscription');
+}
+if(_params.get('cancelled')==='1'){
+  showToast('Checkout cancelled — no charge was made.','fa-solid fa-circle-info','');
   history.replaceState({},'','/subscription');
 }
 

@@ -1,3 +1,5 @@
+// supabase/functions/create-checkout/index.ts
+// Deploy: supabase functions deploy create-checkout
 Deno.serve(async (req) => {
   const cors = {
     "Access-Control-Allow-Origin": "*",

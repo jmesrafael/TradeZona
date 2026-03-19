@@ -6,12 +6,6 @@
 const SUPABASE_URL  = 'https://oixrpuqylidbunbttftg.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho';
 
-// Storage bucket name — create this in Supabase Dashboard → Storage
-const IMAGE_BUCKET = 'trade-images';
-
-// Signed URL in-memory cache — avoids re-fetching for the same path within a session
-const _urlCache = new Map();
-
 const { createClient } = supabase;
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
@@ -34,6 +28,7 @@ db.auth.onAuthStateChange((event) => {
     }
   }
 
+  // Redirect to reset-password page when magic link is clicked
   if (event === 'PASSWORD_RECOVERY') {
     if (!path.includes('reset-password')) {
       window.location.href = '/reset-password';
@@ -42,6 +37,7 @@ db.auth.onAuthStateChange((event) => {
 });
 
 // ── requireAuth ───────────────────────────────────────────
+// Server-validates the JWT. Call at the top of every protected page.
 async function requireAuth() {
   const { data: { user }, error } = await db.auth.getUser();
   if (error || !user) {
@@ -86,19 +82,16 @@ async function createJournal(userId, { name, capital, pin_hash, show_pnl = true,
     .single();
   if (error) throw error;
 
-  // Default tags kept to exactly 3 per category so Free users never
-  // immediately hit the 3-tag limit on a fresh journal.
   await db.from('journal_settings').insert({
     journal_id:  data.id,
     user_id:     userId,
-    strategies:  ['Breakout', 'Reversal', 'Trend'],
-    timeframes:  ['M15', 'H1', 'H4'],
-    pairs:       ['EURUSD', 'XAUUSD', 'BTCUSD'],
-    moods:       ['Confident', 'Neutral', 'Anxious'],
+    strategies:  ['Breakout','Reversal','Trend Continuation','Liquidity Sweep','Scalp','Swing'],
+    timeframes:  ['M1','M5','M15','M30','H1','H4','D1','W1'],
+    pairs:       ['EURUSD','GBPUSD','BTCUSD','XAUUSD','USDJPY','GBPJPY','NASDAQ','US30'],
+    moods:       ['Euphoric','Confident','Neutral','Doubtful','Anxious','Fearful','Revenge','Focused'],
     mood_colors: {
-      Confident: '#22c55e',
-      Neutral:   '#64748b',
-      Anxious:   '#ef4444',
+      Euphoric:'#f59e0b', Confident:'#22c55e', Neutral:'#64748b', Doubtful:'#f97316',
+      Anxious:'#ef4444',  Fearful:'#dc2626',   Revenge:'#a855f7', Focused:'#3b82f6'
     }
   });
   return data;
@@ -110,25 +103,7 @@ async function updateJournal(journalId, updates) {
 }
 
 async function deleteJournal(journalId) {
-  const { data: trades } = await db
-    .from('trades')
-    .select('id')
-    .eq('journal_id', journalId);
-
-  if (trades?.length) {
-    const tradeIds = trades.map(t => t.id);
-    const { data: images } = await db
-      .from('trade_images')
-      .select('storage_path')
-      .in('trade_id', tradeIds)
-      .not('storage_path', 'is', null);
-
-    if (images?.length) {
-      const paths = images.map(i => i.storage_path).filter(Boolean);
-      if (paths.length) await db.storage.from(IMAGE_BUCKET).remove(paths);
-    }
-  }
-
+  // trades and trade_images are deleted automatically via ON DELETE CASCADE
   const { error } = await db.from('journals').delete().eq('id', journalId);
   if (error) throw error;
 }
@@ -137,7 +112,7 @@ async function deleteJournal(journalId) {
 async function getTrades(journalId) {
   const { data, error } = await db
     .from('trades')
-    .select('*, trade_images(id, data, storage_path)')
+    .select('*, trade_images(id, data)')
     .eq('journal_id', journalId)
     .order('created_at', { ascending: false });
   if (error) { console.error('getTrades:', error); return []; }
@@ -162,20 +137,7 @@ async function updateTrade(tradeId, updates) {
 }
 
 async function deleteTrade(tradeId) {
-  const { data: images } = await db
-    .from('trade_images')
-    .select('storage_path')
-    .eq('trade_id', tradeId)
-    .not('storage_path', 'is', null);
-
-  if (images?.length) {
-    const paths = images.map(i => i.storage_path).filter(Boolean);
-    if (paths.length) {
-      await db.storage.from(IMAGE_BUCKET).remove(paths);
-      paths.forEach(p => _urlCache.delete(p));
-    }
-  }
-
+  // trade_images rows are deleted automatically via ON DELETE CASCADE
   const { error } = await db.from('trades').delete().eq('id', tradeId);
   if (error) throw error;
 }
@@ -212,82 +174,41 @@ function dbToTrade(row) {
     mood:       row.mood        || [],
     notes:      row.notes       || '',
     images: (row.trade_images || []).map(img => ({
-      id:           img.id,
-      storage_path: img.storage_path || null,
-      data:         img.storage_path ? null : (img.data || ''),
+      id:   img.id,
+      data: img.data || '',
     }))
   };
 }
 
-// ── Trade Images ──────────────────────────────────────────
+// ── Trade Images — Supabase Storage ──────────────────────
+/**
+ * Save a base64 image to the trade_images table (data column).
+ * Works with the current schema — no Storage bucket or migration required.
+ */
 async function addTradeImage(userId, tradeId, base64DataUrl) {
-  let blob = null, ext = 'jpg', mimeType = 'image/jpeg';
-
-  try {
-    const [header, b64] = base64DataUrl.split(',');
-    mimeType  = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
-    ext       = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
-    const raw = atob(b64);
-    const buf = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
-    blob = new Blob([buf], { type: mimeType });
-  } catch (e) {
-    console.warn('addTradeImage: base64 parse failed, using DB fallback', e);
-  }
-
-  if (blob) {
-    const path = `${userId}/${tradeId}/${Date.now()}.${ext}`;
-    const { error: uploadErr } = await db.storage
-      .from(IMAGE_BUCKET)
-      .upload(path, blob, { contentType: mimeType, upsert: false });
-
-    if (!uploadErr) {
-      const { data, error: dbErr } = await db
-        .from('trade_images')
-        .insert({ trade_id: tradeId, user_id: userId, storage_path: path, data: null })
-        .select()
-        .single();
-      if (dbErr) throw dbErr;
-      _urlCache.set(path, base64DataUrl);
-      return { ...data, _previewUrl: base64DataUrl };
-    }
-    console.warn('addTradeImage: Storage upload failed, falling back to DB base64', uploadErr);
-  }
-
   const { data, error } = await db
     .from('trade_images')
-    .insert({ trade_id: tradeId, user_id: userId, data: base64DataUrl, storage_path: null })
+    .insert({ trade_id: tradeId, user_id: userId, data: base64DataUrl })
     .select()
     .single();
   if (error) throw error;
-  return data;
+  return { ...data, _previewUrl: base64DataUrl };
 }
 
+/**
+ * Get the display URL for an image.
+ * Images are stored as base64 in the data column — return directly.
+ */
 async function getImageUrl(img) {
   if (!img) return '';
   if (img._previewUrl) return img._previewUrl;
-
-  if (img.storage_path) {
-    if (_urlCache.has(img.storage_path)) return _urlCache.get(img.storage_path);
-    const { data, error } = await db.storage
-      .from(IMAGE_BUCKET)
-      .createSignedUrl(img.storage_path, 3600);
-    if (!error && data?.signedUrl) {
-      _urlCache.set(img.storage_path, data.signedUrl);
-      return data.signedUrl;
-    }
-    console.warn('getImageUrl: signed URL failed', error);
-    return '';
-  }
-
   return img.data || '';
 }
 
-async function deleteTradeImage(imageId, storagePath) {
-  if (storagePath) {
-    await db.storage.from(IMAGE_BUCKET).remove([storagePath]);
-    _urlCache.delete(storagePath);
-  }
+/**
+ * Delete an image row from trade_images.
+ */
+async function deleteTradeImage(imageId) {
   const { error } = await db.from('trade_images').delete().eq('id', imageId);
   if (error) throw error;
 }
@@ -319,7 +240,7 @@ function subscribeTrades(journalId, callback) {
     .subscribe();
 }
 
-// ── PIN security ──────────────────────────────────────────
+// ── PIN security (SHA-256 via Web Crypto) ─────────────────
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
