@@ -34,7 +34,6 @@ db.auth.onAuthStateChange((event) => {
     }
   }
 
-  // Redirect to reset-password page when magic link is clicked
   if (event === 'PASSWORD_RECOVERY') {
     if (!path.includes('reset-password')) {
       window.location.href = '/reset-password';
@@ -43,7 +42,6 @@ db.auth.onAuthStateChange((event) => {
 });
 
 // ── requireAuth ───────────────────────────────────────────
-// Server-validates the JWT. Call at the top of every protected page.
 async function requireAuth() {
   const { data: { user }, error } = await db.auth.getUser();
   if (error || !user) {
@@ -88,16 +86,19 @@ async function createJournal(userId, { name, capital, pin_hash, show_pnl = true,
     .single();
   if (error) throw error;
 
+  // Default tags kept to exactly 3 per category so Free users never
+  // immediately hit the 3-tag limit on a fresh journal.
   await db.from('journal_settings').insert({
     journal_id:  data.id,
     user_id:     userId,
-    strategies:  ['Breakout','Reversal','Trend Continuation','Liquidity Sweep','Scalp','Swing'],
-    timeframes:  ['M1','M5','M15','M30','H1','H4','D1','W1'],
-    pairs:       ['EURUSD','GBPUSD','BTCUSD','XAUUSD','USDJPY','GBPJPY','NASDAQ','US30'],
-    moods:       ['Euphoric','Confident','Neutral','Doubtful','Anxious','Fearful','Revenge','Focused'],
+    strategies:  ['Breakout', 'Reversal', 'Trend'],
+    timeframes:  ['M15', 'H1', 'H4'],
+    pairs:       ['EURUSD', 'XAUUSD', 'BTCUSD'],
+    moods:       ['Confident', 'Neutral', 'Anxious'],
     mood_colors: {
-      Euphoric:'#f59e0b', Confident:'#22c55e', Neutral:'#64748b', Doubtful:'#f97316',
-      Anxious:'#ef4444',  Fearful:'#dc2626',   Revenge:'#a855f7', Focused:'#3b82f6'
+      Confident: '#22c55e',
+      Neutral:   '#64748b',
+      Anxious:   '#ef4444',
     }
   });
   return data;
@@ -109,7 +110,6 @@ async function updateJournal(journalId, updates) {
 }
 
 async function deleteJournal(journalId) {
-  // Clean up Storage images before deleting the journal
   const { data: trades } = await db
     .from('trades')
     .select('id')
@@ -162,7 +162,6 @@ async function updateTrade(tradeId, updates) {
 }
 
 async function deleteTrade(tradeId) {
-  // Remove images from Storage first
   const { data: images } = await db
     .from('trade_images')
     .select('storage_path')
@@ -212,7 +211,6 @@ function dbToTrade(row) {
     confidence: row.confidence  || 0,
     mood:       row.mood        || [],
     notes:      row.notes       || '',
-    // Map image rows — storage_path is new, data is legacy base64
     images: (row.trade_images || []).map(img => ({
       id:           img.id,
       storage_path: img.storage_path || null,
@@ -221,16 +219,7 @@ function dbToTrade(row) {
   };
 }
 
-// ── Trade Images — Supabase Storage ──────────────────────
-/**
- * Upload a base64 image to Supabase Storage.
- * Falls back to storing base64 in DB if the bucket is unavailable.
- *
- * @param {string} userId
- * @param {string} tradeId
- * @param {string} base64DataUrl  — "data:image/png;base64,..."
- * @returns {Promise<{id, storage_path, data, _previewUrl}>}
- */
+// ── Trade Images ──────────────────────────────────────────
 async function addTradeImage(userId, tradeId, base64DataUrl) {
   let blob = null, ext = 'jpg', mimeType = 'image/jpeg';
 
@@ -248,7 +237,6 @@ async function addTradeImage(userId, tradeId, base64DataUrl) {
 
   if (blob) {
     const path = `${userId}/${tradeId}/${Date.now()}.${ext}`;
-
     const { error: uploadErr } = await db.storage
       .from(IMAGE_BUCKET)
       .upload(path, blob, { contentType: mimeType, upsert: false });
@@ -260,14 +248,12 @@ async function addTradeImage(userId, tradeId, base64DataUrl) {
         .select()
         .single();
       if (dbErr) throw dbErr;
-      // Cache the base64 preview so we don't need to fetch a signed URL immediately
       _urlCache.set(path, base64DataUrl);
       return { ...data, _previewUrl: base64DataUrl };
     }
     console.warn('addTradeImage: Storage upload failed, falling back to DB base64', uploadErr);
   }
 
-  // Fallback: store base64 in DB (legacy)
   const { data, error } = await db
     .from('trade_images')
     .insert({ trade_id: tradeId, user_id: userId, data: base64DataUrl, storage_path: null })
@@ -277,27 +263,15 @@ async function addTradeImage(userId, tradeId, base64DataUrl) {
   return data;
 }
 
-/**
- * Resolve a displayable URL for an image row.
- *
- * Priority:
- *  1. In-memory preview (_previewUrl set right after upload — zero latency)
- *  2. Cached signed URL from this session
- *  3. Fresh signed URL from Storage (cached for 1 hour)
- *  4. Legacy base64 data field
- */
 async function getImageUrl(img) {
   if (!img) return '';
   if (img._previewUrl) return img._previewUrl;
 
   if (img.storage_path) {
-    // Check session cache first
     if (_urlCache.has(img.storage_path)) return _urlCache.get(img.storage_path);
-
     const { data, error } = await db.storage
       .from(IMAGE_BUCKET)
       .createSignedUrl(img.storage_path, 3600);
-
     if (!error && data?.signedUrl) {
       _urlCache.set(img.storage_path, data.signedUrl);
       return data.signedUrl;
@@ -306,14 +280,9 @@ async function getImageUrl(img) {
     return '';
   }
 
-  // Legacy base64
   return img.data || '';
 }
 
-/**
- * Delete an image from both Storage and the DB.
- * Pass storage_path if known to clean up the bucket.
- */
 async function deleteTradeImage(imageId, storagePath) {
   if (storagePath) {
     await db.storage.from(IMAGE_BUCKET).remove([storagePath]);
@@ -350,7 +319,7 @@ function subscribeTrades(journalId, callback) {
     .subscribe();
 }
 
-// ── PIN security (SHA-256 via Web Crypto) ─────────────────
+// ── PIN security ──────────────────────────────────────────
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');

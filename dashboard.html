@@ -6,11 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<!-- PostHog Analytics — replace YOUR_POSTHOG_KEY with your real key from app.posthog.com -->
-<script>
-!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-posthog.init('YOUR_POSTHOG_KEY',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true});
-</script>
+<!-- PostHog — replace YOUR_POSTHOG_KEY -->
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('YOUR_POSTHOG_KEY',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true});</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -20,12 +17,15 @@ posthog.init('YOUR_POSTHOG_KEY',{api_host:'https://us.i.posthog.com',person_prof
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* Loader */
 .page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
 .page-loader.gone{opacity:0;pointer-events:none}
-.pl-logo{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center}
+.pl-logo{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;text-align:center;margin-bottom:20px}
 .pl-logo span{color:var(--accent)}
 .pl-spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--panel)}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap;gap:10px}
 .logo{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;cursor:pointer;user-select:none}
 .logo span{color:var(--accent)}
 .hright{display:flex;align-items:center;gap:8px}
@@ -37,88 +37,115 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .badge-free:hover{border-color:var(--accent2);color:var(--accent2)}
 .btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--text)}
+/* Main */
 main{padding:32px;max-width:1100px;margin:0 auto}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+@media(max-width:600px){main{padding:20px 16px}}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
 .sec-hdr h2{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
 .btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:7px}
 .btn-primary:hover{opacity:.85}
+/* Skeleton */
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skel{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:8px}
-.skel-card{height:140px;border-radius:12px;border:1px solid var(--border)}
-.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
-.jcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,transform .15s;position:relative;cursor:default}
+.skel-card{height:170px;border-radius:12px;border:1px solid var(--border)}
+.skel-grid,.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
+/* Journal cards */
+.jcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;transition:border-color .2s,transform .15s}
 .jcard:hover{border-color:var(--accent2);transform:translateY(-1px)}
-.jcard h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:8px}
-.jcard .cap{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.jcard .pnl-row{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
-.jcard .pnl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.jcard .pnl-val{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
+.jcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px}
+.jcard h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;word-break:break-word;flex:1}
+/* PIN lock badge on card */
+.pin-lock{width:26px;height:26px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.25);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:11px;flex-shrink:0}
+.jcard .cap{font-size:12px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.pnl-row{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
+.pnl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.pnl-val{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
 .pnl-pos{color:var(--accent)!important}.pnl-neg{color:#ff5f6d!important}
 .open-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);border:1px solid rgba(0,255,136,.4);border-radius:6px;padding:7px 14px;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .open-btn:hover{background:var(--accent);color:#0b0f0c}
 .empty-state{color:var(--muted);font-size:14px;padding:56px 0;text-align:center;grid-column:1/-1;line-height:1.9}
 .empty-state i{display:block;font-size:36px;margin-bottom:12px;opacity:.3}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+/* Overlay */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:0;width:100%;max-width:460px;margin:20px;overflow:hidden}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+/* Modal */
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;overflow:hidden;max-height:92vh;display:flex;flex-direction:column}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
 .modal-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600}
 .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s}
 .modal-close:hover{background:var(--border);color:var(--text)}
-.modal-body{padding:24px}
-.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+/* Field */
 .field{margin-bottom:16px}
 .field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
-.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
-.field input:focus,.field select:focus{border-color:var(--accent2)}
-.field select option{background:var(--panel)}
+.fi{position:relative}
+.fi input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.fi input:focus{border-color:var(--accent2)}
+.fi input.no-icon{padding-right:13px}
+.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color .15s;line-height:1}
+.eye-btn:hover{color:var(--text)}
+.field input.plain{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.field input.plain:focus{border-color:var(--accent2)}
 .btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
 .btn-cancel:hover{border-color:var(--muted)}
-/* settings modal */
+/* Settings modal sections */
 .settings-modal{max-width:520px}
-.set-section{margin-bottom:24px}
-.set-section:last-child{margin-bottom:0}
+.set-sec{margin-bottom:24px}
+.set-sec:last-child{margin-bottom:0}
 .set-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .set-title i{color:var(--accent2)}
-.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .theme-opt{border:1px solid var(--border);border-radius:9px;padding:12px 10px;text-align:center;cursor:pointer;transition:all .18s;font-size:13px;color:var(--muted)}
 .theme-opt:hover{border-color:var(--accent2);color:var(--text)}
 .theme-opt.active{border-color:var(--accent2);background:rgba(0,255,136,.06);color:var(--accent2);font-weight:600}
 .theme-opt i{display:block;font-size:20px;margin-bottom:6px}
 .plan-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
 .plan-row:last-child{border-bottom:none}
-.plan-lbl{font-size:13px;font-weight:500}
-.plan-val{font-size:12px;color:var(--muted)}
+.pr-lbl{font-size:13px;font-weight:500}
+.pr-val{font-size:12px;color:var(--muted)}
 .upgrade-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .upgrade-btn:hover{opacity:.85}
 .links-row{display:flex;flex-direction:column;gap:4px}
 .link-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:var(--text)}
 .link-item:hover{background:rgba(255,255,255,.04)}
 .link-item i.arr{color:var(--muted);font-size:11px}
-/* Delete account in settings */
-.del-account-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,95,109,.06);border:1px solid rgba(255,95,109,.35);color:#ff5f6d;border-radius:8px;padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;width:100%;justify-content:center}
-.del-account-btn:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
+/* Danger in settings */
+.danger-title{color:#ff5f6d!important}
+.danger-title i{color:#ff5f6d!important}
+.btn-danger-full{display:flex;align-items:center;gap:7px;background:rgba(255,95,109,.06);border:1px solid rgba(255,95,109,.3);color:#ff5f6d;border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;width:100%;justify-content:center}
+.btn-danger-full:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
 /* Delete account modal */
-.del-acc-modal{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:440px;padding:28px;margin:20px}
-.del-acc-icon{width:52px;height:52px;background:rgba(255,95,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:#ff5f6d}
-.warn-list{background:rgba(255,95,109,.05);border:1px solid rgba(255,95,109,.18);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:7px}
+.del-modal{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:440px;padding:28px}
+.del-icon{width:54px;height:54px;background:rgba(255,95,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:#ff5f6d}
+.warn-list{background:rgba(255,95,109,.05);border:1px solid rgba(255,95,109,.18);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
 .warn-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .warn-item i{color:#ff5f6d;width:14px;text-align:center;flex-shrink:0}
-.del-acc-progress{display:none;text-align:center;padding:14px 0}
-.del-acc-progress.show{display:block}
-.del-acc-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:#ff5f6d;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
-/* ad slots */
-.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
+.del-progress{display:none;text-align:center;padding:14px 0}
+.del-progress.show{display:block}
+.del-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:#ff5f6d;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+/* Ad */
+.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .ad-slot.visible{display:block}
-.ad-upgrade-nudge{margin-top:12px;padding:12px 16px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.ad-upgrade-nudge.visible{display:flex}
-.ad-nudge-text{font-size:12px;color:var(--muted);line-height:1.5}
-.ad-nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
-.ad-nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
-.ad-nudge-btn:hover{opacity:.85}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px}
-#toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+.nudge{margin-top:12px;padding:12px 16px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nudge.visible{display:flex}
+.nudge-text{font-size:12px;color:var(--muted);line-height:1.5}
+.nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
+.nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
+.nudge-btn:hover{opacity:.85}
+/* Toast — TOP center, green/red variants */
+#toast{
+  position:fixed;top:20px;left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);
+  box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw
+}
+#toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0);animation:slideDown .25s ease}
+#toast.toast-green{border-color:rgba(0,255,136,.45);background:rgba(0,255,136,.08)}
+#toast.toast-red{border-color:rgba(255,95,109,.45);background:rgba(255,95,109,.08)}
 </style>
 </head>
 <body>
@@ -127,12 +154,12 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 </div>
 
 <header>
-  <div class="logo" onclick="window.location.href='/dashboard'">Trade<span>Zona</span></div>
+  <div class="logo" onclick="location.href='/dashboard'">Trade<span>Zona</span></div>
   <div class="hright">
     <div class="huser">
       <i class="fa-solid fa-circle-user" style="color:var(--muted);font-size:15px"></i>
       <span class="uname" id="uName">—</span>
-      <span class="plan-badge badge-free" id="planBadge" onclick="window.location.href='/subscription'" title="View plan">Free</span>
+      <span class="plan-badge badge-free" id="planBadge" onclick="location.href='/subscription'">Free</span>
     </div>
     <button class="btn-ghost" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Settings</button>
     <button class="btn-ghost" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
@@ -148,270 +175,371 @@ main{padding:32px;max-width:1100px;margin:0 auto}
     <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
   </div>
   <div class="grid" id="grid" style="display:none"></div>
-
-  <div class="ad-slot" id="dashAdSlot" style="margin-top:28px">
+  <div class="ad-slot" id="adSlot" style="margin-top:28px">
     <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6">Advertisement</div>
-    <div style="min-height:90px;display:flex;align-items:center;justify-content:center">
-      <ins class="adsbygoogle" style="display:block;width:100%;min-height:90px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-      <div id="dashAdPlaceholder" style="width:100%;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-        <div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Ad will appear here (Free users)</div><div style="font-size:12px;color:var(--muted)">Replace publisher ID with your real AdSense ID</div></div>
-        <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,.04);border:1px dashed var(--border);border-radius:8px;padding:10px 14px;text-align:center"><i class="fa-solid fa-rectangle-ad" style="display:block;font-size:22px;margin-bottom:5px;opacity:.3"></i>728×90</div>
-      </div>
+    <div style="min-height:90px;padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Ad placeholder (Free users)</div><div style="font-size:12px;color:var(--muted)">Replace ca-pub-XXXXXXXX with your AdSense ID</div></div>
     </div>
   </div>
-  <div class="ad-upgrade-nudge" id="dashUpgradeNudge">
-    <div class="ad-nudge-text"><strong><i class="fa-solid fa-circle-xmark" style="color:#ff5f6d;margin-right:5px"></i>Remove ads &amp; unlock everything</strong>Unlimited journals · Full analytics · Gallery · PIN journals · No ads.</div>
-    <button class="ad-nudge-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro — $5/mo</button>
+  <div class="nudge" id="upgradeNudge">
+    <div class="nudge-text"><strong><i class="fa-solid fa-circle-xmark" style="color:#ff5f6d;margin-right:5px"></i>Remove ads &amp; unlock everything</strong>Unlimited journals · Calculator · Full analytics · No ads.</div>
+    <button class="nudge-btn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro</button>
   </div>
 </main>
 
-<!-- Create Journal Modal -->
+<!-- ══ Create Journal ══ -->
 <div class="overlay" id="createModal">
   <div class="modal">
-    <div class="modal-hdr"><h3><i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px"></i>New Journal</h3><button class="modal-close" onclick="closeCreate()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="modal-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Give your journal a name and optionally set a starting capital amount.</p>
-      <div class="field"><label>Journal Name</label><input type="text" id="jName" placeholder="e.g. Forex, Crypto, Prop Firm…" maxlength="60" autocomplete="off" oninput="clearAlerts()"></div>
-      <div class="field"><label>Starting Capital <span style="color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0">(optional)</span></label><div style="position:relative"><span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none">$</span><input type="number" id="jCapital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px"></div></div>
+    <div class="modal-hdr">
+      <h3><i class="fa-solid fa-plus" style="color:var(--accent2);margin-right:8px"></i>New Journal</h3>
+      <button class="modal-close" onclick="closeCreate()"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-footer"><button class="btn-cancel" onclick="closeCreate()">Cancel</button><button class="btn-primary" id="createBtn" onclick="createJournalAction()"><i class="fa-solid fa-check"></i> Create Journal</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Give your journal a name and optionally set a starting capital.</p>
+      <div class="field">
+        <label>Journal Name</label>
+        <input type="text" class="plain" id="jName" placeholder="e.g. Forex, Crypto…" maxlength="60" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Starting Capital <span style="color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <div style="position:relative">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none">$</span>
+          <input type="number" class="plain" id="jCapital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
+      <button class="btn-primary" id="createBtn" onclick="doCreate()"><i class="fa-solid fa-check"></i> Create</button>
+    </div>
   </div>
 </div>
 
-<!-- Settings Modal -->
+<!-- ══ Settings Modal ══ -->
 <div class="overlay" id="settingsModal">
-  <div class="modal settings-modal" style="max-height:90vh;overflow-y:auto">
-    <div class="modal-hdr"><h3><i class="fa-solid fa-gear" style="color:var(--accent2);margin-right:8px"></i>Settings</h3><button class="modal-close" onclick="closeSettings()"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="modal settings-modal">
+    <div class="modal-hdr">
+      <h3><i class="fa-solid fa-gear" style="color:var(--accent2);margin-right:8px"></i>Settings</h3>
+      <button class="modal-close" onclick="closeSettings()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
     <div class="modal-body">
-      <div class="set-section">
-        <div class="set-title"><i class="fa-solid fa-palette"></i> Appearance</div>
+
+      <!-- Appearance -->
+      <div class="set-sec">
+        <div class="set-title"><i class="fa-solid fa-palette"></i>Appearance</div>
         <div class="theme-grid">
           <div class="theme-opt" id="themeSystem" onclick="setTheme('system')"><i class="fa-solid fa-circle-half-stroke"></i>System</div>
           <div class="theme-opt" id="themeDark"   onclick="setTheme('dark')"><i class="fa-solid fa-moon"></i>Dark</div>
           <div class="theme-opt" id="themeLight"  onclick="setTheme('light')"><i class="fa-solid fa-sun"></i>Light</div>
         </div>
       </div>
-      <div class="set-section">
-        <div class="set-title"><i class="fa-solid fa-user-circle"></i> Account</div>
-        <div class="field"><label>Update Email</label><input type="email" id="setEmail" placeholder="New email address" autocomplete="email"></div>
-        <div class="field" style="margin-bottom:10px"><label>New Password</label><input type="password" id="setPassword" placeholder="Leave blank to keep current"></div>
+
+      <!-- Account -->
+      <div class="set-sec">
+        <div class="set-title"><i class="fa-solid fa-user-circle"></i>Account</div>
+        <div class="field">
+          <label>Update Email</label>
+          <div class="fi"><input type="email" id="setEmail" class="no-icon" placeholder="New email address" autocomplete="email" style="padding-right:13px"></div>
+        </div>
+        <div class="field">
+          <label>New Password</label>
+          <div class="fi">
+            <input type="password" id="setPassword" placeholder="Leave blank to keep current" autocomplete="new-password">
+            <button class="eye-btn" type="button" onclick="toggleEye('setPassword',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Confirm New Password</label>
+          <div class="fi">
+            <input type="password" id="setPasswordConfirm" placeholder="Re-enter new password" autocomplete="new-password">
+            <button class="eye-btn" type="button" onclick="toggleEye('setPasswordConfirm',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
         <button class="btn-primary" onclick="updateAccount()" style="width:100%;justify-content:center"><i class="fa-solid fa-save"></i> Save Account Changes</button>
       </div>
-      <div class="set-section">
-        <div class="set-title"><i class="fa-solid fa-star"></i> Subscription</div>
-        <div class="plan-row"><div><div class="plan-lbl">Current Plan</div><div class="plan-val" id="settingsPlanLabel">Free</div></div><button class="upgrade-btn" onclick="window.location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button></div>
-        <div class="plan-row"><div><div class="plan-lbl">Pro Features</div><div class="plan-val">Unlimited journals, full analytics, advanced themes</div></div><i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i></div>
+
+      <!-- Subscription -->
+      <div class="set-sec">
+        <div class="set-title"><i class="fa-solid fa-star"></i>Subscription</div>
+        <div class="plan-row">
+          <div><div class="pr-lbl">Current Plan</div><div class="pr-val" id="settingsPlanLabel">Free</div></div>
+          <!-- Only shown on Free plan -->
+          <button class="upgrade-btn" id="settingsUpgradeBtn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
+        </div>
+        <div class="plan-row">
+          <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals, calculator, full analytics</div></div>
+          <i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i>
+        </div>
       </div>
-      <div class="set-section">
-        <div class="set-title"><i class="fa-solid fa-file-lines"></i> Legal</div>
+
+      <!-- Legal -->
+      <div class="set-sec">
+        <div class="set-title"><i class="fa-solid fa-file-lines"></i>Legal</div>
         <div class="links-row">
           <div class="link-item" onclick="window.open('/terms')"><span><i class="fa-solid fa-file-contract" style="margin-right:9px;color:var(--muted)"></i>Terms of Service</span><i class="fa-solid fa-chevron-right arr"></i></div>
           <div class="link-item" onclick="window.open('/privacy')"><span><i class="fa-solid fa-shield-halved" style="margin-right:9px;color:var(--muted)"></i>Privacy Policy</span><i class="fa-solid fa-chevron-right arr"></i></div>
         </div>
       </div>
-      <div class="set-section">
-        <div class="set-title" style="color:#ff5f6d"><i class="fa-solid fa-triangle-exclamation" style="color:#ff5f6d"></i> Danger Zone</div>
-        <button class="del-account-btn" onclick="openDelAccount()"><i class="fa-solid fa-user-xmark"></i>Delete My Account Permanently</button>
+
+      <!-- Danger -->
+      <div class="set-sec">
+        <div class="set-title danger-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
+        <button class="btn-danger-full" onclick="openDelAccount()"><i class="fa-solid fa-user-xmark"></i>Delete My Account Permanently</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Delete Account Modal -->
+<!-- ══ Delete Account Modal ══ -->
 <div class="overlay" id="delAccountOverlay">
-  <div class="del-acc-modal">
-    <div class="del-acc-icon"><i class="fa-solid fa-user-xmark"></i></div>
+  <div class="del-modal">
+    <div class="del-icon"><i class="fa-solid fa-user-xmark"></i></div>
     <h3 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;color:#ff5f6d">Delete Your Account?</h3>
-    <p style="font-size:13px;color:var(--muted);line-height:1.7;text-align:center;margin-bottom:16px">This will <strong style="color:#ff5f6d">permanently and irreversibly</strong> delete your entire account.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;text-align:center;margin-bottom:16px">This will <strong style="color:#ff5f6d">permanently and irreversibly</strong> delete everything.</p>
     <div class="warn-list">
       <div class="warn-item"><i class="fa-solid fa-xmark"></i>All journals and trade history</div>
       <div class="warn-item"><i class="fa-solid fa-xmark"></i>All images and screenshots</div>
       <div class="warn-item"><i class="fa-solid fa-xmark"></i>All settings, tags, and moods</div>
       <div class="warn-item"><i class="fa-solid fa-xmark"></i>Your login credentials</div>
     </div>
-    <div id="delAccFormSection">
+    <div id="delAccForm">
       <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Type <strong style="color:var(--text)">DELETE</strong> to confirm:</div>
-      <input type="text" id="delAccConfirmDash" placeholder="DELETE" oninput="checkDelAccDash()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:14px;transition:border-color .2s">
+      <input type="text" id="delAccInput" placeholder="DELETE" oninput="checkDelAcc()"
+        style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:14px;transition:border-color .2s">
       <div style="display:flex;gap:8px">
         <button onclick="closeDelAccount()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
-        <button id="delAccBtnDash" onclick="executeDeleteAccount()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-user-xmark" style="margin-right:6px"></i>Delete Forever</button>
+        <button id="delAccBtn" onclick="executeDeleteAccount()" disabled
+          style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s">
+          <i class="fa-solid fa-user-xmark" style="margin-right:6px"></i>Delete Forever
+        </button>
       </div>
     </div>
-    <div class="del-acc-progress" id="delAccProgressDash">
-      <div class="del-acc-spin"></div>
-      <p id="delAccProgressMsgDash" style="font-size:13px;color:var(--muted)">Deleting your account…</p>
+    <div class="del-progress" id="delAccProgress">
+      <div class="del-spin"></div>
+      <p id="delAccMsg" style="font-size:13px;color:var(--muted)">Deleting your account…</p>
     </div>
   </div>
 </div>
 
-<div id="toast"><i class="fa-solid fa-circle-check" id="toastIcon"></i><span id="toastMsg"></span></div>
+<div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
 
 <script>
 let currentUser = null, journals = [], pnlMap = {};
-let curTheme = localStorage.getItem('tl_theme') || 'dark';
+let isPro = false;
 
+// ── Theme ──────────────────────────────────────────────────
 function applyTheme(t) {
   const r = document.documentElement;
-  const dark = t === 'dark' || (t === 'system' && !window.matchMedia('(prefers-color-scheme:light)').matches);
-  if (!dark) { r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578'); }
-  else { r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a'); }
+  const dark = t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);
+  if (!dark) {
+    r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');
+    r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');
+    r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');
+  } else {
+    r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');
+    r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');
+    r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');
+  }
 }
-applyTheme(curTheme);
+applyTheme(localStorage.getItem('tl_theme')||'dark');
 
 function setTheme(t) {
-  curTheme = t; localStorage.setItem('tl_theme', t); applyTheme(t);
-  document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
-  document.getElementById('theme' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.add('active');
+  localStorage.setItem('tl_theme', t); applyTheme(t);
+  document.querySelectorAll('.theme-opt').forEach(el=>el.classList.remove('active'));
+  const key = t.charAt(0).toUpperCase()+t.slice(1);
+  document.getElementById('theme'+key)?.classList.add('active');
 }
 
-(async () => {
+function toggleEye(id, btn) {
+  const inp = document.getElementById(id);
+  const show = inp.type==='password';
+  inp.type = show ? 'text' : 'password';
+  btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
+// ── Boot ───────────────────────────────────────────────────
+(async()=>{
   currentUser = await requireAuth(); if (!currentUser) return;
   const profile = await getProfile(currentUser.id);
+  isPro = profile?.plan === 'pro';
+  window._userIsPro = isPro;
   document.getElementById('uName').textContent = profile?.name || currentUser.email;
   const badge = document.getElementById('planBadge');
-  const isPro = profile?.plan === 'pro';
-  window._userIsPro = isPro;
-  window._userName  = profile?.name || currentUser.email;
-  if (isPro) { badge.textContent = 'Pro'; badge.className = 'plan-badge badge-pro'; }
-  document.getElementById('settingsPlanLabel').textContent = isPro ? 'Pro' : 'Free';
-  document.getElementById('proLockIcon').style.display = isPro ? 'none' : '';
-  if (!isPro) { document.getElementById('dashAdSlot').classList.add('visible');document.getElementById('dashUpgradeNudge').classList.add('visible');try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){} }
-  // Identify user in PostHog
-  if (window.posthog) { posthog.identify(currentUser.id, { email: currentUser.email, plan: isPro ? 'pro' : 'free', name: profile?.name }); }
+  if (isPro) {
+    badge.textContent='Pro'; badge.className='plan-badge badge-pro';
+    document.getElementById('settingsPlanLabel').textContent='Pro — Active';
+    document.getElementById('settingsUpgradeBtn').style.display='none';
+    document.getElementById('proLockIcon').style.display='none';
+  } else {
+    document.getElementById('adSlot').classList.add('visible');
+    document.getElementById('upgradeNudge').classList.add('visible');
+    try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
+  }
+  if (window.posthog) posthog.identify(currentUser.id,{email:currentUser.email,plan:isPro?'pro':'free',name:profile?.name});
   await loadJournals();
   document.getElementById('pageLoader').classList.add('gone');
 })();
 
+// ── Journals ───────────────────────────────────────────────
 async function loadJournals() {
   journals = await getJournals(currentUser.id);
   pnlMap = {};
-  await Promise.all(journals.map(async j => {
+  await Promise.all(journals.map(async j=>{
     const trades = await getTrades(j.id);
-    const valid  = trades.filter(t => t.pnl != null);
-    if (valid.length) pnlMap[j.id] = valid.reduce((s, t) => s + parseFloat(t.pnl), 0);
+    const valid  = trades.filter(t=>t.pnl!=null&&t.pnl!=='');
+    if (valid.length) pnlMap[j.id] = valid.reduce((s,t)=>s+parseFloat(t.pnl),0);
   }));
-  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('loadingState').style.display='none';
   renderJournals();
 }
 
 function renderJournals() {
-  const grid = document.getElementById('grid'); grid.style.display = '';
-  if (!journals.length) { grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>`; return; }
-  grid.innerHTML = journals.map(j => {
+  const grid = document.getElementById('grid'); grid.style.display='';
+  if (!journals.length) {
+    grid.innerHTML='<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>';
+    return;
+  }
+  grid.innerHTML = journals.map(j=>{
+    // PIN lock icon — shown only when pin_hash is truthy
+    const pinHtml = j.pin_hash
+      ? `<div class="pin-lock" title="PIN protected"><i class="fa-solid fa-lock"></i></div>` : '';
+    // Capital — only if show_capital is true AND capital is set
+    const capHtml = (j.show_capital!==false) && j.capital
+      ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
+    // PNL — only if show_pnl is true AND there's a pnl value
     const pnl = pnlMap[j.id];
-    const capHtml = j.capital ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
     let pnlHtml = '';
-    if (pnl != null) { const cls = pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; const fmt = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2); pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`; }
-    return `<div class="jcard"><h3>${esc(j.name)}</h3>${capHtml}${pnlHtml}<button class="open-btn" onclick="goToJournal('${j.id}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal</button></div>`;
+    if ((j.show_pnl!==false) && pnl!=null) {
+      const cls = pnl>=0 ? 'pnl-pos':'pnl-neg';
+      const fmt = (pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2);
+      pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
+    }
+    return `<div class="jcard">
+      <div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>
+      ${capHtml}${pnlHtml}
+      <button class="open-btn" onclick="goJournal('${j.id}')">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
+      </button>
+    </div>`;
   }).join('');
 }
 
-function goToJournal(id) {
+function goJournal(id) {
   sessionStorage.setItem('tz_current_journal', id);
-  if (window.posthog) posthog.capture('journal_opened', { journal_id: id });
-  window.location.href = '/journal';
+  if (window.posthog) posthog.capture('journal_opened');
+  location.href='/journal';
 }
 
+// ── Create Journal ─────────────────────────────────────────
 function openCreate() {
-  if (!window._userIsPro && journals.length >= 1) { showToast('Free plan allows 1 journal. Upgrade to Pro for unlimited.', 'fa-solid fa-lock'); setTimeout(() => window.location.href = '/subscription', 2000); return; }
+  if (!isPro && journals.length>=1) {
+    showToast('Free plan: 1 journal only. Upgrade for unlimited.','fa-solid fa-lock','red');
+    setTimeout(()=>location.href='/subscription',2100); return;
+  }
   document.getElementById('createModal').classList.add('open');
-  setTimeout(() => document.getElementById('jName').focus(), 100);
+  setTimeout(()=>document.getElementById('jName').focus(),100);
 }
-function closeCreate() { document.getElementById('createModal').classList.remove('open'); document.getElementById('jName').value = ''; document.getElementById('jCapital').value = ''; }
-function clearAlerts() {}
-
-async function createJournalAction() {
-  const name = document.getElementById('jName').value.trim();
-  const capital = document.getElementById('jCapital').value.trim();
-  if (!name) { document.getElementById('jName').style.borderColor = '#ff5f6d'; setTimeout(() => document.getElementById('jName').style.borderColor = '', 1500); return; }
-  const btn = document.getElementById('createBtn'); btn.disabled = true; btn.innerHTML = '<div class="spin-sm"></div> Creating…';
-  try {
-    await createJournal(currentUser.id, { name, capital: capital ? parseFloat(capital) : null, pin_hash: null });
-    closeCreate(); showToast('Journal created!', 'fa-solid fa-circle-check');
-    if (window.posthog) posthog.capture('journal_created');
+function closeCreate(){document.getElementById('createModal').classList.remove('open');document.getElementById('jName').value='';document.getElementById('jCapital').value='';}
+async function doCreate(){
+  const name=document.getElementById('jName').value.trim();
+  const capital=document.getElementById('jCapital').value.trim();
+  if(!name){document.getElementById('jName').style.borderColor='#ff5f6d';setTimeout(()=>document.getElementById('jName').style.borderColor='',1500);return;}
+  const btn=document.getElementById('createBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating…';
+  try{
+    await createJournal(currentUser.id,{name,capital:capital?parseFloat(capital):null,pin_hash:null});
+    closeCreate();showToast('Journal created!','fa-solid fa-circle-check','green');
+    if(window.posthog)posthog.capture('journal_created');
     await loadJournals();
-  } catch (err) { showToast('Error: ' + err.message, 'fa-solid fa-circle-exclamation'); }
-  finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Create Journal'; }
+  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-check"></i> Create';}
 }
-document.getElementById('createModal').addEventListener('click', function(e) { if(e.target===this)closeCreate(); });
+document.getElementById('createModal').addEventListener('click',function(e){if(e.target===this)closeCreate();});
 
-function openSettings() {
-  const t = localStorage.getItem('tl_theme') || 'dark';
-  document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
-  document.getElementById('theme' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.add('active');
+// ── Settings ───────────────────────────────────────────────
+function openSettings(){
+  const t=localStorage.getItem('tl_theme')||'dark';
+  document.querySelectorAll('.theme-opt').forEach(el=>el.classList.remove('active'));
+  const key=t.charAt(0).toUpperCase()+t.slice(1);
+  document.getElementById('theme'+key)?.classList.add('active');
+  document.getElementById('setEmail').value='';
+  document.getElementById('setPassword').value='';
+  document.getElementById('setPasswordConfirm').value='';
   document.getElementById('settingsModal').classList.add('open');
 }
-function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
-document.getElementById('settingsModal').addEventListener('click', function(e) { if(e.target===this)closeSettings(); });
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
+document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)closeSettings();});
 
-async function updateAccount() {
-  const email = document.getElementById('setEmail').value.trim();
-  const pass  = document.getElementById('setPassword').value;
-  if (!email && !pass) { showToast('No changes to save.', 'fa-solid fa-info-circle'); return; }
-  try {
-    const updates = {};
-    if (email) updates.email = email;
-    if (pass)  updates.password = pass;
-    const { error } = await db.auth.updateUser(updates);
-    if (error) throw error;
-    document.getElementById('setEmail').value = '';
-    document.getElementById('setPassword').value = '';
-    showToast('Account updated!', 'fa-solid fa-circle-check');
-  } catch (err) { showToast('Error: ' + err.message, 'fa-solid fa-circle-exclamation'); }
+async function updateAccount(){
+  const email=document.getElementById('setEmail').value.trim();
+  const pass =document.getElementById('setPassword').value;
+  const passC=document.getElementById('setPasswordConfirm').value;
+  if(!email&&!pass){showToast('No changes to save.','fa-solid fa-info-circle','');return;}
+  if(pass&&pass!==passC){showToast('Passwords do not match.','fa-solid fa-circle-exclamation','red');return;}
+  if(pass&&pass.length<8){showToast('Password must be at least 8 characters.','fa-solid fa-circle-exclamation','red');return;}
+  try{
+    const updates={};
+    if(email)updates.email=email;
+    if(pass)updates.password=pass;
+    const{error}=await db.auth.updateUser(updates);
+    if(error)throw error;
+    document.getElementById('setEmail').value='';
+    document.getElementById('setPassword').value='';
+    document.getElementById('setPasswordConfirm').value='';
+    showToast('Account updated!','fa-solid fa-circle-check','green');
+  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
-// ── Delete Account ────────────────────────────────────
-function openDelAccount() {
-  document.getElementById('delAccConfirmDash').value = '';
-  document.getElementById('delAccFormSection').style.display = 'block';
-  document.getElementById('delAccProgressDash').classList.remove('show');
-  checkDelAccDash();
+// ── Delete Account ─────────────────────────────────────────
+function openDelAccount(){
+  document.getElementById('delAccInput').value='';
+  document.getElementById('delAccForm').style.display='block';
+  document.getElementById('delAccProgress').classList.remove('show');
+  checkDelAcc();
+  document.getElementById('settingsModal').classList.remove('open');
   document.getElementById('delAccountOverlay').classList.add('open');
-  closeSettings();
-  setTimeout(() => document.getElementById('delAccConfirmDash').focus(), 150);
+  setTimeout(()=>document.getElementById('delAccInput').focus(),150);
 }
-function closeDelAccount() { document.getElementById('delAccountOverlay').classList.remove('open'); }
-function checkDelAccDash() {
-  const ok = document.getElementById('delAccConfirmDash').value.trim() === 'DELETE';
-  const btn = document.getElementById('delAccBtnDash');
-  btn.disabled = !ok; btn.style.opacity = ok ? '1' : '.4'; btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+function closeDelAccount(){document.getElementById('delAccountOverlay').classList.remove('open');}
+function checkDelAcc(){
+  const ok=document.getElementById('delAccInput').value.trim()==='DELETE';
+  const btn=document.getElementById('delAccBtn');
+  btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';
 }
-
-async function executeDeleteAccount() {
-  document.getElementById('delAccFormSection').style.display = 'none';
-  document.getElementById('delAccProgressDash').classList.add('show');
-  if (window.posthog) posthog.capture('account_delete_initiated');
-  try {
-    const { data: { session } } = await db.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
-    const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/delete-account`,
-      { method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' } }
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Deletion failed');
-    document.getElementById('delAccProgressMsgDash').textContent = 'Account deleted. Redirecting…';
+async function executeDeleteAccount(){
+  document.getElementById('delAccForm').style.display='none';
+  document.getElementById('delAccProgress').classList.add('show');
+  if(window.posthog)posthog.capture('account_delete_initiated');
+  try{
+    const{data:{session}}=await db.auth.getSession();
+    if(!session)throw new Error('Not authenticated');
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/delete-account`,{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'}});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Deletion failed');
+    document.getElementById('delAccMsg').textContent='Account deleted. Redirecting…';
     await db.auth.signOut();
-    sessionStorage.clear(); localStorage.clear();
-    setTimeout(() => window.location.href = '/', 1500);
-  } catch(e) {
-    showToast('Deletion failed: ' + e.message, 'fa-solid fa-circle-exclamation');
-    document.getElementById('delAccFormSection').style.display = 'block';
-    document.getElementById('delAccProgressDash').classList.remove('show');
+    sessionStorage.clear();localStorage.clear();
+    setTimeout(()=>location.href='/',1500);
+  }catch(e){
+    showToast('Failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+    document.getElementById('delAccForm').style.display='block';
+    document.getElementById('delAccProgress').classList.remove('show');
   }
 }
+document.getElementById('delAccountOverlay').addEventListener('click',function(e){if(e.target===this)closeDelAccount();});
 
-document.getElementById('delAccountOverlay').addEventListener('click', function(e) { if(e.target===this)closeDelAccount(); });
+async function logout(){await db.auth.signOut();sessionStorage.clear();location.href='/auth';}
 
-async function logout() { await db.auth.signOut(); sessionStorage.clear(); window.location.href = '/auth'; }
-
+// ── Toast ──────────────────────────────────────────────────
 let _tt;
-function showToast(msg, icon='fa-solid fa-circle-check') { const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3200); }
-function esc(s) { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
-
-const style = document.createElement('style');
-style.textContent = `.spin-sm{width:14px;height:14px;border:2px solid rgba(7,10,8,.3);border-top-color:#0b0f0c;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}`;
-document.head.appendChild(style);
+function showToast(msg, icon='fa-solid fa-circle-check', type='') {
+  const t=document.getElementById('toast');
+  document.getElementById('toastIcon').className=icon;
+  document.getElementById('toastMsg').textContent=msg;
+  t.className='show'+(type==='green'?' toast-green':type==='red'?' toast-red':'');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3400);
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 </script>
 </body>
 </html>
