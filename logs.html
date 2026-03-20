@@ -42,13 +42,13 @@ tbody tr.new-row{background:rgba(var(--accent-rgb,0,255,136),.04)!important;bord
 td{padding:5px 6px;vertical-align:middle;text-align:center}
 .er td{color:var(--muted);font-size:13px;padding:58px 0;text-align:center}
 /* Compact column widths */
-td:nth-child(1){width:30px}   /* # */
-td:nth-child(2){width:90px}   /* date */
-td:nth-child(3){width:72px}   /* time */
-td:nth-child(4){width:80px}   /* pair */
-td:nth-child(5){width:64px}   /* position */
-td:nth-child(8){width:80px}   /* pnl */
-td:nth-child(9){width:64px}   /* r factor */
+td:nth-child(1){width:30px}
+td:nth-child(2){width:90px}
+td:nth-child(3){width:72px}
+td:nth-child(4){width:80px}
+td:nth-child(5){width:64px}
+td:nth-child(8){width:80px}
+td:nth-child(9){width:64px}
 
 .ci{background:none;border:none;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:12px;width:100%;outline:none;padding:0;text-align:center}
 .ci:focus{background:var(--bg);border-radius:5px;padding:2px 4px}
@@ -64,24 +64,33 @@ td:nth-child(9){width:64px}   /* r factor */
 .dt-input.active::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
 .csel{background:none;border:none;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:12px;outline:none;cursor:pointer;padding:0;-webkit-appearance:none;text-align:center;width:100%}
 .csel option{background:var(--panel)}
-.tc{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;align-items:center;cursor:pointer}
+.tc{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;align-items:center;cursor:pointer;min-height:24px;padding:2px}
 .pill{background:rgba(var(--accent-rgb,25,195,125),.10);color:var(--accent2);border-radius:var(--radius-pill);padding:2px 7px;font-size:10px;white-space:nowrap;border:1px solid rgba(var(--accent-rgb,25,195,125),.25);cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);user-select:none;transition:background var(--transition-fast)}
 .pill:hover{background:rgba(var(--accent-rgb,25,195,125),.2)}
 .pill.ep{background:none;border:1px dashed var(--border);color:var(--muted);padding:2px 6px}
 .pill.ep:hover{border-color:var(--accent2);color:var(--text)}
-/* Pill picker popup */
-.pp{position:fixed;z-index:9000;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:200px;max-width:260px;box-shadow:0 8px 28px rgba(0,0,0,.55);max-height:300px;overflow-y:auto}
+
+/* ─── Pill picker popup — FIXED for multi-select ─── */
+.pp{position:fixed;z-index:9000;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;min-width:210px;max-width:270px;box-shadow:0 8px 28px rgba(0,0,0,.55);max-height:320px;overflow-y:auto}
 .pp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.pp-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
-.pp-close-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px}
-.pp-search{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:7px 10px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:12px;outline:none;margin-bottom:8px;box-sizing:border-box;display:block}
+.pp-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+.pp-close-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:var(--radius-sm);transition:all var(--transition-fast)}
+.pp-close-btn:hover{color:var(--text);background:var(--border)}
+.pp-selected-count{font-size:10px;color:var(--accent2);background:rgba(var(--accent-rgb,25,195,125),.1);border:1px solid rgba(var(--accent-rgb,25,195,125),.2);border-radius:var(--radius-pill);padding:1px 7px;display:none}
+.pp-selected-count.show{display:inline-block}
+.pp-search{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:7px 10px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:12px;outline:none;margin-bottom:8px;box-sizing:border-box;display:block;transition:border-color var(--transition-fast)}
 .pp-search:focus{border-color:var(--accent2)}
 .ppills{display:flex;flex-wrap:wrap;gap:5px}
-.ppl{padding:4px 10px;border-radius:var(--radius-pill);font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast);user-select:none}
+/* Pills use mousedown to fire before blur closes the popup */
+.ppl{padding:5px 11px;border-radius:var(--radius-pill);font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast);user-select:none;line-height:1.3}
 .ppl:hover{border-color:var(--accent2);color:var(--text)}
 .ppl.sel{background:rgba(var(--accent-rgb,25,195,125),.15);border-color:var(--accent2);color:var(--accent2);font-weight:500}
+.ppl.sel::before{content:'✓ ';font-size:10px}
 .pnew{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 .pnew-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.pp-done-btn{width:100%;margin-top:8px;padding:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:600;cursor:pointer;transition:opacity var(--transition-fast)}
+.pp-done-btn:hover{opacity:.85}
+
 .stars{display:flex;justify-content:center;gap:2px}
 .star{font-size:13px;cursor:pointer;color:var(--border);transition:color var(--transition-fast);line-height:1}
 .star.on{color:#f5c518}
@@ -179,7 +188,7 @@ td:nth-child(9){width:64px}   /* r factor */
 .nmbody{padding:20px;flex:1}
 .nmlbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
 .nmlbl i{color:var(--accent2)}
-/* Image attach row — moved to top */
+/* Image attach row */
 .nmuprow{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .upbtn{background:none;border:1px dashed var(--border);border-radius:var(--radius-md);color:var(--muted);padding:7px 13px;font-size:13px;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast);display:flex;align-items:center;gap:6px}
 .upbtn:hover{border-color:var(--accent2);color:var(--text)}
@@ -380,11 +389,15 @@ td:nth-child(9){width:64px}   /* r factor */
   </table>
 </div>
 
-<!-- Pill Picker -->
-<div class="pp" id="pp" style="display:none">
+<!-- ─── Pill Picker — FIXED multi-select ─── -->
+<!-- Uses mousedown on pills so clicks register before focus-blur closes the popup -->
+<div class="pp" id="pp" style="display:none" onmousedown="event.stopPropagation()">
   <div class="pp-header">
     <span class="pp-label" id="pp-field-label"></span>
-    <button class="pp-close-btn" onclick="closePP()"><i class="fa-solid fa-xmark"></i></button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="pp-selected-count" id="pp-sel-count"></span>
+      <button class="pp-close-btn" onmousedown="event.stopPropagation()" onclick="closePP()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
   </div>
   <input class="pp-search" id="pp-search" type="text" placeholder="Search or add…" autocomplete="off" spellcheck="false">
   <div class="ppills" id="pp-pills"></div>
@@ -392,6 +405,7 @@ td:nth-child(9){width:64px}   /* r factor */
     <div class="pnew-lbl">Create new</div>
     <div id="pp-new-pill"></div>
   </div>
+  <button class="pp-done-btn" onmousedown="event.stopPropagation()" onclick="closePP()">Done</button>
 </div>
 
 <!-- Ads -->
@@ -416,7 +430,6 @@ td:nth-child(9){width:64px}   /* r factor */
       <button class="nmclose" onclick="closeNotes()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="nmbody">
-      <!-- Image attachment at top -->
       <div class="nmlbl" style="margin-bottom:6px"><i class="fa-solid fa-images"></i> Images <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0" id="imgCntLbl"></span></div>
       <div class="nmuprow" id="uploadRow">
         <button class="upbtn" onclick="document.getElementById('nmFile').click()"><i class="fa-solid fa-paperclip"></i> Add Image</button>
@@ -428,9 +441,7 @@ td:nth-child(9){width:64px}   /* r factor */
         <i class="fa-solid fa-lock" style="opacity:.5"></i>
         <span>Image uploads on <a href="/subscription" style="color:var(--accent2);text-decoration:none;font-weight:600">Pro plan</a>.</span>
       </div>
-      <!-- Gallery grid -->
       <div class="img-grid" id="nmImgs"></div>
-      <!-- Notes textarea below images -->
       <div class="nmlbl"><i class="fa-solid fa-note-sticky"></i> Notes</div>
       <textarea class="nmta" id="nmText" placeholder="Analysis, observations, what you learned…"></textarea>
     </div>
@@ -495,7 +506,7 @@ let pendingDelId=null, activeNotesId=null, imgBuffer=[], activePill=null;
 let _ppCurrentId=null, _ppCurrentField=null;
 const _saveTimers={};
 const _pending=new Set();
-let sortDir='desc'; // 'desc' = newest first, 'asc' = oldest first
+let sortDir='desc';
 
 // ─── Save queue ───
 function scheduleSave(id,immediate=false){_pending.add(id);clearTimeout(_saveTimers[id]);if(immediate)commitSave(id);else _saveTimers[id]=setTimeout(()=>commitSave(id),800);}
@@ -592,7 +603,6 @@ function setSortDir(dir){
   document.getElementById('sort-desc').querySelector('.fd-sort-icon').style.background=dir==='desc'?'var(--accent2)':'';
   document.getElementById('sort-asc').querySelector('.fd-sort-icon').style.background=dir==='asc'?'var(--accent2)':'';
   render();
-  // update button badge
   const btn=document.getElementById('fbSort');
   btn.classList.toggle('active',true);
 }
@@ -665,10 +675,11 @@ function getFilteredTrades(){
   if(f.pnl.min!==''){const mn=parseFloat(f.pnl.min);items=items.filter(t=>!isNaN(parseFloat(t.pnl))&&parseFloat(t.pnl)>=mn);}
   if(f.pnl.max!==''){const mx=parseFloat(f.pnl.max);items=items.filter(t=>!isNaN(parseFloat(t.pnl))&&parseFloat(t.pnl)<=mx);}
   if(f.confidence>0)items=items.filter(t=>(t.confidence||0)>=f.confidence);
-  // sort
   items.sort((a,b)=>{const da=a.date||'',db=b.date||'';return sortDir==='asc'?da.localeCompare(db):db.localeCompare(da);});
   return items;
 }
+
+// ─── Close filter dropdowns on outside click ───
 document.addEventListener('click',e=>{
   if(!_openFD)return;
   const dEl=document.getElementById('fd-'+_openFD);
@@ -769,7 +780,6 @@ function localUpd(id,field,val){
 function updPos(sel,id){localUpd(id,'position',sel.value);sel.style.color=sel.value==='Short'?'var(--red)':'var(--accent)';scheduleSave(id,true);}
 function onPairInput(el,id){
   const t=trades.find(x=>x.id===id);if(t)t.pair=el.value.toUpperCase();
-  // Only show suggestions if user has typed something
   const v=el.value.trim();
   if(v.length>0)showSug(el,id);
   else hideSugImmediate(id);
@@ -793,7 +803,6 @@ async function addRow(){
     tb.querySelectorAll('tr[data-id]').forEach((r,i)=>{const td=r.querySelector('td:first-child');if(td)td.textContent=i+1;});
     updateAnalytics();
     setTimeout(()=>tr.classList.remove('new-row'),3000);
-    // Focus on pair input but DO NOT show suggestions until user types
     setTimeout(()=>tr.querySelector('.pw-cell input')?.focus(),60);
   }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
@@ -811,10 +820,8 @@ async function confirmDelete(){
   }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
-// ─── Pair suggestions — only show when typing ───
-function showSugOnFocus(el,id){
-  // Do NOT show on focus — only on input
-}
+// ─── Pair suggestions ───
+function showSugOnFocus(el,id){}
 function showSug(el,id){
   const v=el.value.toUpperCase().trim();
   if(!v){hideSugImmediate(id);return;}
@@ -829,58 +836,145 @@ function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>
 function hideSugImmediate(id){const box=document.getElementById('sug_'+id);if(box)box.style.display='none';}
 function pickPair(id,p){localUpd(id,'pair',p);const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;document.getElementById('sug_'+id).style.display='none';scheduleSave(id,true);}
 
-// ─── Pill picker — stays open for multi-select ───
+// ─── Pill picker — FIXED multi-select ───
+// KEY FIX: The popup has onmousedown="event.stopPropagation()" on the container,
+// so clicks inside the popup do NOT bubble to the document click handler that closes it.
+// Pills use onmousedown (not onclick) so they fire before any blur event can close the popup.
+// The popup stays open until the user clicks Done or clicks outside.
+
 function openPP(e,id,field){
-  e.stopPropagation();_ppCurrentId=id;_ppCurrentField=field;activePill={id,field};
-  const pop=document.getElementById('pp');const searchEl=document.getElementById('pp-search');
-  document.getElementById('pp-field-label').textContent=field;
+  e.stopPropagation();
+  // If same popup already open, close it
+  if(_ppCurrentId===id&&_ppCurrentField===field&&document.getElementById('pp').style.display!=='none'){
+    closePP();return;
+  }
+  _ppCurrentId=id;_ppCurrentField=field;activePill={id,field};
+  const pop=document.getElementById('pp');
+  const searchEl=document.getElementById('pp-search');
+  document.getElementById('pp-field-label').textContent=field.charAt(0).toUpperCase()+field.slice(1);
   pop.style.display='block';
+  // Position popup
   const rect=e.currentTarget.getBoundingClientRect();
-  let top=rect.bottom+window.scrollY+4;let left=rect.left+window.scrollX;
-  const pw=Math.max(pop.offsetWidth,220);if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;
+  let top=rect.bottom+window.scrollY+4;
+  let left=rect.left+window.scrollX;
+  const pw=Math.max(pop.offsetWidth,220);
+  if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;
   pop.style.top=top+'px';pop.style.left=Math.max(4,left)+'px';
-  searchEl.value='';_renderPPPills('');
+  // Reset search and render
+  searchEl.value='';
+  _renderPPPills('');
+  _updatePPSelCount();
+  // Wire search
   searchEl.oninput=function(){_renderPPPills(this.value);};
   searchEl.onkeydown=function(ev){
-    if(ev.key==='Enter'){ev.preventDefault();const v=this.value.trim();if(!v)return;const ex=getTags(field).find(t=>t.toLowerCase()===v.toLowerCase());if(ex)_ppToggle(id,field,ex);else _ppCreate(id,field,v);}
-    if(ev.key==='Escape')closePP();
+    if(ev.key==='Enter'){
+      ev.preventDefault();
+      const v=this.value.trim();if(!v)return;
+      const ex=getTags(field).find(t=>t.toLowerCase()===v.toLowerCase());
+      if(ex)_ppToggle(id,field,ex);
+      else _ppCreate(id,field,v);
+    }
+    if(ev.key==='Escape'){ev.stopPropagation();closePP();}
   };
   setTimeout(()=>searchEl.focus(),10);
 }
+
+function _updatePPSelCount(){
+  const id=_ppCurrentId,field=_ppCurrentField;if(!id)return;
+  const t=trades.find(x=>x.id===id);
+  const sel=t?t[field]||[]:[];
+  const el=document.getElementById('pp-sel-count');
+  if(sel.length>0){el.textContent=sel.length+' selected';el.classList.add('show');}
+  else{el.textContent='';el.classList.remove('show');}
+}
+
 function _renderPPPills(filter){
   const id=_ppCurrentId,field=_ppCurrentField;if(!id)return;
-  const t=trades.find(x=>x.id===id),sel=t?t[field]||[]:[];
+  const t=trades.find(x=>x.id===id);
+  const sel=t?t[field]||[]:[];
   const all=getTags(field);
   const fil=filter?all.filter(l=>l.toLowerCase().includes(filter.toLowerCase())):all;
   const pillsEl=document.getElementById('pp-pills');
-  pillsEl.innerHTML=fil.length?fil.map(tag=>`<span class="ppl${sel.includes(tag)?' sel':''}" style="${field==='mood'?moodStyle(tag):''}" onclick="_ppToggle('${id}','${field}','${esc(tag)}')">${esc(tag)}</span>`).join(''):'<span style="font-size:12px;color:var(--muted)">No tags. Type to create.</span>';
-  const newEl=document.getElementById('pp-new'),newPill=document.getElementById('pp-new-pill');
+
+  if(!fil.length&&!filter){
+    pillsEl.innerHTML='<span style="font-size:12px;color:var(--muted)">No tags yet. Type to create one.</span>';
+  } else if(!fil.length){
+    pillsEl.innerHTML='<span style="font-size:12px;color:var(--muted)">No matches.</span>';
+  } else {
+    // Use DOM elements with addEventListener so we can use mousedown properly
+    pillsEl.innerHTML='';
+    fil.forEach(tag=>{
+      const span=document.createElement('span');
+      span.className='ppl'+(sel.includes(tag)?' sel':'');
+      if(field==='mood'){const s=moodStyle(tag);if(s)span.style.cssText=s;}
+      span.textContent=tag;
+      // CRITICAL: use mousedown so this fires BEFORE the document click handler
+      span.addEventListener('mousedown',function(ev){
+        ev.preventDefault(); // prevent focus loss
+        ev.stopPropagation(); // don't bubble to document
+        _ppToggle(id,field,tag);
+      });
+      pillsEl.appendChild(span);
+    });
+  }
+
+  // Show "create new" option
+  const newEl=document.getElementById('pp-new');
+  const newPill=document.getElementById('pp-new-pill');
   if(filter&&!all.find(x=>x.toLowerCase()===filter.toLowerCase())){
     newEl.style.display='block';
-    newPill.innerHTML=`<span class="ppl" style="border-style:dashed" onclick="_ppCreate('${id}','${field}','${esc(filter)}')">${esc(filter)}</span>`;
-  } else {newEl.style.display='none';}
+    newPill.innerHTML='';
+    const span=document.createElement('span');
+    span.className='ppl';span.style.borderStyle='dashed';
+    span.textContent='+ Create "'+filter+'"';
+    span.addEventListener('mousedown',function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      _ppCreate(id,field,filter);
+    });
+    newPill.appendChild(span);
+  } else {
+    newEl.style.display='none';
+  }
 }
+
 async function _ppToggle(id,field,val){
   const t=trades.find(x=>x.id===id);if(!t)return;
   if(!t[field])t[field]=[];
   const idx=t[field].indexOf(val);
-  if(idx>-1)t[field].splice(idx,1);else t[field].push(val);
+  if(idx>-1)t[field].splice(idx,1);
+  else t[field].push(val);
+  // Update the cell in the table immediately
   const pre={strategy:'st_',timeframe:'tf_',mood:'md_'}[field]||'st_';
   const c=document.getElementById(pre+id);
   if(c)c.innerHTML=field==='mood'?buildMoodPills(t[field]):buildPills(t[field]);
-  // Re-render pills without closing — keep open for multi-select
-  _renderPPPills(document.getElementById('pp-search').value||'');
-  document.getElementById('pp-search').focus();
-  await commitSave(id);
+  // Re-render pills in popup (popup stays open)
+  const currentSearch=document.getElementById('pp-search').value||'';
+  _renderPPPills(currentSearch);
+  _updatePPSelCount();
+  // Save in background — don't await, keep popup responsive
+  commitSave(id);
 }
+
 async function _ppCreate(id,field,val){
   const v=val.trim();if(!v||!settings)return;
   const k={strategy:'strategies',timeframe:'timeframes',mood:'moods',pair:'pairs'}[field];
-  if(k&&!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){settings[k]=[...settings[k],v];await updateJournalSettings(jid,{[k]:settings[k]});}
+  if(k&&!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){
+    settings[k]=[...settings[k],v];
+    await updateJournalSettings(jid,{[k]:settings[k]});
+  }
   await _ppToggle(id,field,v);
-  const searchEl=document.getElementById('pp-search');searchEl.value='';_renderPPPills('');searchEl.focus();
+  const searchEl=document.getElementById('pp-search');
+  searchEl.value='';
+  _renderPPPills('');
+  searchEl.focus();
 }
-function closePP(){document.getElementById('pp').style.display='none';activePill=null;_ppCurrentId=null;_ppCurrentField=null;}
+
+function closePP(){
+  document.getElementById('pp').style.display='none';
+  activePill=null;_ppCurrentId=null;_ppCurrentField=null;
+}
+
+// Close pill picker when clicking outside — but NOT when clicking inside (handled by onmousedown stopPropagation on the popup)
 document.addEventListener('click',e=>{
   const pop=document.getElementById('pp');
   if(pop.style.display!=='none'&&!pop.contains(e.target))closePP();
@@ -963,13 +1057,12 @@ function openLb(i){
   document.getElementById('lb').classList.add('open');
 }
 function _lbRender(){
-  const img=document.getElementById('lbImg');const wrap=document.getElementById('lbImgWrap');
+  const img=document.getElementById('lbImg');
   const cur=lbImages[lbIndex];if(!cur)return;
   img.src=cur._previewUrl||cur.data||'';
   img.style.transform=`translate(${lbPanX}px,${lbPanY}px) scale(${lbScale})`;
   document.getElementById('lbPrev').style.display=lbIndex>0?'flex':'none';
   document.getElementById('lbNext').style.display=lbIndex<lbImages.length-1?'flex':'none';
-  // dots
   const dots=document.getElementById('lbDots');
   dots.innerHTML=lbImages.length>1?lbImages.map((_,i)=>`<div class="lb-dot${i===lbIndex?' active':''}"></div>`).join(''):'';
 }
@@ -985,7 +1078,6 @@ function lbDeleteCurrent(){
 }
 function closeLb(){document.getElementById('lb').classList.remove('open');lbScale=1;lbPanX=0;lbPanY=0;}
 
-// Drag to pan
 const lbWrap=document.getElementById('lbImgWrap');
 lbWrap.addEventListener('mousedown',e=>{if(e.button!==0)return;lbDragging=true;lbLastX=e.clientX;lbLastY=e.clientY;lbWrap.classList.add('grabbing');});
 document.addEventListener('mousemove',e=>{
@@ -995,9 +1087,7 @@ document.addEventListener('mousemove',e=>{
   const img=document.getElementById('lbImg');img.style.transform=`translate(${lbPanX}px,${lbPanY}px) scale(${lbScale})`;
 });
 document.addEventListener('mouseup',()=>{lbDragging=false;lbWrap.classList.remove('grabbing');});
-// Wheel zoom
 lbWrap.addEventListener('wheel',e=>{e.preventDefault();lbZoom(e.deltaY>0?-0.15:0.15);},{passive:false});
-// Click backdrop to close
 document.getElementById('lb').addEventListener('click',e=>{if(e.target===document.getElementById('lb'))closeLb();});
 document.addEventListener('keydown',e=>{
   if(!document.getElementById('lb').classList.contains('open'))return;

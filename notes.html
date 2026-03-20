@@ -85,31 +85,18 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .empty-state .ei{font-size:48px;opacity:.2;line-height:1}
 .empty-state h3{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:16px;color:var(--text);font-weight:600}
 .empty-state p{font-size:13px;line-height:1.7;max-width:320px}
-/* Detail Modal */
+
+/* ─── Detail Modal ─── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px)}
 .overlay.open{display:flex;animation:fadeIn .2s ease}
-.modal{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius-xl);width:100%;max-width:760px;margin:auto;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.6)}
-/* Image gallery strip */
-.modal-imgs{position:relative;background:#000;min-height:0}
-.modal-imgs.has-imgs{min-height:260px;max-height:340px}
-.modal-imgs-gallery{display:grid;gap:2px;height:100%}
-.modal-imgs-gallery.count-1{grid-template-columns:1fr}
-.modal-imgs-gallery.count-2{grid-template-columns:1fr 1fr}
-.modal-imgs-gallery.count-3{grid-template-columns:2fr 1fr}
-.modal-imgs-gallery.count-3 .gal-img:first-child{grid-row:1/3}
-.modal-imgs-gallery.count-4,.modal-imgs-gallery.count-many{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
-.gal-img{overflow:hidden;cursor:zoom-in;position:relative;background:#111;min-height:120px}
-.gal-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform var(--transition-base)}
-.gal-img:hover img{transform:scale(1.04)}
-.gal-more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;backdrop-filter:blur(2px)}
-.modal-img-actions{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2}
-.mia-btn{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:var(--radius-md);padding:6px 10px;font-size:11px;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);display:flex;align-items:center;gap:5px;transition:background var(--transition-fast);backdrop-filter:blur(4px)}
-.mia-btn:hover{background:rgba(0,0,0,.8)}
-.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto;max-height:65vh}
-.modal-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius-xl);width:100%;max-width:700px;margin:auto;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+
+/* ─── Modal header (no image strip) ─── */
+.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:0;flex:1;overflow-y:auto;max-height:80vh}
+.modal-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .modal-trade-info{flex:1;min-width:0}
 .modal-pair{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:20px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
-.modal-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.modal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .meta-chip{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px 9px}
 .meta-chip.pos{color:var(--accent);border-color:rgba(var(--accent-rgb,0,255,136),.25);background:rgba(var(--accent-rgb,0,255,136),.06)}
 .meta-chip.neg{color:var(--red);border-color:rgba(255,95,109,.25);background:rgba(255,95,109,.06)}
@@ -118,38 +105,52 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .modal-close:hover{background:var(--border);color:var(--text)}
 .modal-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
 .mtag{background:rgba(var(--accent-rgb,25,195,125),.1);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,25,195,125),.2);border-radius:var(--radius-pill);padding:3px 10px;font-size:11px}
-.note-edit-section{margin-bottom:14px}
+
+/* ─── Divider between sections ─── */
+.modal-divider{height:1px;background:var(--border);margin:14px 0;opacity:.5}
+
+/* ─── Notes section ─── */
+.note-edit-section{margin-bottom:16px}
 .note-section-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
 .note-section-lbl i{color:var(--accent2);font-size:9px}
-.note-ta{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:13px;line-height:1.7;resize:vertical;outline:none;min-height:100px;transition:border-color var(--transition-base)}
+.note-ta{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:13px;line-height:1.7;resize:vertical;outline:none;min-height:120px;transition:border-color var(--transition-base)}
 .note-ta:focus{border-color:var(--accent2)}
 .note-ta::placeholder{color:var(--muted2)}
 .autosave-status{font-size:11px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:5px;min-height:16px}
 .autosave-status.saving{color:var(--amber);animation:pulse 1s ease infinite}
 .autosave-status.saved{color:var(--accent2)}
 .autosave-status.err{color:var(--red)}
-/* Image manager — add button at top */
-.img-manager{margin-bottom:14px}
-.img-add-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.add-img-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;background:none;border:1px dashed var(--border);border-radius:var(--radius-md);color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast);white-space:nowrap}
+
+/* ─── Image manager ─── */
+.img-manager{margin-bottom:6px}
+.img-manager-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.img-add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.add-img-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;background:none;border:1px dashed var(--border);border-radius:var(--radius-md);color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast);white-space:nowrap}
 .add-img-btn:hover{border-color:var(--accent2);color:var(--text)}
-.img-hint{font-size:10px;color:var(--muted2);margin-top:4px}
-/* Image thumbs gallery */
-.img-thumbs-gallery{display:grid;gap:6px;margin-bottom:8px}
-.img-thumbs-gallery.g-1{grid-template-columns:1fr}
-.img-thumbs-gallery.g-2{grid-template-columns:1fr 1fr}
-.img-thumbs-gallery.g-3{grid-template-columns:2fr 1fr}
-.img-thumbs-gallery.g-3 .img-th:first-child{grid-row:1/3}
-.img-thumbs-gallery.g-many{grid-template-columns:1fr 1fr;grid-template-rows:auto}
-.img-th{position:relative;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:border-color var(--transition-fast);background:var(--bg);aspect-ratio:4/3}
-.img-th:hover{border-color:var(--accent2)}
-.img-th img{width:100%;height:100%;object-fit:cover;display:block}
-.img-th .img-th-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity var(--transition-fast)}
+.img-paste-hint{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.img-type-hint{font-size:10px;color:var(--muted2);margin-bottom:10px}
+
+/* ─── Image gallery grid (masonry-style) ─── */
+.img-gallery-grid{display:grid;gap:6px;margin-bottom:4px}
+.img-gallery-grid.g-1{grid-template-columns:1fr;max-width:400px}
+.img-gallery-grid.g-2{grid-template-columns:1fr 1fr}
+.img-gallery-grid.g-3{grid-template-columns:1fr 1fr 1fr}
+.img-gallery-grid.g-4{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+.img-gallery-grid.g-many{grid-template-columns:repeat(3,1fr)}
+.img-th{position:relative;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);background:var(--bg);aspect-ratio:4/3}
+.img-th:hover{border-color:var(--accent2);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.img-th img{width:100%;height:100%;object-fit:cover;display:block;transition:transform var(--transition-base)}
+.img-th:hover img{transform:scale(1.04)}
+.img-th .img-th-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity var(--transition-fast)}
 .img-th:hover .img-th-overlay{opacity:1}
-.img-th-btn{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;backdrop-filter:blur(4px)}
-.img-th-view{background:rgba(255,255,255,.2);color:#fff}
-.img-th-del{background:rgba(255,95,109,.8);color:#fff}
-/* Lightbox with zoom/drag */
+.img-th-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;backdrop-filter:blur(4px);transition:transform var(--transition-fast)}
+.img-th-btn:hover{transform:scale(1.1)}
+.img-th-view{background:rgba(255,255,255,.25);color:#fff}
+.img-th-del{background:rgba(255,95,109,.85);color:#fff}
+.img-empty{display:flex;align-items:center;gap:8px;padding:18px 14px;background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius-lg);font-size:12px;color:var(--muted2);margin-bottom:4px}
+.img-empty i{font-size:16px;opacity:.4}
+
+/* ─── Lightbox with zoom/drag ─── */
 .lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:1000;align-items:center;justify-content:center;flex-direction:column}
 .lb.open{display:flex;animation:fadeIn .2s}
 .lb-toolbar{position:absolute;top:14px;right:16px;display:flex;gap:8px;z-index:2}
@@ -166,22 +167,24 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .lb-dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:7px}
 .lb-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);transition:background var(--transition-fast)}
 .lb-dot.active{background:#fff}
+
 .save-indicator{position:fixed;bottom:16px;right:20px;background:var(--panel);border:1px solid var(--accent2);border-radius:var(--radius-lg);padding:9px 14px;font-size:12px;font-weight:500;color:var(--accent2);display:flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(var(--accent-rgb,0,255,136),.15);opacity:0;pointer-events:none;transition:opacity var(--transition-base);z-index:200}
 .save-indicator.show{opacity:1}
 #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.g{border-color:rgba(var(--accent-rgb,0,255,136),.4);background:rgba(var(--accent-rgb,0,255,136),.07)}
 #toast.r{border-color:rgba(255,95,109,.4);background:rgba(255,95,109,.07)}
+
 /* Ads slot placeholder */
 .ad-slot-notes{display:none;margin:0 18px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .ad-slot-notes.visible{display:block}
+
 @media(max-width:600px){
   .notes-grid{grid-template-columns:1fr 1fr}
   .modal{margin:0;border-radius:0;min-height:100vh}
   .modal-body{max-height:none}
   .overlay{padding:0}
-  .img-thumbs-gallery.g-2,.img-thumbs-gallery.g-3,.img-thumbs-gallery.g-many{grid-template-columns:1fr 1fr;grid-template-rows:auto}
-  .img-thumbs-gallery.g-3 .img-th:first-child{grid-row:auto}
+  .img-gallery-grid.g-3,.img-gallery-grid.g-many{grid-template-columns:1fr 1fr}
 }
 @media(max-width:380px){.notes-grid{grid-template-columns:1fr}}
 </style>
@@ -259,17 +262,11 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
   </div>
 </div>
 
-<!-- Detail Modal -->
+<!-- Detail Modal — NO top image strip, images live in body only -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal" id="modal">
-    <div class="modal-imgs" id="modalImgs">
-      <div class="modal-imgs-gallery" id="modalGallery"></div>
-      <div class="modal-img-actions" id="imgActions" style="display:none">
-        <button class="mia-btn" onclick="triggerImgUpload()"><i class="fa-solid fa-plus"></i> Add Image</button>
-        <input type="file" id="modalFileInp" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" multiple style="display:none" onchange="handleModalUpload(event)">
-      </div>
-    </div>
     <div class="modal-body">
+      <!-- Header: pair name + meta + close -->
       <div class="modal-hdr">
         <div class="modal-trade-info">
           <div class="modal-pair" id="modalPair">—</div>
@@ -277,24 +274,34 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
         </div>
         <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
+
+      <!-- Tags row -->
       <div class="modal-tags" id="modalTags"></div>
+
+      <!-- Notes textarea -->
       <div class="note-edit-section">
         <div class="note-section-lbl"><i class="fa-solid fa-note-sticky"></i> Trade Notes</div>
         <textarea class="note-ta" id="modalNote" placeholder="No notes yet. Start typing to add analysis, observations, or what you learned…" oninput="onNoteInput()"></textarea>
         <div class="autosave-status" id="saveStatus"></div>
       </div>
+
+      <div class="modal-divider"></div>
+
+      <!-- Image manager — single unified section -->
       <div class="img-manager" id="imgManager">
-        <div class="note-section-lbl"><i class="fa-solid fa-images"></i> Images <span id="imgMgrCount" style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
-        <!-- Add image button at top -->
-        <div class="img-add-row">
-          <button class="add-img-btn" onclick="triggerImgUpload()">
-            <i class="fa-solid fa-paperclip"></i> Add Image
-          </button>
-          <span style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-clipboard" style="margin-right:4px"></i>Paste (Ctrl+V)</span>
+        <div class="img-manager-header">
+          <div class="note-section-lbl" style="margin-bottom:0"><i class="fa-solid fa-images"></i> Images <span id="imgMgrCount" style="color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+          <div class="img-add-row">
+            <button class="add-img-btn" onclick="triggerImgUpload()">
+              <i class="fa-solid fa-paperclip"></i> Add Image
+            </button>
+            <input type="file" id="modalFileInp" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" multiple style="display:none" onchange="handleModalUpload(event)">
+            <span class="img-paste-hint"><i class="fa-solid fa-clipboard"></i> Ctrl+V to paste</span>
+          </div>
         </div>
-        <div class="img-hint">PNG, JPG, GIF, WebP · max 5 MB per image</div>
-        <!-- Gallery of attached images -->
-        <div id="imgThumbsGallery"></div>
+        <div class="img-type-hint">PNG, JPG, GIF, WebP · max 5 MB per image</div>
+        <!-- Single gallery grid — the only place images appear -->
+        <div id="imgGallery"></div>
       </div>
     </div>
   </div>
@@ -449,12 +456,13 @@ function buildCard(t,i){
 async function openModal(id){
   const t=allTrades.find(x=>x.id===id);if(!t)return;
   currentTradeId=id;modalImgBuffer=[...(t.images||[]).filter(img=>img._previewUrl)];
-  _refreshModalMeta(t);renderModalGallery();renderImgThumbs();
+  _refreshModalMeta(t);
+  renderImgGallery();
   document.getElementById('modalNote').value=t.notes||'';
   document.getElementById('saveStatus').textContent='';document.getElementById('saveStatus').className='autosave-status';
   document.getElementById('overlay').classList.add('open');
-  document.getElementById('imgActions').style.display='flex';
 }
+
 function _refreshModalMeta(t){
   const pnl=fmtPnl(t.pnl);
   document.getElementById('modalPair').textContent=t.pair||'Untitled Trade';
@@ -469,32 +477,36 @@ function _refreshModalMeta(t){
   document.getElementById('modalTags').innerHTML=tags.map(tg=>`<span class="mtag">${esc(tg)}</span>`).join('');
 }
 
-function renderModalGallery(){
-  const wrap=document.getElementById('modalImgs'),gal=document.getElementById('modalGallery');
+/* ─── Single unified image gallery — the only place images render in modal ─── */
+function renderImgGallery(){
+  const container=document.getElementById('imgGallery');
   const imgs=modalImgBuffer.filter(img=>img._previewUrl);
-  if(!imgs.length){wrap.classList.remove('has-imgs');gal.innerHTML='';return;}
-  wrap.classList.add('has-imgs');
-  const count=imgs.length;
-  let cls='count-1';if(count===2)cls='count-2';else if(count===3)cls='count-3';else if(count>=4)cls='count-4';
-  gal.className='modal-imgs-gallery '+cls;
-  const shown=imgs.slice(0,count<=3?count:4);
-  gal.innerHTML=shown.map((img,i)=>{
-    const isLast=count>4&&i===3;
-    return`<div class="gal-img" onclick="openLb(${i})">${isLast?`<img src="${img._previewUrl}" alt="" loading="lazy"><div class="gal-more-badge">+${count-3}</div>`:`<img src="${img._previewUrl}" alt="" loading="lazy">`}</div>`;
-  }).join('');
-}
-
-function renderImgThumbs(){
-  const row=document.getElementById('imgThumbsGallery'),cnt=document.getElementById('imgMgrCount');
-  const imgs=modalImgBuffer.filter(img=>img._previewUrl);
+  const cnt=document.getElementById('imgMgrCount');
   cnt.textContent=imgs.length?`(${imgs.length})`:'';
-  if(!imgs.length){row.innerHTML='';return;}
+
+  if(!imgs.length){
+    container.innerHTML='<div class="img-empty"><i class="fa-solid fa-image"></i><span>No images yet — click Add Image or paste from clipboard</span></div>';
+    return;
+  }
+
   const count=imgs.length;
-  let galCls='g-1';if(count===2)galCls='g-2';else if(count===3)galCls='g-3';else if(count>3)galCls='g-many';
-  row.innerHTML=`<div class="img-thumbs-gallery ${galCls}">${imgs.map((img,i)=>`<div class="img-th"><img src="${img._previewUrl}" alt="" loading="lazy"><div class="img-th-overlay"><button class="img-th-btn img-th-view" onclick="event.stopPropagation();openLb(${i})" title="View"><i class="fa-solid fa-expand" style="font-size:10px"></i></button><button class="img-th-btn img-th-del" onclick="event.stopPropagation();removeModalImg(${i})" title="Delete"><i class="fa-solid fa-trash" style="font-size:10px"></i></button></div></div>`).join('')}</div>`;
+  let galCls='g-1';
+  if(count===2)galCls='g-2';
+  else if(count===3)galCls='g-3';
+  else if(count===4)galCls='g-4';
+  else if(count>4)galCls='g-many';
+
+  container.innerHTML=`<div class="img-gallery-grid ${galCls}">${imgs.map((img,i)=>`
+    <div class="img-th">
+      <img src="${img._previewUrl}" alt="" loading="lazy">
+      <div class="img-th-overlay">
+        <button class="img-th-btn img-th-view" onclick="event.stopPropagation();openLb(${i})" title="View full size"><i class="fa-solid fa-expand" style="font-size:10px"></i></button>
+        <button class="img-th-btn img-th-del" onclick="event.stopPropagation();removeModalImg(${i})" title="Remove image"><i class="fa-solid fa-trash" style="font-size:10px"></i></button>
+      </div>
+    </div>`).join('')}</div>`;
 }
 
-function removeModalImg(i){modalImgBuffer.splice(i,1);renderModalGallery();renderImgThumbs();triggerAutoSave();}
+function removeModalImg(i){modalImgBuffer.splice(i,1);renderImgGallery();triggerAutoSave();}
 function closeModal(){if(saveTimer){clearTimeout(saveTimer);_doSave();}document.getElementById('overlay').classList.remove('open');currentTradeId=null;modalImgBuffer=[];}
 function overlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
 function onNoteInput(){setSaveStatus('saving','Saving…');triggerAutoSave();}
@@ -530,7 +542,7 @@ function handleModalUpload(e){
   [...e.target.files].forEach(f=>{
     if(!validateImg(f))return;
     if(!userIsPro&&modalImgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','r');return;}
-    const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderModalGallery();renderImgThumbs();triggerAutoSave();};r.readAsDataURL(f);
+    const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderImgGallery();triggerAutoSave();};r.readAsDataURL(f);
   });
   e.target.value='';
 }
@@ -541,7 +553,7 @@ document.addEventListener('paste',e=>{
     if(item.type.startsWith('image/')){
       const file=item.getAsFile();if(!file||!validateImg(file))return;
       if(!userIsPro&&modalImgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','r');return;}
-      const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderModalGallery();renderImgThumbs();triggerAutoSave();};r.readAsDataURL(file);
+      const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderImgGallery();triggerAutoSave();};r.readAsDataURL(file);
     }
   });
 });
@@ -568,15 +580,14 @@ function lbNav(dir){lbIndex=Math.max(0,Math.min(lbImages.length-1,lbIndex+dir));
 function lbZoom(delta){lbScale=Math.max(0.5,Math.min(5,lbScale+delta));const img=document.getElementById('lbImg');img.style.transform=`translate(${lbPanX}px,${lbPanY}px) scale(${lbScale})`;}
 function lbResetZoom(){lbScale=1;lbPanX=0;lbPanY=0;document.getElementById('lbImg').style.transform='';}
 function lbDeleteCurrent(){
-  // Map lightbox index back to modalImgBuffer index
   const src=lbImages[lbIndex];
   const bufIdx=modalImgBuffer.findIndex(img=>(img._previewUrl||img.data)===(src._previewUrl||src.data));
   if(bufIdx>-1)modalImgBuffer.splice(bufIdx,1);
   lbImages=modalImgBuffer.filter(img=>img._previewUrl);
-  if(lbImages.length===0){closeLb();renderModalGallery();renderImgThumbs();triggerAutoSave();return;}
+  if(lbImages.length===0){closeLb();renderImgGallery();triggerAutoSave();return;}
   if(lbIndex>=lbImages.length)lbIndex=lbImages.length-1;
   lbScale=1;lbPanX=0;lbPanY=0;_lbRender();
-  renderModalGallery();renderImgThumbs();triggerAutoSave();
+  renderImgGallery();triggerAutoSave();
 }
 function closeLb(){document.getElementById('lb').classList.remove('open');lbScale=1;lbPanX=0;lbPanY=0;}
 
