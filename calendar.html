@@ -9,67 +9,62 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="theme.js"></script>
 <script src="supabase.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:18px;min-height:100vh}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);padding:18px;min-height:100vh}
 .pw{max-width:860px;margin:0 auto}
 .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.cal-hdr h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
+.cal-hdr h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
 .nav-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.nav-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition-base);font-size:13px}
 .nav-btn:hover{border-color:var(--accent2);color:var(--text)}
-.month-lbl{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;min-width:130px;text-align:center}
-/* skeleton */
-.skel-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.month-lbl{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:14px;font-weight:600;min-width:130px;text-align:center}
+.skel-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .dow-hdr-skel{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border);height:36px}
 .grid-skel{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
 .cell-skel{aspect-ratio:1/1;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
-/* calendar */
-.cal-wrap{display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.cal-wrap{display:none;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .dow-hdr{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border)}
 .dow-cell{padding:9px 8px;text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cal-day{background:var(--panel);aspect-ratio:1/1;padding:6px 5px 4px;cursor:pointer;transition:background .15s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cal-day{background:var(--panel);aspect-ratio:1/1;padding:6px 5px 4px;cursor:pointer;transition:background var(--transition-fast);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .cal-day:hover{background:rgba(255,255,255,.04)}
 .cal-day.other-month{opacity:.3}
 .cal-day.today .dn{color:var(--accent);font-weight:700}
 .cal-day.locked{cursor:default;opacity:.4}
 .cal-day.locked:hover{background:var(--panel)}
-.dn{position:absolute;top:5px;left:7px;font-size:11px;color:var(--muted);line-height:1;font-family:'Space Grotesk',sans-serif}
+.dn{position:absolute;top:5px;left:7px;font-size:11px;color:var(--muted);line-height:1;font-family:var(--font-heading,'Space Grotesk',sans-serif)}
 .day-data{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;margin-top:8px}
-.day-cnt{font-size:10px;color:var(--muted);line-height:1;font-family:'Inter',sans-serif}
-.day-pnl{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;line-height:1}
+.day-cnt{font-size:10px;color:var(--muted);line-height:1;font-family:var(--font-body,'Inter',sans-serif)}
+.day-pnl{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;line-height:1}
 .day-pnl.pos{color:var(--accent)}
 .day-pnl.neg{color:var(--red)}
 .day-pnl.be{color:var(--muted)}
 .day-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 1px 1px}
 .day-bar.pos{background:var(--accent)}
 .day-bar.neg{background:var(--red)}
-/* Summary bar */
-.sum-bar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.sum-bar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:14px}
 .sum-item{display:flex;flex-direction:column;gap:2px;min-width:72px}
 .sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
-.sum-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+.sum-val{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:16px;font-weight:700}
 .sum-val.pos{color:var(--accent)}.sum-val.neg{color:var(--red)}
-/* Day panel */
-.day-panel{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px}
+.day-panel{display:none;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:14px}
 .day-panel.show{display:block}
 .dp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.dp-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
-.dp-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:3px;transition:color .15s}
+.dp-hdr h3{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:14px;font-weight:600}
+.dp-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:3px;transition:color var(--transition-fast)}
 .dp-close:hover{color:var(--text)}
-.dp-trade{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:7px;margin-bottom:6px;font-size:13px;flex-wrap:wrap;gap:6px}
+.dp-trade{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);margin-bottom:6px;font-size:13px;flex-wrap:wrap;gap:6px}
 .dp-trade:last-child{margin-bottom:0}
-.dp-pair{font-weight:600;font-family:'Space Grotesk',sans-serif}
-.dp-pos{font-size:11px;padding:2px 7px;border-radius:20px;font-weight:600}
+.dp-pair{font-weight:600;font-family:var(--font-heading,'Space Grotesk',sans-serif)}
+.dp-pos{font-size:11px;padding:2px 7px;border-radius:var(--radius-pill);font-weight:600}
 .dp-pos.long{background:rgba(var(--accent-rgb),.12);color:var(--accent2)}
 .dp-pos.short{background:rgba(255,95,109,.1);color:var(--red)}
-.dp-pnl{font-family:'Space Grotesk',sans-serif;font-weight:700}
+.dp-pnl{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-weight:700}
 .dp-pnl.pos{color:var(--accent)}.dp-pnl.neg{color:var(--red)}
-.free-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:9px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.5}
+.free-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-lg);margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.5}
 .free-banner i{color:var(--amber);flex-shrink:0}
 .free-banner a{color:var(--accent2);text-decoration:none;font-weight:600}
 .lock-lbl{font-size:9px;color:var(--muted);opacity:.5;display:flex;align-items:center;gap:2px;justify-content:center}
@@ -118,22 +113,19 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     <div id="dpTrades"></div>
   </div>
 
-  <div id="calAdSlot" style="display:none;margin-top:18px;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+  <div id="calAdSlot" style="display:none;margin-top:18px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
     <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:5px 12px 0;opacity:.5">Advertisement</div>
     <div style="min-height:72px;display:flex;align-items:center;justify-content:center;padding:10px 16px">
       <ins class="adsbygoogle" style="display:block;width:100%;min-height:72px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
     </div>
   </div>
-  <div id="calUpgradeNudge" style="display:none;margin-top:10px;padding:10px 14px;border-radius:9px;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap" class="cal-nudge-bar">
+  <div id="calUpgradeNudge" style="display:none;margin-top:10px;padding:10px 14px;border-radius:var(--radius-lg);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap" class="cal-nudge-bar">
     <span style="font-size:12px;color:var(--muted)"><strong style="color:var(--text)">Remove ads + unlock full history</strong> — upgrade to Pro.</span>
-    <a href="/subscription" style="background:var(--accent);color:#0b0f0c;border:none;border-radius:6px;padding:6px 12px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap">Upgrade to Pro</a>
+    <a href="/subscription" style="background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:6px 12px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap">Upgrade to Pro</a>
   </div>
 </div>
 
 <script>
-// ── Theme: fully delegated to theme.js TZ engine ─────────────
-// theme.js loaded in <head> auto-applies on load.
-// TZ already handles postMessage({ type:'tz_theme' }) natively.
 window.addEventListener('message', e => {
   if (e.data?.type === 'tz_plan' && typeof e.data.isPro !== 'undefined') {
     userIsPro = e.data.isPro;
@@ -264,7 +256,7 @@ function showDayPanel(dayNum,dateStr,trades){
   const container=document.getElementById('dpTrades');container.innerHTML='';
   const sum=document.createElement('div');sum.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)';
   const sc=document.createElement('span');sc.style.cssText='font-size:12px;color:var(--muted)';sc.textContent=trades.length+' trade'+(trades.length>1?'s':'');
-  const sp=document.createElement('span');sp.style.cssText='font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:700;color:'+(dayPnl>0?'var(--accent)':dayPnl<0?'var(--red)':'var(--muted)');sp.textContent=fP(dayPnl)||'—';
+  const sp=document.createElement('span');sp.style.cssText='font-family:var(--font-mono,"Space Grotesk",sans-serif);font-size:14px;font-weight:700;color:'+(dayPnl>0?'var(--accent)':dayPnl<0?'var(--red)':'var(--muted)');sp.textContent=fP(dayPnl)||'—';
   sum.appendChild(sc);sum.appendChild(sp);container.appendChild(sum);
   trades.forEach(t=>{
     const row=document.createElement('div');row.className='dp-trade';
@@ -277,7 +269,7 @@ function showDayPanel(dayNum,dateStr,trades){
     const time=document.createElement('span');time.style.cssText='font-size:11px;color:var(--muted)';time.textContent=t.time||'';
     const pnlN=parseFloat(t.pnl);const pnlEl=document.createElement('span');pnlEl.className='dp-pnl '+(pnlN>0?'pos':pnlN<0?'neg':'');pnlEl.textContent=fP(t.pnl)||'—';
     right.appendChild(time);right.appendChild(pnlEl);
-    if(t.r){const rEl=document.createElement('span');rEl.style.cssText='font-size:11px;color:'+(parseFloat(t.r)>0?'var(--accent2)':'var(--red)');rEl.textContent=(parseFloat(t.r)>0?'+':'')+parseFloat(t.r).toFixed(2)+'R';right.appendChild(rEl);}
+    if(t.r){const rEl=document.createElement('span');rEl.style.cssText='font-size:11px;font-family:var(--font-mono,"Space Grotesk",sans-serif);color:'+(parseFloat(t.r)>0?'var(--accent2)':'var(--red)');rEl.textContent=(parseFloat(t.r)>0?'+':'')+parseFloat(t.r).toFixed(2)+'R';right.appendChild(rEl);}
     row.appendChild(left);row.appendChild(right);container.appendChild(row);
   });
   document.getElementById('dayPanel').classList.add('show');

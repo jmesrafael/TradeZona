@@ -7,57 +7,56 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Calculator</title>
 <script src="theme.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);padding:20px;min-height:100vh}
 .pw{max-width:980px;margin:0 auto}
-.calc-hero{background:linear-gradient(135deg,rgba(var(--accent-rgb,0,255,136),.06),rgba(var(--accent2-rgb,25,195,125),.03));border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
-.calc-hero-icon{width:40px;height:40px;background:rgba(var(--accent-rgb,0,255,136),.12);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:17px;flex-shrink:0}
-.calc-hero-text h2{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:3px}
+.calc-hero{background:linear-gradient(135deg,rgba(var(--accent-rgb,0,255,136),.06),rgba(var(--accent2-rgb,25,195,125),.03));border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:var(--radius-xl);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.calc-hero-icon{width:40px;height:40px;background:rgba(var(--accent-rgb,0,255,136),.12);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:17px;flex-shrink:0}
+.calc-hero-text h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:14px;font-weight:600;margin-bottom:3px}
 .calc-hero-text p{font-size:12px;color:var(--muted);line-height:1.5}
 .calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:680px){.calc-layout{grid-template-columns:1fr}}
-.cpanel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
-.cpanel-title{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.cpanel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl);padding:18px}
+.cpanel-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .cpanel-title i{color:var(--accent2)}
 .field{margin-bottom:12px}
 .field-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
 .tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--muted);font-size:9px;cursor:help;position:relative;flex-shrink:0}
-.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#000;color:#e6f2ec;font-size:10px;padding:5px 8px;border-radius:6px;z-index:99;max-width:200px;text-align:center;width:180px;line-height:1.4;pointer-events:none;border:1px solid var(--border);white-space:normal}
+.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#000;color:#e6f2ec;font-size:10px;padding:5px 8px;border-radius:var(--radius-md);z-index:99;max-width:200px;text-align:center;width:180px;line-height:1.4;pointer-events:none;border:1px solid var(--border);white-space:normal}
 .input-wrap{position:relative;display:flex;align-items:center}
 .input-pre,.input-suf{position:absolute;font-size:12px;color:var(--muted);pointer-events:none;z-index:1}
 .input-pre{left:12px}.input-suf{right:12px}
-.ci{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.ci{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;transition:border-color var(--transition-base);-moz-appearance:textfield}
 .ci::-webkit-outer-spin-button,.ci::-webkit-inner-spin-button{-webkit-appearance:none}
 .ci:focus{border-color:var(--accent2)}
 .ci.pre{padding-left:26px}.ci.suf{padding-right:26px}
-.csel{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color .2s}
+.csel{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color var(--transition-base)}
 .csel:focus{border-color:var(--accent2)}
 .csel option{background:var(--panel)}
 .asset-toggle{display:flex;gap:6px;margin-bottom:12px}
-.asset-btn{flex:1;padding:9px 8px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-size:13px;font-family:'Space Grotesk',sans-serif;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.asset-btn{flex:1;padding:9px 8px;border:1px solid var(--border);border-radius:var(--radius-md);background:none;color:var(--muted);font-size:13px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-weight:600;cursor:pointer;transition:all var(--transition-fast);text-align:center}
 .asset-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(var(--accent2-rgb,25,195,125),.07)}
 .cdiv{border:none;border-top:1px solid var(--border);margin:12px 0}
 .rg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:360px){.rg{grid-template-columns:1fr}}
-.rc{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px}
+.rc{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px}
 .rc.hi{border-color:rgba(var(--accent-rgb,0,255,136),.3);background:rgba(var(--accent-rgb,0,255,136),.04)}
 .rc.danger{border-color:rgba(255,95,109,.25);background:rgba(255,95,109,.04)}
 .rl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
 .rl i{font-size:9px}
-.rv{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);line-height:1}
+.rv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:20px;font-weight:700;color:var(--text);line-height:1}
 .rv.pos{color:var(--accent)}.rv.neg{color:var(--red)}.rv.warn{color:var(--amber)}
 .rs{font-size:11px;color:var(--muted);margin-top:3px}
 .pnl-sec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.pnl-title{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.pnl-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .pnl-title i{color:var(--accent2)}
 .rr-wrap{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0 3px}
-.rr-bar{height:100%;border-radius:3px;transition:width .4s,background .3s}
-.formula-box{margin-top:14px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.6}
-.formula-title{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
-.disclaimer{font-size:11px;color:var(--muted);line-height:1.5;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-top:12px;opacity:.7}
+.rr-bar{height:100%;border-radius:3px;transition:width .4s,background var(--transition-base)}
+.formula-box{margin-top:14px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;color:var(--muted);line-height:1.6}
+.formula-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
+.disclaimer{font-size:11px;color:var(--muted);line-height:1.5;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:12px;opacity:.7}
 .disclaimer i{color:var(--accent2);margin-right:4px}
 .forex-only{display:none}
 .forex-only.show{display:block}
@@ -174,7 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;paddi
         <div id="rrSec" style="display:none;margin-top:12px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span style="font-size:11px;color:var(--muted)">Risk / Reward</span>
-            <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700" id="rRR">—</span>
+            <span style="font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:15px;font-weight:700" id="rRR">—</span>
           </div>
           <div class="rr-wrap"><div class="rr-bar" id="rrBar"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
@@ -197,10 +196,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;paddi
 </div>
 
 <script>
-// ── Theme: fully delegated to theme.js TZ engine ─────────────
-// theme.js loaded in <head> auto-applies on load.
-// TZ already handles postMessage({ type:'tz_theme' }) natively.
-
 let assetType='crypto';
 
 function setAsset(t){

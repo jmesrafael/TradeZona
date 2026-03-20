@@ -7,41 +7,40 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="theme.js"></script>
 <script src="supabase.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px}
+body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);padding:20px}
 .pw{max-width:1100px;margin:0 auto}
-.skel-bar{height:20px;border-radius:6px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;margin-bottom:10px}
+.skel-bar{height:20px;border-radius:var(--radius-md);background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;margin-bottom:10px}
 .skel-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin-bottom:18px}
-.skel-card{height:70px;border-radius:10px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;border:1px solid var(--border)}
-.skel-chart{height:200px;border-radius:10px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;border:1px solid var(--border);margin-bottom:14px}
+.skel-card{height:70px;border-radius:var(--radius-lg);background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;border:1px solid var(--border)}
+.skel-chart{height:200px;border-radius:var(--radius-lg);background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite;border:1px solid var(--border);margin-bottom:14px}
 .sr{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin-bottom:18px}
-.sc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.sc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px}
 .sc .sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
-.sc .sv{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600}
+.sc .sv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:20px;font-weight:600}
 .sc .sv.pos{color:var(--accent)}.sc .sv.neg{color:var(--red)}
-.cb{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
-.cb h3{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.cb{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px}
+.cb h3{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
 .cb h3 i{color:var(--accent2)}
 .c2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 canvas{max-height:190px}
-.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
 .ad-slot.visible{display:block}
 .ad-slot-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6}
 .ad-slot-inner{min-height:90px;display:flex;align-items:center;justify-content:center}
-.ad-upgrade-nudge{padding:12px 16px;background:rgba(var(--accent-rgb,0,255,136),.04);border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ad-upgrade-nudge{padding:12px 16px;background:rgba(var(--accent-rgb,0,255,136),.04);border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:var(--radius-lg);display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .ad-upgrade-nudge.visible{display:flex}
 .ad-nudge-text{font-size:12px;color:var(--muted);line-height:1.5}
 .ad-nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
-.ad-nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
+.ad-nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity var(--transition-base);flex-shrink:0}
 .ad-nudge-btn:hover{opacity:.85}
 .stk{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.skc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.skc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;text-align:center}
 .skc .sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
-.skc .sv{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700}
+.skc .sv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:30px;font-weight:700}
 .skc .sv.win{color:var(--accent)}.skc .sv.loss{color:var(--red)}
 .skc .ss{font-size:11px;color:var(--muted);margin-top:3px}
 .bt{width:100%;border-collapse:collapse}
@@ -67,10 +66,6 @@ canvas{max-height:190px}
 </div>
 
 <script>
-// ── Theme: fully delegated to theme.js TZ engine ─────────────
-// theme.js loaded in <head> auto-applies on load.
-// TZ already handles postMessage({ type:'tz_theme' }) natively.
-
 const jid = sessionStorage.getItem('tz_current_journal') || (()=>{
   try { return parent?.sessionStorage?.getItem('tz_current_journal'); } catch(e) { return null; }
 })();
@@ -88,21 +83,21 @@ function fPct(v){return'%'+parseFloat(v).toFixed(1);}
   const{data:{user:authUser}}=await db.auth.getUser();
   let isPro=false;
   if(authUser){
-    try{
-      isPro=parent?._userIsPro||false;
-      if(!isPro){const p=await getProfile(authUser.id);isPro=p?.plan==='pro';}
-    }catch(e){const p=await getProfile(authUser.id);isPro=p?.plan==='pro';}
+    try{isPro=parent?._userIsPro||false;if(!isPro){const p=await getProfile(authUser.id);isPro=p?.plan==='pro';}}
+    catch(e){const p=await getProfile(authUser.id);isPro=p?.plan==='pro';}
   }
 
-  // Read current theme tokens for chart colors
   const rootStyle=getComputedStyle(document.documentElement);
   const accent=rootStyle.getPropertyValue('--accent').trim()||'#19c37d';
   const red=rootStyle.getPropertyValue('--red').trim()||'#ff5f6d';
   const tc=rootStyle.getPropertyValue('--muted').trim()||'#8fa39a';
   const gc=rootStyle.getPropertyValue('--border').trim()||'#1c2a25';
+  const fh=rootStyle.getPropertyValue('--font-heading').trim()||"'Space Grotesk', sans-serif";
+  const fb=rootStyle.getPropertyValue('--font-body').trim()||"'Inter', sans-serif";
 
   Chart.defaults.color=tc;
   Chart.defaults.borderColor=gc;
+  Chart.defaults.font.family=fb.replace(/'/g,'').split(',')[0].trim();
 
   if(!trades.length){document.getElementById('root').innerHTML='<div class="empty"><i class="fa-solid fa-chart-line"></i>No trades yet.<br>Add trades in the Logs tab to see analytics.</div>';return;}
   document.getElementById('root').innerHTML=`
@@ -119,9 +114,9 @@ function fPct(v){return'%'+parseFloat(v).toFixed(1);}
     <div class="cb pro-upsell-box">
       <div style="text-align:center;padding:20px 16px">
         <i class="fa-solid fa-lock" style="font-size:28px;color:var(--muted);opacity:.4;display:block;margin-bottom:12px"></i>
-        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:8px">Advanced Analytics — Pro</h3>
+        <h3 style="font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:15px;font-weight:600;margin-bottom:8px">Advanced Analytics — Pro</h3>
         <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:420px;margin:0 auto 16px">Unlock Strategy PNL, Mood heatmaps, Hour analysis, Day-of-week breakdown, Long vs Short, and more.</p>
-        <a href="/subscription" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <a href="/subscription" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:10px 20px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:700;text-decoration:none;transition:opacity var(--transition-base)" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
           <i class="fa-solid fa-arrow-up"></i> Upgrade to Pro — $5/mo
         </a>
       </div>
