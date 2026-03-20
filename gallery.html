@@ -1,0 +1,478 @@
+<!-- gallery.html — Trade Notes & Gallery -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Notes</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* ── Top bar ─────────────────────────────────────── */
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap}
+.search-wrap{flex:1;min-width:160px;position:relative;max-width:340px}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
+.search-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px 8px 30px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--accent2)}
+.search-input::placeholder{color:var(--muted)}
+.filter-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.filter-btn{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--muted);padding:6px 11px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.filter-btn:hover{border-color:var(--accent2);color:var(--text)}
+.filter-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(25,195,125,.08)}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.vbtn{background:none;border:none;color:var(--muted);padding:6px 10px;cursor:pointer;font-size:13px;transition:all .15s}
+.vbtn.active{background:rgba(25,195,125,.1);color:var(--accent2)}
+.count-badge{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ── Main content ─────────────────────────────────── */
+.pw{padding:18px;max-width:1280px;margin:0 auto}
+
+/* ── Skeleton ─────────────────────────────────────── */
+.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.skel-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.skel-img{height:160px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
+.skel-body{padding:14px;display:flex;flex-direction:column;gap:8px}
+.skel-line{height:10px;border-radius:4px;background:linear-gradient(90deg,var(--border) 25%,rgba(255,255,255,.04) 50%,var(--border) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
+.skel-line.short{width:60%}
+
+/* ── Grid view ────────────────────────────────────── */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.note-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;animation:fadeIn .3s ease both}
+.note-card:hover{transform:translateY(-2px);border-color:rgba(0,255,136,.3);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.card-img{width:100%;height:160px;object-fit:cover;display:block;background:var(--border)}
+.card-img-placeholder{height:160px;background:linear-gradient(135deg,rgba(25,195,125,.04),rgba(0,255,136,.02));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted)}
+.card-img-placeholder i{font-size:32px;opacity:.25}
+.card-img-placeholder span{font-size:11px;opacity:.45}
+.card-body{padding:13px}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:6px;flex-wrap:wrap}
+.card-pair{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+.card-dir{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.dir-long{background:rgba(0,255,136,.12);color:var(--accent2);border:1px solid rgba(0,255,136,.25)}
+.dir-short{background:rgba(255,95,109,.1);color:#ff5f6d;border:1px solid rgba(255,95,109,.25)}
+.card-date{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.card-pnl{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700}
+.card-pnl.pos{color:var(--accent)}.card-pnl.neg{color:#ff5f6d}.card-pnl.zero{color:var(--muted)}
+.card-note-preview{font-size:12px;color:var(--muted);line-height:1.55;margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px}
+.ctag{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(25,195,125,.08);color:var(--accent2);border:1px solid rgba(25,195,125,.18)}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.cf-imgs{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.cf-r{font-size:11px;color:var(--muted)}
+.card-stars{display:flex;gap:1px}
+.cstar{font-size:10px;color:var(--border)}
+.cstar.on{color:#f5c518}
+
+/* ── List view ────────────────────────────────────── */
+.notes-list{display:flex;flex-direction:column;gap:8px}
+.list-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;align-items:flex-start;gap:14px;animation:fadeIn .25s ease both}
+.list-card:hover{border-color:rgba(0,255,136,.3);background:rgba(255,255,255,.015)}
+.list-thumb{width:72px;height:56px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--border)}
+.list-thumb-ph{width:72px;height:56px;border-radius:7px;background:linear-gradient(135deg,rgba(25,195,125,.05),rgba(0,0,0,.1));display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-size:18px;opacity:.4}
+.list-info{flex:1;min-width:0}
+.list-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.list-pair{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700}
+.list-date{font-size:11px;color:var(--muted)}
+.list-note{font-size:12px;color:var(--muted);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.list-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+
+/* ── Empty state ──────────────────────────────────── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;color:var(--muted)}
+.empty i{font-size:48px;opacity:.18;margin-bottom:18px;display:block}
+.empty h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.empty p{font-size:13px;line-height:1.7;max-width:360px}
+
+/* ── Detail overlay ───────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:700;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.detail-modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:820px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;animation:fadeIn .22s ease}
+.dm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px;flex-wrap:wrap}
+.dm-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dm-pair{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700}
+.dm-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all .15s;flex-shrink:0}
+.dm-close:hover{background:var(--border);color:var(--text)}
+.dm-body{padding:20px;flex:1}
+/* Trade stats row */
+.dm-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:20px}
+.dstat{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.dstat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.dstat-val{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+.dstat-val.pos{color:var(--accent)}.dstat-val.neg{color:#ff5f6d}
+/* Pills in detail */
+.dm-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.dtag{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(25,195,125,.1);color:var(--accent2);border:1px solid rgba(25,195,125,.25)}
+.dtag.mood{border-radius:20px}
+/* Notes text */
+.dm-notes-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dm-notes-lbl i{color:var(--accent2)}
+.dm-notes-text{font-size:13px;color:var(--text);line-height:1.75;white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;min-height:48px}
+.dm-notes-empty{font-size:13px;color:var(--muted);font-style:italic;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px}
+/* Images in detail */
+.dm-imgs-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dm-imgs-lbl i{color:var(--accent2)}
+.dm-img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.dm-img-thumb{border-radius:9px;overflow:hidden;border:1px solid var(--border);cursor:zoom-in;position:relative;background:var(--bg)}
+.dm-img-thumb img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;transition:transform .2s}
+.dm-img-thumb:hover img{transform:scale(1.04)}
+.dm-img-thumb .zoom-icon{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;border-radius:5px;padding:3px 5px;font-size:10px;opacity:0;transition:opacity .15s}
+.dm-img-thumb:hover .zoom-icon{opacity:1}
+/* Nav arrows */
+.dm-nav{display:flex;align-items:center;gap:8px}
+.nav-btn{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--muted);padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.nav-btn:hover:not(:disabled){border-color:var(--accent2);color:var(--text)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.nav-pos{font-size:12px;color:var(--muted);min-width:50px;text-align:center}
+
+/* ── Lightbox ──────────────────────────────────────── */
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:900;align-items:center;justify-content:center}
+.lb.open{display:flex}
+.lb img{max-width:90vw;max-height:88vh;border-radius:8px;object-fit:contain}
+.lb-x{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;cursor:pointer;width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.lb-x:hover{background:rgba(255,255,255,.2)}
+
+/* ── Toast ────────────────────────────────────────── */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:9999;opacity:0;pointer-events:none;transition:all .28s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:92vw}
+#toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+
+/* ── Responsive ───────────────────────────────────── */
+@media(max-width:600px){
+  .notes-grid{grid-template-columns:1fr}
+  .dm-img-grid{grid-template-columns:repeat(2,1fr)}
+  .dm-stats{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:10px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="search-wrap">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search pair, notes, tags…" oninput="applyFilter()">
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn active" id="fAll" onclick="setFilter('all')">All</button>
+    <button class="filter-btn" id="fNotes" onclick="setFilter('notes')"><i class="fa-solid fa-note-sticky"></i> Has Notes</button>
+    <button class="filter-btn" id="fImgs" onclick="setFilter('images')"><i class="fa-solid fa-images"></i> Has Images</button>
+    <button class="filter-btn" id="fLong" onclick="setFilter('long')"><i class="fa-solid fa-arrow-up"></i> Long</button>
+    <button class="filter-btn" id="fShort" onclick="setFilter('short')"><i class="fa-solid fa-arrow-down"></i> Short</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+    <span class="count-badge" id="countBadge"></span>
+    <div class="view-toggle">
+      <button class="vbtn active" id="vGrid" onclick="setView('grid')" title="Grid view"><i class="fa-solid fa-grip"></i></button>
+      <button class="vbtn" id="vList" onclick="setView('list')" title="List view"><i class="fa-solid fa-list"></i></button>
+    </div>
+  </div>
+</div>
+
+<div class="pw">
+  <!-- Skeleton -->
+  <div id="skelWrap" class="skel-grid">
+    <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skel-card" style="opacity:.5"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+  </div>
+  <!-- Content -->
+  <div id="content"></div>
+</div>
+
+<!-- Detail Modal -->
+<div class="overlay" id="detailOverlay">
+  <div class="detail-modal" id="detailModal">
+    <div class="dm-header">
+      <div class="dm-title">
+        <span class="dm-pair" id="dm-pair">—</span>
+        <span class="card-dir" id="dm-dir"></span>
+        <span style="font-size:12px;color:var(--muted)" id="dm-date"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="dm-nav">
+          <button class="nav-btn" id="navPrev" onclick="navDetail(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <span class="nav-pos" id="navPos">1 / 1</span>
+          <button class="nav-btn" id="navNext" onclick="navDetail(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <button class="dm-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div class="dm-body" id="dm-body">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lb" id="lb" onclick="this.classList.remove('open')">
+  <button class="lb-x" onclick="event.stopPropagation();document.getElementById('lb').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
+
+<script>
+// ── Theme ──────────────────────────────────────────
+function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#eef3f0');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0a9460');r.style.setProperty('--border','#c4d4cc');r.style.setProperty('--text','#0a1812');r.style.setProperty('--muted','#2e5044');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
+(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
+window.addEventListener('message',e=>{
+  if(e.data?.theme)applyTheme(e.data.theme);
+  if(e.data?.type==='tz_plan'&&e.data.isPro!==undefined)userIsPro=e.data.isPro;
+  if(e.data?.type==='tz_settings_updated')loadData();
+});
+
+// ── State ──────────────────────────────────────────
+const jid=sessionStorage.getItem('tz_current_journal')||(()=>{try{return parent?.sessionStorage?.getItem('tz_current_journal');}catch(e){return null;}})();
+let currentUser=null,userIsPro=false,settings=null;
+let allTrades=[],filtered=[],viewMode='grid',activeFilter='all';
+let detailIdx=0;
+
+// ── Boot ───────────────────────────────────────────
+(async()=>{
+  const{data:{user}}=await db.auth.getUser();
+  currentUser=user;
+  if(!currentUser||!jid)return;
+  try{userIsPro=parent?._userIsPro||false;}catch(e){}
+  if(!userIsPro){const p=await getProfile(currentUser.id);userIsPro=p?.plan==='pro';}
+  settings=await getJournalSettings(jid);
+  await loadData();
+  document.getElementById('skelWrap').style.display='none';
+})();
+
+async function loadData(){
+  const raw=await getTrades(jid);
+  allTrades=raw.map(dbToTrade).sort((a,b)=>{
+    // Sort: newest date first
+    if(a.date&&b.date)return b.date.localeCompare(a.date);
+    if(a.date)return -1;if(b.date)return 1;return 0;
+  });
+  applyFilter();
+}
+
+// ── Filtering ──────────────────────────────────────
+function setFilter(f){
+  activeFilter=f;
+  ['all','notes','images','long','short'].forEach(k=>{
+    const btn=document.getElementById('f'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(btn)btn.classList.toggle('active',k===f);
+  });
+  applyFilter();
+}
+
+function applyFilter(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  filtered=allTrades.filter(t=>{
+    // Active filter
+    if(activeFilter==='notes'&&!(t.notes&&t.notes.trim()))return false;
+    if(activeFilter==='images'&&!(t.images&&t.images.length>0))return false;
+    if(activeFilter==='long'&&t.position!=='Long')return false;
+    if(activeFilter==='short'&&t.position!=='Short')return false;
+    // Search
+    if(q){
+      const blob=[
+        t.pair||'',
+        t.notes||'',
+        t.position||'',
+        ...(t.strategy||[]),
+        ...(t.timeframe||[]),
+        ...(t.mood||[]),
+        t.date||''
+      ].join(' ').toLowerCase();
+      if(!blob.includes(q))return false;
+    }
+    return true;
+  });
+  document.getElementById('countBadge').textContent=`${filtered.length} trade${filtered.length!==1?'s':''}`;
+  render();
+}
+
+function setView(v){
+  viewMode=v;
+  document.getElementById('vGrid').classList.toggle('active',v==='grid');
+  document.getElementById('vList').classList.toggle('active',v==='list');
+  render();
+}
+
+// ── Render ─────────────────────────────────────────
+function render(){
+  const el=document.getElementById('content');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><i class="fa-solid fa-note-sticky"></i><h3>No notes found</h3><p>${allTrades.length===0?'Add your first trade in the Logs tab. Notes and images will appear here.':'No trades match your current filter. Try changing the filter or search.'}</p></div>`;
+    return;
+  }
+  if(viewMode==='grid')el.innerHTML=`<div class="notes-grid">${filtered.map((t,i)=>buildCard(t,i)).join('')}</div>`;
+  else el.innerHTML=`<div class="notes-list">${filtered.map((t,i)=>buildListItem(t,i)).join('')}</div>`;
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+function fmtPNL(v){const n=parseFloat(v);if(isNaN(n)||v==null||v==='')return null;return{str:(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2),cls:n>0?'pos':n<0?'neg':'zero'};}
+function moodStyle(m){const c=(settings?.mood_colors||{})[m];if(!c)return'';const[r,g,b]=[c.slice(1,3),c.slice(3,5),c.slice(5,7)].map(x=>parseInt(x,16));return`background:rgba(${r},${g},${b},.15);color:${c};border:1px solid rgba(${r},${g},${b},.35);`;}
+function starsHTML(n){return[1,2,3,4,5].map(i=>`<span class="cstar${(n||0)>=i?' on':''}">★</span>`).join('');}
+function getFirstImage(t){return t.images&&t.images.length>0?(t.images[0]._previewUrl||t.images[0].data||null):null;}
+
+function buildCard(t,idx){
+  const img=getFirstImage(t);
+  const pnl=fmtPNL(t.pnl);
+  const tags=[...(t.strategy||[]),...(t.timeframe||[])].slice(0,3);
+  const moods=t.mood||[];
+  return`<div class="note-card" onclick="openDetail(${idx})">
+    ${img
+      ?`<img class="card-img" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+      :`<div class="card-img-placeholder"><i class="fa-solid fa-chart-line"></i><span>${t.images&&t.images.length>0?'Image unavailable':'No screenshot'}</span></div>`}
+    ${img?`<div class="card-img-placeholder" style="display:none"><i class="fa-solid fa-chart-line"></i><span>Image unavailable</span></div>`:''}
+    <div class="card-body">
+      <div class="card-meta">
+        <span class="card-pair">${esc(t.pair||'—')}</span>
+        <span class="card-dir ${t.position==='Short'?'dir-short':'dir-long'}">${esc(t.position||'Long')}</span>
+      </div>
+      <div class="card-date"><i class="fa-regular fa-calendar" style="font-size:10px"></i>${esc(t.date||'No date')}${t.time?` · ${esc(t.time)}`:''}</div>
+      ${pnl?`<span class="card-pnl ${pnl.cls}">${pnl.str}</span>${t.r?`<span style="font-size:11px;color:var(--muted);margin-left:6px">${parseFloat(t.r)>=0?'+':''}${parseFloat(t.r).toFixed(2)}R</span>`:'`'}`:
+        `<span style="font-size:12px;color:var(--muted)">No PNL recorded</span>`}
+      ${t.notes&&t.notes.trim()?`<div class="card-note-preview">${esc(t.notes)}</div>`:''}
+      ${tags.length?`<div class="card-tags">${tags.map(tg=>`<span class="ctag">${esc(tg)}</span>`).join('')}${(t.strategy||[]).length+(t.timeframe||[]).length>3?`<span class="ctag" style="opacity:.6">+${(t.strategy||[]).length+(t.timeframe||[]).length-3}</span>`:''}</div>`:''}
+      <div class="card-footer">
+        <span class="cf-imgs"><i class="fa-solid fa-image" style="font-size:10px"></i>${t.images&&t.images.length>0?t.images.length+' photo'+(t.images.length>1?'s':''):'No photos'}</span>
+        <div class="card-stars">${starsHTML(t.confidence)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildListItem(t,idx){
+  const img=getFirstImage(t);
+  const pnl=fmtPNL(t.pnl);
+  return`<div class="list-card" onclick="openDetail(${idx})">
+    ${img
+      ?`<img class="list-thumb" src="${esc(img)}" alt="" loading="lazy">`
+      :`<div class="list-thumb-ph"><i class="fa-solid fa-chart-line"></i></div>`}
+    <div class="list-info">
+      <div class="list-top">
+        <span class="list-pair">${esc(t.pair||'—')}</span>
+        <span class="card-dir ${t.position==='Short'?'dir-short':'dir-long'}" style="font-size:9px;padding:1px 6px">${esc(t.position||'Long')}</span>
+        <span class="list-date">${esc(t.date||'')}${t.time?` · ${esc(t.time)}`:''}</span>
+      </div>
+      <div class="list-note">${t.notes&&t.notes.trim()?esc(t.notes):'<em style="opacity:.5">No notes</em>'}</div>
+      <div class="card-tags" style="margin-top:5px">${[...(t.strategy||[]),...(t.timeframe||[]),...(t.mood||[])].slice(0,4).map(tg=>`<span class="ctag">${esc(tg)}</span>`).join('')}</div>
+    </div>
+    <div class="list-right">
+      ${pnl?`<span class="card-pnl ${pnl.cls}" style="font-size:13px">${pnl.str}</span>`:''}
+      ${t.r?`<span style="font-size:11px;color:var(--muted)">${parseFloat(t.r)>=0?'+':''}${parseFloat(t.r).toFixed(2)}R</span>`:''}
+      <span class="cf-imgs"><i class="fa-solid fa-image" style="font-size:10px"></i>${t.images&&t.images.length>0?t.images.length:0}</span>
+      <div class="card-stars">${starsHTML(t.confidence)}</div>
+    </div>
+  </div>`;
+}
+
+// ── Detail Modal ───────────────────────────────────
+function openDetail(idx){
+  detailIdx=idx;
+  renderDetail();
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');}
+function navDetail(dir){
+  detailIdx=Math.max(0,Math.min(filtered.length-1,detailIdx+dir));
+  renderDetail();
+}
+
+function renderDetail(){
+  const t=filtered[detailIdx];
+  if(!t)return;
+  const pnl=fmtPNL(t.pnl);
+  const allTags=[...(t.strategy||[]),...(t.timeframe||[])];
+  const moods=t.mood||[];
+  const imgs=t.images||[];
+
+  // Header
+  document.getElementById('dm-pair').textContent=t.pair||'Unknown Pair';
+  const dirEl=document.getElementById('dm-dir');
+  dirEl.textContent=t.position||'Long';
+  dirEl.className='card-dir '+(t.position==='Short'?'dir-short':'dir-long');
+  document.getElementById('dm-date').textContent=(t.date||'')+(t.time?' · '+t.time:'');
+
+  // Nav
+  document.getElementById('navPos').textContent=`${detailIdx+1} / ${filtered.length}`;
+  document.getElementById('navPrev').disabled=detailIdx===0;
+  document.getElementById('navNext').disabled=detailIdx===filtered.length-1;
+
+  // Body
+  const body=document.getElementById('dm-body');
+  body.innerHTML=`
+    <div class="dm-stats">
+      <div class="dstat">
+        <div class="dstat-lbl">PNL</div>
+        <div class="dstat-val ${pnl?pnl.cls:''}">${pnl?pnl.str:'—'}</div>
+      </div>
+      <div class="dstat">
+        <div class="dstat-lbl">R Factor</div>
+        <div class="dstat-val ${t.r&&parseFloat(t.r)>0?'pos':t.r&&parseFloat(t.r)<0?'neg':''}">${t.r?((parseFloat(t.r)>=0?'+':'')+parseFloat(t.r).toFixed(2)+'R'):'—'}</div>
+      </div>
+      <div class="dstat">
+        <div class="dstat-lbl">Confidence</div>
+        <div class="dstat-val">${t.confidence?'★'.repeat(t.confidence)+'☆'.repeat(5-t.confidence):'—'}</div>
+      </div>
+      <div class="dstat">
+        <div class="dstat-lbl">Photos</div>
+        <div class="dstat-val">${imgs.length}</div>
+      </div>
+    </div>
+
+    ${allTags.length||moods.length?`<div class="dm-tags">
+      ${allTags.map(tg=>`<span class="dtag">${esc(tg)}</span>`).join('')}
+      ${moods.map(m=>`<span class="dtag mood" style="${moodStyle(m)}">${esc(m)}</span>`).join('')}
+    </div>`:''}
+
+    <div class="dm-notes-lbl"><i class="fa-solid fa-note-sticky"></i> Notes</div>
+    ${t.notes&&t.notes.trim()
+      ?`<div class="dm-notes-text">${esc(t.notes)}</div>`
+      :`<div class="dm-notes-empty">No notes recorded for this trade.</div>`}
+
+    ${imgs.length?`
+      <div class="dm-imgs-lbl"><i class="fa-solid fa-images"></i> Screenshots (${imgs.length})</div>
+      <div class="dm-img-grid">
+        ${imgs.map((img,i)=>{
+          const src=img._previewUrl||img.data||'';
+          return`<div class="dm-img-thumb" onclick="openLb('${esc(src)}')">
+            <img src="${esc(src)}" alt="Screenshot ${i+1}" loading="lazy">
+            <span class="zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+          </div>`;
+        }).join('')}
+      </div>`
+    :''}
+  `;
+
+  // Scroll to top of modal body
+  document.getElementById('detailModal').scrollTop=0;
+}
+
+// ── Lightbox ───────────────────────────────────────
+function openLb(src){document.getElementById('lbImg').src=src;document.getElementById('lb').classList.add('open');}
+
+// ── Keyboard nav ──────────────────────────────────
+document.addEventListener('keydown',e=>{
+  const ov=document.getElementById('detailOverlay');
+  if(ov.classList.contains('open')){
+    if(e.key==='ArrowRight')navDetail(1);
+    if(e.key==='ArrowLeft')navDetail(-1);
+    if(e.key==='Escape'){closeDetail();document.getElementById('lb').classList.remove('open');}
+  }
+});
+
+document.getElementById('detailOverlay').addEventListener('click',function(e){
+  if(e.target===this)closeDetail();
+});
+
+let _tt;
+function showToast(msg,icon='fa-solid fa-circle-check'){const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.className='show';clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+</body>
+</html>

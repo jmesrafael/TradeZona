@@ -8,6 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
+<script src="theme.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -16,11 +17,7 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .35s}
-.page-loader.gone{opacity:0;pointer-events:none}
-.pl-logo{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;text-align:center;margin-bottom:18px}
-.pl-logo span{color:var(--accent)}
-.pl-spin{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+/* page-loader styles handled by theme.js */
 header{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;gap:12px;flex-wrap:wrap}
 .hleft{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .back-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
@@ -44,10 +41,7 @@ nav::-webkit-scrollbar{display:none}
 .tab-content.active{display:flex;flex-direction:column}
 iframe{flex:1;border:none;width:100%;height:100%;min-height:calc(100vh - 115px);opacity:0;transition:opacity .25s}
 iframe.ready{opacity:1}
-.tab-loader{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:10;transition:opacity .3s}
-.tab-loader.hidden{opacity:0;pointer-events:none}
-.tab-loader-spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-.tab-loader-label{font-size:13px;color:var(--muted)}
+/* tab-loader styles now handled by theme.js TZ.buildTabLoader() */
 .pro-gate{position:absolute;inset:0;background:rgba(11,15,12,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;z-index:20;backdrop-filter:blur(4px)}
 .pro-gate h3{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px}
 .pro-gate p{font-size:13px;color:var(--muted);line-height:1.7;max-width:360px;margin-bottom:22px}
@@ -209,9 +203,8 @@ iframe.ready{opacity:1}
 </head>
 <body>
 
-<div class="page-loader" id="pageLoader">
-  <div><div class="pl-logo">Trade<span>Zona</span></div><div class="pl-spin"></div></div>
-</div>
+<!-- Candlestick loader — built by theme.js TZ.buildLoader() -->
+<div id="pageLoader"></div>
 
 <header>
   <div class="hleft">
@@ -230,7 +223,6 @@ iframe.ready{opacity:1}
 <nav>
   <button class="tab active" data-tab="logs"       onclick="switchTab('logs')"><i class="fa-solid fa-table-list"></i>Logs</button>
   <button class="tab"        data-tab="calendar"   onclick="switchTab('calendar')"><i class="fa-solid fa-calendar-days"></i>Calendar</button>
-  <button class="tab"        data-tab="gallery"    onclick="switchTab('gallery')"><i class="fa-solid fa-note-sticky"></i>Notes</button>
   <button class="tab"        data-tab="analytics"  onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i>Analytics</button>
   <button class="tab"        data-tab="notes"      onclick="switchTab('notes')"><i class="fa-solid fa-note-sticky"></i>Notes</button>
   <button class="tab"        data-tab="calculator" onclick="switchTab('calculator')"><i class="fa-solid fa-calculator"></i>Calculator<span class="pro-tab-badge" id="calcBadge" style="display:none">PRO</span></button>
@@ -240,32 +232,27 @@ iframe.ready{opacity:1}
 
 <!-- Tab: Logs -->
 <div class="tab-content active" id="tab-logs">
-  <div class="tab-loader hidden" id="loader-logs"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading…</span></div>
+  <div class="tab-loader hidden" id="loader-logs"></div><span class="tab-loader-label">Loading…</span></div>
   <iframe src="logs.html" id="logsFrame" onload="frameReady('logs')"></iframe>
 </div>
 <!-- Tab: Calendar -->
 <div class="tab-content" id="tab-calendar">
-  <div class="tab-loader" id="loader-calendar"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading calendar…</span></div>
+  <div class="tab-loader" id="loader-calendar"></div><span class="tab-loader-label">Loading calendar…</span></div>
   <iframe id="calFrame" onload="frameReady('calendar')"></iframe>
 </div>
-<!-- Tab: Gallery -->
-<div class="tab-content" id="tab-gallery">
-  <div class="tab-loader" id="loader-gallery"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading gallery…</span></div>
-  <iframe id="galFrame" onload="frameReady('gallery')"></iframe>
-</div>
-<!-- Tab: Analytics -->
+<span class="tab-lo<!-- Tab: Analytics -->
 <div class="tab-content" id="tab-analytics">
-  <div class="tab-loader" id="loader-analytics"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading analytics…</span></div>
+  <div class="tab-loader" id="loader-analytics"></div><span class="tab-loader-label">Loading analytics…</span></div>
   <iframe id="analyticsFrame" onload="frameReady('analytics')"></iframe>
 </div>
 <!-- Tab: Notes — full notes management page -->
 <div class="tab-content" id="tab-notes">
-  <div class="tab-loader" id="loader-notes"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading notes…</span></div>
+  <div class="tab-loader" id="loader-notes"></div><span class="tab-loader-label">Loading notes…</span></div>
   <iframe id="notesFrame" onload="frameReady('notes')"></iframe>
 </div>
 <!-- Tab: Calculator — Pro gate wraps the iframe -->
 <div class="tab-content" id="tab-calculator">
-  <div class="tab-loader hidden" id="loader-calculator"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading calculator…</span></div>
+  <div class="tab-loader hidden" id="loader-calculator"></div><span class="tab-loader-label">Loading calculator…</span></div>
   <div class="pro-gate" id="calcProGate">
     <i class="fa-solid fa-calculator" style="font-size:42px;color:var(--muted);opacity:.3;margin-bottom:18px"></i>
     <h3>Calculator — Pro Feature</h3>
@@ -502,15 +489,14 @@ iframe.ready{opacity:1}
 // ════════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════════
-const TABS=['logs','calendar','gallery','analytics','notes','calculator','settings'];
+const TABS=['logs','calendar','analytics','notes','calculator','settings'];
 let activeTab='logs', journalId=sessionStorage.getItem('tz_current_journal');
 let journalObj=null, settings=null, currentUser=null, userIsPro=false, isDirty=false;
 let exportScope='full', importMode='replace', importPayload=null;
 let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
 
-// ── Theme ──────────────────────────────────────────
-function applyTheme(t){const r=document.documentElement,dark=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dark){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
-applyTheme(localStorage.getItem('tl_theme')||'dark');
+// ── Theme — handled by theme.js ───────────────────
+// applyTheme() is available as TZ.applyTheme() via theme.js
 
 // ── Boot ───────────────────────────────────────────
 (async()=>{
@@ -535,8 +521,7 @@ applyTheme(localStorage.getItem('tl_theme')||'dark');
   document.title='TradeZona — '+journalObj.name;
   settings=await getJournalSettings(journalId);
   bcast({type:'tz_plan',isPro:userIsPro});
-  document.getElementById('pageLoader').classList.add('gone');
-  setTimeout(()=>{const pl=document.getElementById('pageLoader');if(pl)pl.style.display='none';},400);
+  TZ.hideLoader();
   const lf=document.getElementById('logsFrame');
   if(lf?.contentDocument?.readyState==='complete')frameReady('logs');
   // Silently preload all other tabs in background
@@ -548,7 +533,6 @@ applyTheme(localStorage.getItem('tl_theme')||'dark');
 function _preloadTabs(){
   const loads=[
     {id:'calFrame',      src:'calendar.html'},
-    {id:'galFrame',      src:'notes.html'},
     {id:'analyticsFrame',src:'analytics.html'},
     {id:'notesFrame',    src:'notes.html'},
   ];
@@ -580,6 +564,10 @@ window.addEventListener('message',e=>{
     const dest=_flushTarget;_flushTarget=null;
     location.href=dest;
   }
+  if(e.data?.type==='tz_analytics_state'){
+    const sw=document.getElementById('analyticsToggleSwitch');
+    if(sw)sw.classList.toggle('on',!!e.data.on);
+  }
 });
 
 function goBack(){
@@ -601,7 +589,6 @@ function switchTab(name){
   // Frame map for tabs that use iframes
   const frameMap={
     calendar:{id:'calFrame',src:'calendar.html'},
-    gallery:{id:'galFrame',src:'gallery.html'},
     analytics:{id:'analyticsFrame',src:'analytics.html'},
     notes:{id:'notesFrame',src:'notes.html'},
     calculator:{id:'calcFrame',src:'calculator.html'},
@@ -628,19 +615,32 @@ function switchTab(name){
   document.getElementById('unsavedBar').classList.remove('show');
 }
 
-function showTabLoader(n){const l=document.getElementById('loader-'+n);if(l){l.style.display='';l.classList.remove('hidden');}}
+function showTabLoader(n){
+  const l=document.getElementById('loader-'+n);
+  if(!l)return;
+  l.style.display='';
+  l.classList.remove('hidden');
+  // Build candlestick loader if not already built
+  if(!l.querySelector('.tz-tl')){
+    const labels={logs:'Loading trades…',calendar:'Loading calendar…',analytics:'Loading analytics…',notes:'Loading notes…',calculator:'Loading calculator…'};
+    TZ.buildTabLoader(l, labels[n]||'Loading…');
+  }
+}
 function frameReady(n){
-  const map={logs:'logsFrame',calendar:'calFrame',gallery:'galFrame',analytics:'analyticsFrame',notes:'notesFrame',calculator:'calcFrame'};
+  const map={logs:'logsFrame',calendar:'calFrame',analytics:'analyticsFrame',notes:'notesFrame',calculator:'calcFrame'};
   const f=document.getElementById(map[n]);
   try{if(f?.contentWindow?.applyTheme)f.contentWindow.applyTheme(localStorage.getItem('tl_theme')||'dark');}catch(e){}
   try{if(f?.contentWindow)f.contentWindow.postMessage({type:'tz_plan',isPro:userIsPro},'*');}catch(e){}
   if(f){
     f.classList.add('ready');
     const l=document.getElementById('loader-'+n);
-    if(l){l.classList.add('hidden');setTimeout(()=>{if(l.classList.contains('hidden'))l.style.display='none';},350);}
+    if(l){
+      TZ.hideTabLoader(l);
+      setTimeout(()=>{l.classList.add('hidden');l.style.display='none';},380);
+    }
   }
 }
-function bcast(msg){['logsFrame','calFrame','galFrame','analyticsFrame','notesFrame','calcFrame'].forEach(id=>{const f=document.getElementById(id);try{if(f?.contentWindow)f.contentWindow.postMessage(msg,'*');}catch(e){}});}
+function bcast(msg){['logsFrame','calFrame','analyticsFrame','notesFrame','calcFrame'].forEach(id=>{const f=document.getElementById(id);try{if(f?.contentWindow)f.contentWindow.postMessage(msg,'*');}catch(e){}});}
 
 // ── Dirty tracking ─────────────────────────────────
 function markDirty(){isDirty=true;document.getElementById('unsavedBar').classList.add('show');}
@@ -903,7 +903,6 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 
 // ── Analytics toggle (wired to logs iframe) ────────
 function toggleAnalyticsBar(){
-  // Read current state from localStorage then flip
   const cur=localStorage.getItem('tl_analytics_on')!=='false';
   const next=!cur;
   localStorage.setItem('tl_analytics_on',next);
@@ -911,13 +910,6 @@ function toggleAnalyticsBar(){
   if(sw)sw.classList.toggle('on',next);
   bcast({type:'tz_analytics_toggle',on:next});
 }
-// Receive current analytics state from logs iframe on boot
-window.addEventListener('message',e=>{
-  if(e.data?.type==='tz_analytics_state'){
-    const sw=document.getElementById('analyticsToggleSwitch');
-    if(sw)sw.classList.toggle('on',!!e.data.on);
-  }
-});
 
 // Enter keys for tag inputs
 document.addEventListener('keydown',e=>{

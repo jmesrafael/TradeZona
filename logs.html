@@ -8,6 +8,7 @@
 <title>Logs</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
+<script src="theme.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -248,6 +249,8 @@ body.light-theme{
 </style>
 </head>
 <body>
+<!-- Tab loader — built automatically by theme.js -->
+<div id="tzTabLoader" style="position:fixed;inset:0;z-index:9999"></div>
 <div class="pw">
 
 <div class="topbar">
@@ -445,8 +448,7 @@ body.light-theme{
 <div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
 
 <script>
-function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#eef3f0');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0a9460');r.style.setProperty('--border','#c4d4cc');r.style.setProperty('--text','#0a1812');r.style.setProperty('--muted','#2e5044');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
-(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
+// Theme handled by theme.js — applyTheme() alias available via TZ.applyTheme||'dark'))();
 window.addEventListener('message',e=>{
   if(e.data?.theme)applyTheme(e.data.theme);
   if(e.data?.type==='tz_settings_updated')reloadSettings();
@@ -502,6 +504,7 @@ function nowTimeLocal(){const d=new Date();return String(d.getHours()).padStart(
   document.getElementById('skelTable').style.display='none';
   document.getElementById('tableWrap').style.display='block';
   applyAnalyticsState();render();
+  TZ.hideTabLoader();
   document.body.style.visibility='visible';
   if(!userIsPro){
     document.getElementById('logsAdSlot').style.display='block';

@@ -6,30 +6,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeZona — Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<!-- PostHog — replace YOUR_POSTHOG_KEY -->
+<!-- PostHog -->
 <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('YOUR_POSTHOG_KEY',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only',capture_pageview:true});</script>
+<script src="theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
+/* ── All colors, fonts, radius come from theme.js TZ.tokens ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-/* Loader */
-.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
-.page-loader.gone{opacity:0;pointer-events:none}
-.pl-logo{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;text-align:center;margin-bottom:20px}
-.pl-logo span{color:var(--accent)}
-.pl-spin{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-/* Header */
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap;gap:10px}
 .logo{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;cursor:pointer;user-select:none}
 .logo span{color:var(--accent)}
 .hright{display:flex;align-items:center;gap:8px}
-.huser{display:flex;align-items:center;gap:10px;margin-right:6px}
+.huser{display:flex;align-items:center;gap:9px;margin-right:5px}
 .uname{font-size:13px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plan-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .2s}
 .badge-pro{background:rgba(0,255,136,.15);color:var(--accent2);border:1px solid rgba(0,255,136,.3)}
@@ -37,38 +34,35 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .badge-free:hover{border-color:var(--accent2);color:var(--accent2)}
 .btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--text)}
-/* Main */
+
 main{padding:32px;max-width:1100px;margin:0 auto}
 @media(max-width:600px){main{padding:20px 16px}}
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
 .sec-hdr h2{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
 .btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:10px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:7px}
 .btn-primary:hover{opacity:.85}
-/* Skeleton */
-@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+
 .skel{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:8px}
 .skel-card{height:170px;border-radius:12px;border:1px solid var(--border)}
 .skel-grid,.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
-/* Journal cards */
-.jcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;transition:border-color .2s,transform .15s}
+
+.jcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;transition:border-color .2s,transform .15s;cursor:default}
 .jcard:hover{border-color:var(--accent2);transform:translateY(-1px)}
 .jcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px}
 .jcard h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;word-break:break-word;flex:1}
-/* PIN lock badge on card */
 .pin-lock{width:26px;height:26px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.25);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:11px;flex-shrink:0}
 .jcard .cap{font-size:12px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
 .pnl-row{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
 .pnl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .pnl-val{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
-.pnl-pos{color:var(--accent)!important}.pnl-neg{color:#ff5f6d!important}
+.pnl-pos{color:var(--accent)!important}.pnl-neg{color:var(--red)!important}
 .open-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);border:1px solid rgba(0,255,136,.4);border-radius:6px;padding:7px 14px;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
 .open-btn:hover{background:var(--accent);color:#0b0f0c}
 .empty-state{color:var(--muted);font-size:14px;padding:56px 0;text-align:center;grid-column:1/-1;line-height:1.9}
 .empty-state i{display:block;font-size:36px;margin-bottom:12px;opacity:.3}
-/* Overlay */
+
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-/* Modal */
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;overflow:hidden;max-height:92vh;display:flex;flex-direction:column}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
 .modal-hdr h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600}
@@ -76,26 +70,14 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .modal-close:hover{background:var(--border);color:var(--text)}
 .modal-body{padding:24px;overflow-y:auto;flex:1}
 .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
-/* Field */
 .field{margin-bottom:16px}
 .field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
-.fi{position:relative}
-.fi input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
-.fi input:focus{border-color:var(--accent2)}
-.fi input.no-icon{padding-right:13px}
-.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color .15s;line-height:1}
-.eye-btn:hover{color:var(--text)}
-.acct-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;flex-shrink:0}
-.acct-edit-btn:hover{border-color:var(--accent2);color:var(--accent2)}
-.acct-save-btn{flex:1;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:9px 14px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center}
-.acct-save-btn:hover{opacity:.85}
-.acct-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
-.acct-cancel-btn:hover{border-color:var(--muted);color:var(--text)}
 .field input.plain{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
 .field input.plain:focus{border-color:var(--accent2)}
 .btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
 .btn-cancel:hover{border-color:var(--muted)}
-/* Settings modal sections */
+
+/* Settings modal */
 .settings-modal{max-width:520px}
 .set-sec{margin-bottom:24px}
 .set-sec:last-child{margin-bottom:0}
@@ -108,19 +90,36 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .theme-opt i{display:block;font-size:20px;margin-bottom:6px}
 .plan-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
 .plan-row:last-child{border-bottom:none}
-.pr-lbl{font-size:13px;font-weight:500}
-.pr-val{font-size:12px;color:var(--muted)}
+.pr-lbl{font-size:13px;font-weight:500}.pr-val{font-size:12px;color:var(--muted)}
 .upgrade-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .upgrade-btn:hover{opacity:.85}
 .links-row{display:flex;flex-direction:column;gap:4px}
 .link-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:var(--text)}
 .link-item:hover{background:rgba(255,255,255,.04)}
 .link-item i.arr{color:var(--muted);font-size:11px}
-/* Danger in settings */
 .danger-title{color:#ff5f6d!important}
 .danger-title i{color:#ff5f6d!important}
 .btn-danger-full{display:flex;align-items:center;gap:7px;background:rgba(255,95,109,.06);border:1px solid rgba(255,95,109,.3);color:#ff5f6d;border-radius:8px;padding:10px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;width:100%;justify-content:center}
 .btn-danger-full:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
+
+/* Account edit rows */
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+.acct-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.acct-edit-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+.acct-expand{margin-top:8px;display:none;flex-direction:column;gap:8px}
+.acct-expand.show{display:flex}
+.acct-inp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.acct-inp:focus{border-color:var(--accent2)}
+.acct-inp.plain{padding-right:13px}
+.acct-actions{display:flex;gap:8px}
+.acct-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.acct-cancel-btn:hover{border-color:var(--muted)}
+.acct-save-btn{flex:1;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:9px 14px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.acct-save-btn:hover{opacity:.85}
+.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color .15s}
+.eye-btn:hover{color:var(--text)}
+.fi{position:relative}
+
 /* Delete account modal */
 .del-modal{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:14px;width:100%;max-width:440px;padding:28px}
 .del-icon{width:54px;height:54px;background:rgba(255,95,109,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:#ff5f6d}
@@ -130,7 +129,8 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .del-progress{display:none;text-align:center;padding:14px 0}
 .del-progress.show{display:block}
 .del-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:#ff5f6d;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
-/* Ad */
+
+/* Ad / nudge */
 .ad-slot{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .ad-slot.visible{display:block}
 .nudge{margin-top:12px;padding:12px 16px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:10px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -139,25 +139,17 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
 .nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
 .nudge-btn:hover{opacity:.85}
-/* Toast — TOP center, green/red variants */
-#toast{
-  position:fixed;top:20px;left:50%;
-  transform:translateX(-50%) translateY(-20px);
-  background:var(--panel);border:1px solid var(--border);
-  border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);
-  box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;
-  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
-  white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw
-}
+
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0);animation:slideDown .25s ease}
 #toast.toast-green{border-color:rgba(0,255,136,.45);background:rgba(0,255,136,.08)}
 #toast.toast-red{border-color:rgba(255,95,109,.45);background:rgba(255,95,109,.08)}
 </style>
 </head>
 <body>
-<div class="page-loader" id="pageLoader">
-  <div><div class="pl-logo">Trade<span>Zona</span></div><div class="pl-spin"></div></div>
-</div>
+
+<!-- Candlestick loader — built & managed entirely by theme.js -->
+<div id="pageLoader"></div>
 
 <header>
   <div class="logo" onclick="location.href='/dashboard'">Trade<span>Zona</span></div>
@@ -178,13 +170,15 @@ main{padding:32px;max-width:1100px;margin:0 auto}
     <button class="btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> New Journal</button>
   </div>
   <div id="loadingState" class="skel-grid">
-    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
   </div>
   <div class="grid" id="grid" style="display:none"></div>
   <div class="ad-slot" id="adSlot" style="margin-top:28px">
     <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:6px 12px 0;opacity:.6">Advertisement</div>
     <div style="min-height:90px;padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-      <div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Ad placeholder (Free users)</div><div style="font-size:12px;color:var(--muted)">Replace ca-pub-XXXXXXXX with your AdSense ID</div></div>
+      <ins class="adsbygoogle" style="display:block;width:100%;min-height:72px" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
     </div>
   </div>
   <div class="nudge" id="upgradeNudge">
@@ -193,7 +187,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
   </div>
 </main>
 
-<!-- ══ Create Journal ══ -->
+<!-- Create Journal -->
 <div class="overlay" id="createModal">
   <div class="modal">
     <div class="modal-hdr">
@@ -221,7 +215,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
   </div>
 </div>
 
-<!-- ══ Settings Modal ══ -->
+<!-- Settings Modal -->
 <div class="overlay" id="settingsModal">
   <div class="modal settings-modal">
     <div class="modal-hdr">
@@ -243,46 +237,44 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <!-- Account -->
       <div class="set-sec">
         <div class="set-title"><i class="fa-solid fa-user-circle"></i>Account</div>
-
-        <!-- Email row — button reveals input -->
-        <div style="margin-bottom:12px">
-          <div id="emailBtnRow" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+        <!-- Email -->
+        <div style="margin-bottom:10px">
+          <div class="acct-row">
             <div>
               <div style="font-size:13px;font-weight:500">Email Address</div>
               <div style="font-size:11px;color:var(--muted);margin-top:2px" id="emailCurrentDisplay">—</div>
             </div>
-            <button class="acct-edit-btn" onclick="toggleAcctSection('email')"><i class="fa-solid fa-pen" style="margin-right:5px"></i>Change</button>
+            <button class="acct-edit-btn" onclick="toggleAcct('email')"><i class="fa-solid fa-pen" style="margin-right:4px"></i>Change</button>
           </div>
-          <div id="emailSection" style="display:none;margin-top:8px">
-            <div class="fi"><input type="email" id="setEmail" class="no-icon" placeholder="New email address" autocomplete="email" style="padding-right:13px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s"></div>
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="acct-cancel-btn" onclick="toggleAcctSection('email')">Cancel</button>
-              <button class="acct-save-btn" onclick="saveEmail()"><i class="fa-solid fa-save" style="margin-right:5px"></i>Save Email</button>
+          <div class="acct-expand" id="emailExpand">
+            <input type="email" class="acct-inp plain" id="setEmail" placeholder="New email address" autocomplete="email">
+            <div class="acct-actions">
+              <button class="acct-cancel-btn" onclick="toggleAcct('email')">Cancel</button>
+              <button class="acct-save-btn" onclick="saveEmail()"><i class="fa-solid fa-save"></i>Save Email</button>
             </div>
           </div>
         </div>
-
-        <!-- Password row — button reveals inputs -->
+        <!-- Password -->
         <div>
-          <div id="passBtnRow" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <div class="acct-row">
             <div>
               <div style="font-size:13px;font-weight:500">Password</div>
               <div style="font-size:11px;color:var(--muted);margin-top:2px">••••••••••</div>
             </div>
-            <button class="acct-edit-btn" onclick="toggleAcctSection('pass')"><i class="fa-solid fa-pen" style="margin-right:5px"></i>Change</button>
+            <button class="acct-edit-btn" onclick="toggleAcct('pass')"><i class="fa-solid fa-pen" style="margin-right:4px"></i>Change</button>
           </div>
-          <div id="passSection" style="display:none;margin-top:8px;display:none;flex-direction:column;gap:8px">
-            <div class="fi" style="position:relative">
-              <input type="password" id="setPassword" placeholder="New password (min 8 chars)" autocomplete="new-password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s">
+          <div class="acct-expand" id="passExpand">
+            <div class="fi">
+              <input type="password" class="acct-inp" id="setPassword" placeholder="New password (min 8 chars)" autocomplete="new-password">
               <button class="eye-btn" type="button" onclick="toggleEye('setPassword',this)"><i class="fa-solid fa-eye"></i></button>
             </div>
-            <div class="fi" style="position:relative">
-              <input type="password" id="setPasswordConfirm" placeholder="Confirm new password" autocomplete="new-password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 40px 11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s">
+            <div class="fi">
+              <input type="password" class="acct-inp" id="setPasswordConfirm" placeholder="Confirm new password" autocomplete="new-password">
               <button class="eye-btn" type="button" onclick="toggleEye('setPasswordConfirm',this)"><i class="fa-solid fa-eye"></i></button>
             </div>
-            <div style="display:flex;gap:8px">
-              <button class="acct-cancel-btn" onclick="toggleAcctSection('pass')">Cancel</button>
-              <button class="acct-save-btn" onclick="savePassword()"><i class="fa-solid fa-save" style="margin-right:5px"></i>Save Password</button>
+            <div class="acct-actions">
+              <button class="acct-cancel-btn" onclick="toggleAcct('pass')">Cancel</button>
+              <button class="acct-save-btn" onclick="savePassword()"><i class="fa-solid fa-save"></i>Save Password</button>
             </div>
           </div>
         </div>
@@ -293,7 +285,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         <div class="set-title"><i class="fa-solid fa-star"></i>Subscription</div>
         <div class="plan-row">
           <div><div class="pr-lbl">Current Plan</div><div class="pr-val" id="settingsPlanLabel">Free</div></div>
-          <!-- Only shown on Free plan -->
           <button class="upgrade-btn" id="settingsUpgradeBtn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
         </div>
         <div class="plan-row">
@@ -311,7 +302,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         </div>
       </div>
 
-      <!-- Danger -->
+      <!-- Danger Zone -->
       <div class="set-sec">
         <div class="set-title danger-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
         <button class="btn-danger-full" onclick="openDelAccount()"><i class="fa-solid fa-user-xmark"></i>Delete My Account Permanently</button>
@@ -320,7 +311,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
   </div>
 </div>
 
-<!-- ══ Delete Account Modal ══ -->
+<!-- Delete Account Modal -->
 <div class="overlay" id="delAccountOverlay">
   <div class="del-modal">
     <div class="del-icon"><i class="fa-solid fa-user-xmark"></i></div>
@@ -354,49 +345,30 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 <div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
 
 <script>
-let currentUser = null, journals = [], pnlMap = {};
-let isPro = false;
+let currentUser=null, journals=[], pnlMap={}, isPro=false;
 
-// ── Theme ──────────────────────────────────────────────────
-function applyTheme(t) {
-  const r = document.documentElement;
-  const dark = t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);
-  if (!dark) {
-    r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');
-    r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');
-    r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');
-  } else {
-    r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');
-    r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');
-    r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');
-  }
-}
-applyTheme(localStorage.getItem('tl_theme')||'dark');
-
-function setTheme(t) {
-  localStorage.setItem('tl_theme', t); applyTheme(t);
+function setTheme(t){
+  TZ.setTheme(t);
   document.querySelectorAll('.theme-opt').forEach(el=>el.classList.remove('active'));
-  const key = t.charAt(0).toUpperCase()+t.slice(1);
-  document.getElementById('theme'+key)?.classList.add('active');
+  document.getElementById('theme'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.add('active');
 }
 
-function toggleEye(id, btn) {
-  const inp = document.getElementById(id);
-  const show = inp.type==='password';
-  inp.type = show ? 'text' : 'password';
-  btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+function toggleEye(id,btn){
+  const inp=document.getElementById(id);const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  btn.querySelector('i').className=show?'fa-solid fa-eye-slash':'fa-solid fa-eye';
 }
 
-// ── Boot ───────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────
 (async()=>{
-  currentUser = await requireAuth(); if (!currentUser) return;
-  const profile = await getProfile(currentUser.id);
-  isPro = profile?.plan === 'pro';
-  window._userIsPro = isPro;
-  document.getElementById('uName').textContent = profile?.name || currentUser.email;
-  const badge = document.getElementById('planBadge');
-  if (isPro) {
-    badge.textContent='Pro'; badge.className='plan-badge badge-pro';
+  currentUser=await requireAuth();if(!currentUser)return;
+  const profile=await getProfile(currentUser.id);
+  isPro=profile?.plan==='pro';
+  window._userIsPro=isPro;
+  document.getElementById('uName').textContent=profile?.name||currentUser.email;
+  const badge=document.getElementById('planBadge');
+  if(isPro){
+    badge.textContent='Pro';badge.className='plan-badge badge-pro';
     document.getElementById('settingsPlanLabel').textContent='Pro — Active';
     document.getElementById('settingsUpgradeBtn').style.display='none';
     document.getElementById('proLockIcon').style.display='none';
@@ -405,67 +377,54 @@ function toggleEye(id, btn) {
     document.getElementById('upgradeNudge').classList.add('visible');
     try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
   }
-  if (window.posthog) posthog.identify(currentUser.id,{email:currentUser.email,plan:isPro?'pro':'free',name:profile?.name});
+  if(window.posthog)posthog.identify(currentUser.id,{email:currentUser.email,plan:isPro?'pro':'free',name:profile?.name});
   await loadJournals();
-  document.getElementById('pageLoader').classList.add('gone');
+  // Hide candlestick loader via theme.js
+  TZ.hideLoader();
 })();
 
-// ── Journals ───────────────────────────────────────────────
-async function loadJournals() {
-  journals = await getJournals(currentUser.id);
-  pnlMap = {};
+// ── Journals ──────────────────────────────────────────────
+async function loadJournals(){
+  journals=await getJournals(currentUser.id);
+  pnlMap={};
   await Promise.all(journals.map(async j=>{
-    const trades = await getTrades(j.id);
-    const valid  = trades.filter(t=>t.pnl!=null&&t.pnl!=='');
-    if (valid.length) pnlMap[j.id] = valid.reduce((s,t)=>s+parseFloat(t.pnl),0);
+    const trades=await getTrades(j.id);
+    const valid=trades.filter(t=>t.pnl!=null&&t.pnl!=='');
+    if(valid.length)pnlMap[j.id]=valid.reduce((s,t)=>s+parseFloat(t.pnl),0);
   }));
   document.getElementById('loadingState').style.display='none';
   renderJournals();
 }
 
-function renderJournals() {
-  const grid = document.getElementById('grid'); grid.style.display='';
-  if (!journals.length) {
+function renderJournals(){
+  const grid=document.getElementById('grid');grid.style.display='';
+  if(!journals.length){
     grid.innerHTML='<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>';
     return;
   }
-  grid.innerHTML = journals.map(j=>{
-    // PIN lock icon — shown only when pin_hash is truthy
-    const pinHtml = j.pin_hash
-      ? `<div class="pin-lock" title="PIN protected"><i class="fa-solid fa-lock"></i></div>` : '';
-    // Capital — only if show_capital is true AND capital is set
-    const capHtml = (j.show_capital!==false) && j.capital
-      ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
-    // PNL — only if show_pnl is true AND there's a pnl value
-    const pnl = pnlMap[j.id];
-    let pnlHtml = '';
-    if ((j.show_pnl!==false) && pnl!=null) {
-      const cls = pnl>=0 ? 'pnl-pos':'pnl-neg';
-      const fmt = (pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2);
-      pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
+  grid.innerHTML=journals.map(j=>{
+    const pinHtml=j.pin_hash?`<div class="pin-lock" title="PIN protected"><i class="fa-solid fa-lock"></i></div>`:'';
+    const capHtml=(j.show_capital!==false)&&j.capital?`<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>`:'';
+    const pnl=pnlMap[j.id];
+    let pnlHtml='';
+    if((j.show_pnl!==false)&&pnl!=null){
+      const cls=pnl>=0?'pnl-pos':'pnl-neg';
+      const fmt=(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2);
+      pnlHtml=`<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
     }
-    return `<div class="jcard">
-      <div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>
-      ${capHtml}${pnlHtml}
-      <button class="open-btn" onclick="goJournal('${j.id}')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
-      </button>
-    </div>`;
+    return`<div class="jcard"><div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>${capHtml}${pnlHtml}<button class="open-btn" onclick="goJournal('${j.id}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal</button></div>`;
   }).join('');
 }
 
-function goJournal(id) {
-  sessionStorage.setItem('tz_current_journal', id);
-  if (window.posthog) posthog.capture('journal_opened');
+function goJournal(id){
+  sessionStorage.setItem('tz_current_journal',id);
+  if(window.posthog)posthog.capture('journal_opened');
   location.href='/journal';
 }
 
-// ── Create Journal ─────────────────────────────────────────
-function openCreate() {
-  if (!isPro && journals.length>=1) {
-    showToast('Free plan: 1 journal only. Upgrade for unlimited.','fa-solid fa-lock','red');
-    setTimeout(()=>location.href='/subscription',2100); return;
-  }
+// ── Create Journal ────────────────────────────────────────
+function openCreate(){
+  if(!isPro&&journals.length>=1){showToast('Free plan: 1 journal only. Upgrade for unlimited.','fa-solid fa-lock','red');setTimeout(()=>location.href='/subscription',2100);return;}
   document.getElementById('createModal').classList.add('open');
   setTimeout(()=>document.getElementById('jName').focus(),100);
 }
@@ -485,45 +444,30 @@ async function doCreate(){
 }
 document.getElementById('createModal').addEventListener('click',function(e){if(e.target===this)closeCreate();});
 
-// ── Settings ───────────────────────────────────────────────
+// ── Settings ──────────────────────────────────────────────
 function openSettings(){
   const t=localStorage.getItem('tl_theme')||'dark';
   document.querySelectorAll('.theme-opt').forEach(el=>el.classList.remove('active'));
-  const key=t.charAt(0).toUpperCase()+t.slice(1);
-  document.getElementById('theme'+key)?.classList.add('active');
-  // Reset account sections to collapsed state
-  collapseAcctSection('email');
-  collapseAcctSection('pass');
-  // Show current email
-  const emailDisplay=document.getElementById('emailCurrentDisplay');
-  if(emailDisplay&&currentUser?.email)emailDisplay.textContent=currentUser.email;
+  document.getElementById('theme'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.add('active');
+  collapseAcct('email');collapseAcct('pass');
+  const ed=document.getElementById('emailCurrentDisplay');
+  if(ed&&currentUser?.email)ed.textContent=currentUser.email;
   document.getElementById('settingsModal').classList.add('open');
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
 document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)closeSettings();});
 
-// ── Account section toggle ─────────────────────────────────
-function toggleAcctSection(section){
-  const emailSection=document.getElementById('emailSection');
-  const passSection=document.getElementById('passSection');
-  if(section==='email'){
-    const open=emailSection.style.display!=='none'&&emailSection.style.display!=='';
-    if(open){collapseAcctSection('email');}
-    else{collapseAcctSection('pass');emailSection.style.display='block';setTimeout(()=>document.getElementById('setEmail')?.focus(),80);}
-  } else {
-    const open=passSection.style.display==='flex';
-    if(open){collapseAcctSection('pass');}
-    else{collapseAcctSection('email');passSection.style.display='flex';setTimeout(()=>document.getElementById('setPassword')?.focus(),80);}
-  }
+function toggleAcct(section){
+  const el=document.getElementById(section==='email'?'emailExpand':'passExpand');
+  const open=el.classList.contains('show');
+  collapseAcct('email');collapseAcct('pass');
+  if(!open){el.classList.add('show');setTimeout(()=>document.getElementById(section==='email'?'setEmail':'setPassword')?.focus(),60);}
 }
-function collapseAcctSection(section){
-  if(section==='email'){
-    const el=document.getElementById('emailSection');
-    if(el){el.style.display='none';const inp=document.getElementById('setEmail');if(inp)inp.value='';}
-  } else {
-    const el=document.getElementById('passSection');
-    if(el){el.style.display='none';['setPassword','setPasswordConfirm'].forEach(id=>{const inp=document.getElementById(id);if(inp)inp.value='';});}
-  }
+function collapseAcct(section){
+  const el=document.getElementById(section==='email'?'emailExpand':'passExpand');
+  if(!el)return;el.classList.remove('show');
+  if(section==='email'){const i=document.getElementById('setEmail');if(i)i.value='';}
+  else{['setPassword','setPasswordConfirm'].forEach(id=>{const i=document.getElementById(id);if(i)i.value='';});}
 }
 
 async function saveEmail(){
@@ -533,13 +477,13 @@ async function saveEmail(){
     const{error}=await db.auth.updateUser({email});
     if(error)throw error;
     document.getElementById('emailCurrentDisplay').textContent=email;
-    collapseAcctSection('email');
+    collapseAcct('email');
     showToast('Email updated! Check your inbox to confirm.','fa-solid fa-circle-check','green');
   }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
 async function savePassword(){
-  const pass =document.getElementById('setPassword').value;
+  const pass=document.getElementById('setPassword').value;
   const passC=document.getElementById('setPasswordConfirm').value;
   if(!pass){showToast('Enter a new password.','fa-solid fa-circle-exclamation','red');return;}
   if(pass.length<8){showToast('Password must be at least 8 characters.','fa-solid fa-circle-exclamation','red');return;}
@@ -547,12 +491,12 @@ async function savePassword(){
   try{
     const{error}=await db.auth.updateUser({password:pass});
     if(error)throw error;
-    collapseAcctSection('pass');
+    collapseAcct('pass');
     showToast('Password updated successfully!','fa-solid fa-circle-check','green');
   }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
-// ── Delete Account ─────────────────────────────────────────
+// ── Delete Account ────────────────────────────────────────
 function openDelAccount(){
   document.getElementById('delAccInput').value='';
   document.getElementById('delAccForm').style.display='block';
@@ -563,11 +507,7 @@ function openDelAccount(){
   setTimeout(()=>document.getElementById('delAccInput').focus(),150);
 }
 function closeDelAccount(){document.getElementById('delAccountOverlay').classList.remove('open');}
-function checkDelAcc(){
-  const ok=document.getElementById('delAccInput').value.trim()==='DELETE';
-  const btn=document.getElementById('delAccBtn');
-  btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';
-}
+function checkDelAcc(){const ok=document.getElementById('delAccInput').value.trim()==='DELETE';const btn=document.getElementById('delAccBtn');btn.disabled=!ok;btn.style.opacity=ok?'1':'.4';btn.style.cursor=ok?'pointer':'not-allowed';}
 async function executeDeleteAccount(){
   document.getElementById('delAccForm').style.display='none';
   document.getElementById('delAccProgress').classList.add('show');
@@ -579,8 +519,7 @@ async function executeDeleteAccount(){
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||'Deletion failed');
     document.getElementById('delAccMsg').textContent='Account deleted. Redirecting…';
-    await db.auth.signOut();
-    sessionStorage.clear();localStorage.clear();
+    await db.auth.signOut();sessionStorage.clear();localStorage.clear();
     setTimeout(()=>location.href='/',1500);
   }catch(e){
     showToast('Failed: '+e.message,'fa-solid fa-circle-exclamation','red');
@@ -592,15 +531,13 @@ document.getElementById('delAccountOverlay').addEventListener('click',function(e
 
 async function logout(){await db.auth.signOut();sessionStorage.clear();location.href='/auth';}
 
-// ── Toast ──────────────────────────────────────────────────
 let _tt;
-function showToast(msg, icon='fa-solid fa-circle-check', type='') {
+function showToast(msg,icon='fa-solid fa-circle-check',type=''){
   const t=document.getElementById('toast');
   document.getElementById('toastIcon').className=icon;
   document.getElementById('toastMsg').textContent=msg;
   t.className='show'+(type==='green'?' toast-green':type==='red'?' toast-red':'');
-  clearTimeout(_tt);
-  _tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3400);
+  clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3400);
 }
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 </script>

@@ -8,6 +8,7 @@
 <title>Notes</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
+<script src="theme.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -187,6 +188,8 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 </style>
 </head>
 <body>
+<!-- Tab loader — built automatically by theme.js -->
+<div id="tzTabLoader" style="position:fixed;inset:0;z-index:9999"></div>
 <div class="app">
 
   <div class="topbar">
@@ -304,8 +307,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 <div id="toast"><i id="toastIcon"></i><span id="toastMsg"></span></div>
 
 <script>
-function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#eef3f0');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--panel2','#e8f0ec');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0a9460');r.style.setProperty('--border','#c4d4cc');r.style.setProperty('--border2','#b5c8bf');r.style.setProperty('--text','#0a1812');r.style.setProperty('--muted','#2e5044');r.style.setProperty('--muted2','#4a7065');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--panel2','#161d1a');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--border2','#243530');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');r.style.setProperty('--muted2','#5c7068');}}
-(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
+// Theme handled by theme.js — applyTheme() alias available via TZ.applyTheme||'dark'))();
 window.addEventListener('message',e=>{
   if(e.data?.theme)applyTheme(e.data.theme);
   if(e.data?.type==='tz_plan'&&e.data.isPro!==undefined)userIsPro=e.data.isPro;
@@ -326,7 +328,8 @@ const ALLOWED_IMG=['image/png','image/jpeg','image/jpg','image/gif','image/webp'
 function validateImg(file){if(!ALLOWED_IMG.includes(file.type)){showToast('Only PNG, JPG, GIF, WebP allowed.','fa-solid fa-triangle-exclamation','r');return false;}if(file.size>5*1024*1024){showToast('Max 5MB per image.','fa-solid fa-triangle-exclamation','r');return false;}return true;}
 
 (async()=>{
-  if(!jid){document.getElementById('skelGrid').style.display='none';document.getElementById('notesGrid').style.display='';document.getElementById('notesGrid').innerHTML='<div class="empty-state"><div class="ei"><i class="fa-solid fa-note-sticky"></i></div><h3>No journal selected</h3><p>Open a journal first.</p></div>';document.body.style.visibility='visible';return;}
+  if(!jid){document.getElementById('skelGrid').style.display='none';document.getElementById('notesGrid').style.display='';document.getElementById('notesGrid').innerHTML='<div class="empty-state"><div class="ei"><i class="fa-solid fa-note-sticky"></i></div><h3>No journal selected</h3><p>Open a journal first.</p></div>';TZ.hideTabLoader();
+  document.body.style.visibility='visible';return;}
   try{userIsPro=parent?._userIsPro||false;}catch(e){}
   if(!userIsPro){const{data:{user}}=await db.auth.getUser();if(user){const p=await getProfile(user.id);userIsPro=p?.plan==='pro';}}
   settings=await getJournalSettings(jid);
@@ -335,6 +338,7 @@ function validateImg(file){if(!ALLOWED_IMG.includes(file.type)){showToast('Only 
   document.getElementById('skelGrid').style.display='none';
   document.getElementById('notesGrid').style.display='';
   applyFilters();
+  TZ.hideTabLoader();
   document.body.style.visibility='visible';
   subscribeTrades(jid,async()=>{const r=await getTrades(jid);allTrades=await Promise.all(r.map(dbToTrade).map(async t=>{const imgs=await Promise.all((t.images||[]).map(async img=>{const url=img._previewUrl||img.data||(typeof getImageUrl==='function'?await getImageUrl(img):null);return{...img,_previewUrl:url};}));return{...t,images:imgs};}));applyFilters();if(currentTradeId&&document.getElementById('overlay').classList.contains('open')){const u=allTrades.find(t=>t.id===currentTradeId);if(u)_refreshModalMeta(u);}});
 })();
