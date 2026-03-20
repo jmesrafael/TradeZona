@@ -106,7 +106,7 @@ async function createJournal(
     user_id: userId,
     strategies: ["Breakout", "Reversal", "Trend"],
     timeframes: ["M15", "H1", "H4"],
-    pairs: ["EURUSD", "XAUUSD", "BTCUSD"],
+    pairs: ["EURUSD", "XAUUSD", "BTCUSDT"],
     moods: ["Confident", "Neutral", "Anxious"],
     mood_colors: {
       Confident: "#19c37d",

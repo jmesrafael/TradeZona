@@ -26,29 +26,77 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .skel-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .dow-hdr-skel{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border);height:36px}
 .grid-skel{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cell-skel{height:72px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
+/* Square cells via aspect-ratio */
+.cell-skel{aspect-ratio:1/1;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
 /* calendar */
 .cal-wrap{display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .dow-hdr{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border)}
 .dow-cell{padding:9px 8px;text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cal-day{background:var(--panel);min-height:72px;padding:7px 8px;cursor:pointer;transition:background .15s;position:relative;display:flex;flex-direction:column}
+/* Square day cells */
+.cal-day{
+  background:var(--panel);
+  aspect-ratio:1/1;
+  padding:6px 5px 4px;
+  cursor:pointer;
+  transition:background .15s;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
 .cal-day:hover{background:rgba(255,255,255,.04)}
-.cal-day.other-month{opacity:.35}
+.cal-day.other-month{opacity:.3}
 .cal-day.today .dn{color:var(--accent);font-weight:700}
-.cal-day.locked{cursor:default;opacity:.45}
+.cal-day.locked{cursor:default;opacity:.4}
 .cal-day.locked:hover{background:var(--panel)}
-.dn{font-size:12px;color:var(--muted);margin-bottom:5px;line-height:1}
-.day-pnl{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700}
-.day-pnl.pos{color:var(--accent)}.day-pnl.neg{color:#ff5f6d}.day-pnl.be{color:var(--muted)}
-.day-cnt{font-size:10px;color:var(--muted);margin-top:2px}
-.day-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 2px 2px}
-.day-bar.pos{background:var(--accent)}.day-bar.neg{background:#ff5f6d}
+/* Day number — top left corner */
+.dn{
+  position:absolute;
+  top:5px;
+  left:7px;
+  font-size:11px;
+  color:var(--muted);
+  line-height:1;
+  font-family:'Space Grotesk',sans-serif;
+}
+/* Trade data — centered in cell */
+.day-data{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  text-align:center;
+  margin-top:8px; /* nudge below day number */
+}
+.day-cnt{
+  font-size:10px;
+  color:var(--muted);
+  line-height:1;
+  font-family:'Inter',sans-serif;
+}
+.day-pnl{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  line-height:1;
+}
+.day-pnl.pos{color:var(--accent)}
+.day-pnl.neg{color:#ff5f6d}
+.day-pnl.be{color:var(--muted)}
+/* Bottom bar indicator */
+.day-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 1px 1px}
+.day-bar.pos{background:var(--accent)}
+.day-bar.neg{background:#ff5f6d}
+/* Summary bar */
 .sum-bar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
 .sum-item{display:flex;flex-direction:column;gap:2px;min-width:72px}
 .sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
 .sum-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
 .sum-val.pos{color:var(--accent)}.sum-val.neg{color:#ff5f6d}
+/* Day panel */
 .day-panel{display:none;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px}
 .day-panel.show{display:block}
 .dp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -66,7 +114,8 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .free-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:9px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.5}
 .free-banner i{color:#f59e0b;flex-shrink:0}
 .free-banner a{color:var(--accent2);text-decoration:none;font-weight:600}
-@media(max-width:480px){.cal-day{min-height:54px;padding:5px 6px}.day-pnl{font-size:11px}.dn{font-size:11px}}
+/* Lock icon in locked cells */
+.lock-lbl{font-size:9px;color:var(--muted);opacity:.5;display:flex;align-items:center;gap:2px;justify-content:center}
 </style>
 </head>
 <body>
@@ -96,13 +145,11 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     <div class="sum-item"><div class="sum-lbl">Worst Day</div><div class="sum-val neg" id="sumWorst">—</div></div>
   </div>
 
-  <!-- Skeleton (no DOW text — built by JS) -->
   <div class="skel-wrap" id="skelWrap">
     <div class="dow-hdr-skel" id="skelDow"></div>
     <div class="grid-skel" id="skelGrid"></div>
   </div>
 
-  <!-- Real calendar (DOW header filled by JS — never template literals in HTML) -->
   <div class="cal-wrap" id="calWrap">
     <div class="dow-hdr" id="calDow"></div>
     <div class="cal-grid" id="calGrid"></div>
@@ -113,7 +160,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     <div id="dpTrades"></div>
   </div>
 
-  <!-- Ad slot — free users only -->
   <div id="calAdSlot" style="display:none;margin-top:18px;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden">
     <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:5px 12px 0;opacity:.5">Advertisement</div>
     <div style="min-height:72px;display:flex;align-items:center;justify-content:center;padding:10px 16px">
@@ -141,69 +187,36 @@ window.addEventListener('message',e=>{
 const jid=sessionStorage.getItem('tz_current_journal');
 let allTrades=[],curYear=new Date().getFullYear(),curMonth=new Date().getMonth(),userIsPro=false;
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-// DOW labels array — used ONLY in JS to build DOM nodes, never pasted as template literals into HTML
 const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 function buildDowHeader(id){
-  // Builds the day-of-week header purely via DOM API
-  const el=document.getElementById(id);
-  if(!el)return;
-  el.innerHTML='';
-  DOW.forEach(function(label){
-    var cell=document.createElement('div');
-    cell.className='dow-cell';
-    cell.textContent=label;
-    el.appendChild(cell);
-  });
+  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  DOW.forEach(function(label){var cell=document.createElement('div');cell.className='dow-cell';cell.textContent=label;el.appendChild(cell);});
 }
-
 function buildSkelDow(){
-  var el=document.getElementById('skelDow');
-  if(!el)return;
-  DOW.forEach(function(){
-    var c=document.createElement('div');
-    c.style.cssText='height:100%;background:var(--panel)';
-    el.appendChild(c);
-  });
+  var el=document.getElementById('skelDow');if(!el)return;
+  DOW.forEach(function(){var c=document.createElement('div');c.style.cssText='height:100%;background:var(--panel)';el.appendChild(c);});
 }
-
 function buildSkelGrid(){
-  var el=document.getElementById('skelGrid');
-  if(!el)return;
-  for(var i=0;i<35;i++){
-    var c=document.createElement('div');
-    c.className='cell-skel';
-    el.appendChild(c);
-  }
+  var el=document.getElementById('skelGrid');if(!el)return;
+  for(var i=0;i<35;i++){var c=document.createElement('div');c.className='cell-skel';el.appendChild(c);}
 }
 
 function fP(v){var n=parseFloat(v);if(isNaN(n))return'';return(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2);}
 function isLocked(dateStr){if(userIsPro)return false;var d=new Date(dateStr+'T12:00:00'),cut=new Date();cut.setDate(cut.getDate()-90);return d<cut;}
 
 (async function(){
-  buildDowHeader('skelDow');
-  buildDowHeader('calDow');
-  buildSkelGrid();
+  buildDowHeader('skelDow');buildDowHeader('calDow');buildSkelGrid();
   if(!jid)return;
   try{userIsPro=parent&&parent._userIsPro||false;}catch(e){}
-  if(!userIsPro){
-    var res=await db.auth.getUser();
-    if(res.data&&res.data.user){var p=await getProfile(res.data.user.id);userIsPro=(p&&p.plan==='pro')||false;}
-  }
+  if(!userIsPro){var res=await db.auth.getUser();if(res.data&&res.data.user){var p=await getProfile(res.data.user.id);userIsPro=(p&&p.plan==='pro')||false;}}
   if(!userIsPro)document.getElementById('freeBanner').style.display='flex';
   var raw=await getTrades(jid);
   allTrades=raw.map(dbToTrade);
   document.getElementById('skelWrap').style.display='none';
   document.getElementById('calWrap').style.display='block';
-  renderMonth();
-  updateNavButtons();
-  // Show ad for free users
-  if(!userIsPro){
-    document.getElementById('calAdSlot').style.display='block';
-    document.getElementById('calUpgradeNudge').style.display='flex';
-    try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
-  }
+  renderMonth();updateNavButtons();
+  if(!userIsPro){document.getElementById('calAdSlot').style.display='block';document.getElementById('calUpgradeNudge').style.display='flex';try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}}
   document.body.style.visibility='visible';
 })();
 
@@ -212,7 +225,6 @@ function renderMonth(){
   var firstDay=new Date(curYear,curMonth,1);
   var lastDay=new Date(curYear,curMonth+1,0);
   var startDow=firstDay.getDay()-1;if(startDow<0)startDow=6;
-  // Group by day
   var dayMap={};
   allTrades.forEach(function(t){
     if(!t.date)return;
@@ -223,8 +235,7 @@ function renderMonth(){
     }
   });
   var today=new Date();
-  var calGrid=document.getElementById('calGrid');
-  calGrid.innerHTML='';
+  var calGrid=document.getElementById('calGrid');calGrid.innerHTML='';
   var monthPnl=0,tradeCnt=0,winDays=0,lossDays=0,bestDay=null,worstDay=null,dayPnls={};
   Object.keys(dayMap).forEach(function(day){
     var trades=dayMap[day];
@@ -251,21 +262,24 @@ function renderMonth(){
     if(locked)cls+=' locked';
     cell.className=cls;
     if(inMonth){
+      // Day number — always top-left
       var dn=document.createElement('span');dn.className='dn';dn.textContent=String(dayNum);cell.appendChild(dn);
       if(locked){
-        var lk=document.createElement('span');lk.style.cssText='font-size:9px;color:var(--muted);opacity:.5';
-        var li=document.createElement('i');li.className='fa-solid fa-lock';li.style.cssText='font-size:8px;margin-right:3px';
-        lk.appendChild(li);lk.appendChild(document.createTextNode('Pro'));cell.appendChild(lk);
+        var lk=document.createElement('div');lk.className='lock-lbl';
+        var li=document.createElement('i');li.className='fa-solid fa-lock';li.style.fontSize='8px';
+        lk.appendChild(li);lk.appendChild(document.createTextNode(' Pro'));cell.appendChild(lk);
       } else if(hasTrades){
-        var pe=document.createElement('span');pe.className='day-pnl '+(dayPnl>0?'pos':dayPnl<0?'neg':'be');pe.textContent=fP(dayPnl)||'—';cell.appendChild(pe);
-        var ce=document.createElement('span');ce.className='day-cnt';ce.textContent=dayMap[dayNum].length+' trade'+(dayMap[dayNum].length>1?'s':'');cell.appendChild(ce);
+        // Centered data block
+        var dd=document.createElement('div');dd.className='day-data';
+        var ce=document.createElement('span');ce.className='day-cnt';ce.textContent=dayMap[dayNum].length+(dayMap[dayNum].length===1?' trade':' trades');dd.appendChild(ce);
+        var pe=document.createElement('span');pe.className='day-pnl '+(dayPnl>0?'pos':dayPnl<0?'neg':'be');pe.textContent=fP(dayPnl)||'—';dd.appendChild(pe);
+        cell.appendChild(dd);
         if(dayPnl!==0){var bar=document.createElement('div');bar.className='day-bar '+(dayPnl>0?'pos':'neg');cell.appendChild(bar);}
         (function(dn2,ds2,tr2){cell.addEventListener('click',function(){showDayPanel(dn2,ds2,tr2);});})(dayNum,dateStr,dayMap[dayNum]);
       }
     }
     calGrid.appendChild(cell);
   }
-  // Summary
   if(tradeCnt>0){
     document.getElementById('sumBar').style.display='flex';
     var wr=(winDays+lossDays)>0?(winDays/(winDays+lossDays)*100).toFixed(0)+'%':'—';
@@ -276,9 +290,7 @@ function renderMonth(){
     document.getElementById('sumWR').textContent=wr;
     document.getElementById('sumBest').textContent=bestDay!==null?fP(bestDay):'—';
     document.getElementById('sumWorst').textContent=worstDay!==null?fP(worstDay):'—';
-  } else {
-    document.getElementById('sumBar').style.display='none';
-  }
+  } else {document.getElementById('sumBar').style.display='none';}
   closePanel();
 }
 
@@ -287,7 +299,6 @@ function showDayPanel(dayNum,dateStr,trades){
   document.getElementById('dpTitle').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var dayPnl=trades.filter(function(t){return t.pnl!==''&&!isNaN(parseFloat(t.pnl));}).reduce(function(s,t){return s+parseFloat(t.pnl);},0);
   var container=document.getElementById('dpTrades');container.innerHTML='';
-  // Summary
   var sum=document.createElement('div');sum.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)';
   var sc=document.createElement('span');sc.style.cssText='font-size:12px;color:var(--muted)';sc.textContent=trades.length+' trade'+(trades.length>1?'s':'');
   var sp=document.createElement('span');sp.style.cssText='font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:700;color:'+(dayPnl>0?'var(--accent)':dayPnl<0?'#ff5f6d':'var(--muted)');sp.textContent=fP(dayPnl)||'—';
@@ -309,67 +320,39 @@ function showDayPanel(dayNum,dateStr,trades){
   document.getElementById('dayPanel').classList.add('show');
 }
 function closePanel(){document.getElementById('dayPanel').classList.remove('show');}
+
 function prevMonthClick(){
-  // Check if blocked for free users
   if(!userIsPro){
     var testM=curMonth-1,testY=curYear;
     if(testM<0){testM=11;testY--;}
     var lastDay=new Date(testY,testM+1,0);
     var cut=new Date();cut.setDate(cut.getDate()-90);
     if(lastDay<cut){
-      // Show upgrade nudge in the free banner
-      var banner=document.getElementById('freeBanner');
-      banner.style.display='flex';
-      banner.style.background='rgba(245,158,11,.1)';
-      banner.style.borderColor='rgba(245,158,11,.4)';
+      var banner=document.getElementById('freeBanner');banner.style.display='flex';
+      banner.style.background='rgba(245,158,11,.1)';banner.style.borderColor='rgba(245,158,11,.4)';
       setTimeout(()=>{banner.style.background='';banner.style.borderColor='';},2000);
       return;
     }
   }
   prevMonth();
 }
-
-function prevMonth(){
-  curMonth--;if(curMonth<0){curMonth=11;curYear--;}
-  renderMonth();
-  updateNavButtons();
-}
-function nextMonth(){
-  curMonth++;if(curMonth>11){curMonth=0;curYear++;}
-  renderMonth();
-  updateNavButtons();
-}
-function goToday(){
-  curYear=new Date().getFullYear();curMonth=new Date().getMonth();
-  renderMonth();
-  updateNavButtons();
-}
+function prevMonth(){curMonth--;if(curMonth<0){curMonth=11;curYear--;}renderMonth();updateNavButtons();}
+function nextMonth(){curMonth++;if(curMonth>11){curMonth=0;curYear++;}renderMonth();updateNavButtons();}
+function goToday(){curYear=new Date().getFullYear();curMonth=new Date().getMonth();renderMonth();updateNavButtons();}
 
 function updateNavButtons(){
-  var prevBtn=document.getElementById('prevBtn');
-  var nextBtn=document.getElementById('nextBtn');
+  var prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn');
   if(!prevBtn||!nextBtn)return;
-  var today=new Date();
-  var todayY=today.getFullYear(),todayM=today.getMonth();
+  var today=new Date(),todayY=today.getFullYear(),todayM=today.getMonth();
   var isCurrentOrFuture=(curYear>todayY)||(curYear===todayY&&curMonth>=todayM);
-  nextBtn.disabled=isCurrentOrFuture;
-  nextBtn.style.opacity=isCurrentOrFuture?'.35':'';
-  nextBtn.style.cursor=isCurrentOrFuture?'not-allowed':'';
+  nextBtn.disabled=isCurrentOrFuture;nextBtn.style.opacity=isCurrentOrFuture?'.35':'';nextBtn.style.cursor=isCurrentOrFuture?'not-allowed':'';
   if(!userIsPro){
-    var testM=curMonth-1,testY=curYear;
-    if(testM<0){testM=11;testY--;}
-    var lastDayOfPrevMonth=new Date(testY,testM+1,0);
-    var cut=new Date();cut.setDate(cut.getDate()-90);
+    var testM=curMonth-1,testY=curYear;if(testM<0){testM=11;testY--;}
+    var lastDayOfPrevMonth=new Date(testY,testM+1,0);var cut=new Date();cut.setDate(cut.getDate()-90);
     var prevBlocked=lastDayOfPrevMonth<cut;
-    prevBtn.disabled=prevBlocked;
-    prevBtn.style.opacity=prevBlocked?'.35':'';
-    prevBtn.style.cursor=prevBlocked?'not-allowed':'';
+    prevBtn.disabled=prevBlocked;prevBtn.style.opacity=prevBlocked?'.35':'';prevBtn.style.cursor=prevBlocked?'not-allowed':'';
     prevBtn.title=prevBlocked?'Upgrade to Pro to view older history':'';
-  } else {
-    prevBtn.disabled=false;
-    prevBtn.style.opacity='';
-    prevBtn.style.cursor='';
-  }
+  } else {prevBtn.disabled=false;prevBtn.style.opacity='';prevBtn.style.cursor='';}
 }
 </script>
 </body>

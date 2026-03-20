@@ -15,29 +15,23 @@
 :root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-@keyframes savePulse{0%,100%{opacity:1}50%{opacity:.2}}
 body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:18px}
 .pw{max-width:1200px;margin:0 auto}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:9px 16px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:6px}
 .btn-primary:hover{opacity:.85}
-/* save indicator */
-.save-ind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .3s;pointer-events:none;user-select:none}
-.save-ind.show{opacity:1}
-.save-ind .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:background .2s}
-.save-ind.saving .dot{background:var(--accent2);animation:savePulse .8s ease-in-out infinite}
-.save-ind.saved .dot{background:var(--accent)}
-.save-ind.saved{color:var(--accent2)}
 .atoggle-label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
 .tswitch{width:34px;height:18px;background:var(--border);border-radius:9px;position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
 .tswitch.on{background:var(--accent2)}
 .tswitch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s}
 .tswitch.on::after{transform:translateX(16px)}
+/* Analytics bar */
 .abar{display:none;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;margin-bottom:14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
 .abar.show{display:grid}
-.stat .slbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:block}
-.stat .sval{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:block}
+.stat{text-align:center}
+.stat .slbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:block;text-align:center}
+.stat .sval{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;display:block;text-align:center}
 .stat .sval.pos{color:var(--accent)}.stat .sval.neg{color:#ff5f6d}
 /* skeleton */
 .skel-table{border:1px solid var(--border);border-radius:10px;overflow:hidden}
@@ -57,13 +51,20 @@ tbody tr:hover{background:rgba(255,255,255,.022)}
 tbody tr.new-row{background:rgba(0,255,136,.04)!important;border-color:rgba(0,255,136,.18)!important}
 td{padding:7px 7px;vertical-align:middle;text-align:center}
 .er td{color:var(--muted);font-size:13px;padding:58px 0;text-align:center}
+/* inline cell inputs */
 .ci{background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;width:100%;outline:none;padding:0;text-align:center}
 .ci:focus{background:var(--bg);border-radius:5px;padding:3px 5px}
-.dtc{display:flex;align-items:center;justify-content:center;gap:3px}
-.dtc .di{font-size:10px;color:var(--muted);opacity:.45;pointer-events:none;flex-shrink:0;transition:all .15s}
-.dtc:hover .di{opacity:1;color:var(--accent2)}
-.ci.dti{font-size:12px}
-.ci.dti::-webkit-calendar-picker-indicator{display:none!important}
+/* date/time cell — edit mode */
+.dt-cell{display:flex;align-items:center;justify-content:center;gap:4px;position:relative}
+.dt-val{font-size:13px;color:var(--text);cursor:default;text-align:center;min-width:70px;line-height:1.4}
+.dt-val.empty{color:var(--muted)}
+.dt-pencil{background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px;padding:2px 4px;border-radius:4px;transition:all .15s;opacity:.45;flex-shrink:0}
+.dt-pencil:hover{opacity:1;color:var(--accent2)}
+.dt-pencil.editing{opacity:1;color:var(--accent2);background:rgba(25,195,125,.12)}
+/* hidden actual input under the display */
+.dt-input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.dt-input.active{position:static;opacity:1;width:auto;height:auto;pointer-events:all;background:var(--bg);border:1px solid var(--accent2);border-radius:6px;padding:3px 6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;outline:none;text-align:center}
+.dt-input.active::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
 .csel{background:none;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;cursor:pointer;padding:0;-webkit-appearance:none;text-align:center;width:100%}
 .csel option{background:var(--panel)}
 .tc{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;align-items:center;cursor:pointer}
@@ -84,7 +85,7 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
 .stars{display:flex;justify-content:center;gap:2px}
 .star{font-size:13px;cursor:pointer;color:var(--border);transition:color .1s;line-height:1}
 .star.on{color:#f5c518}
-/* pair suggestions */
+/* pair suggestions — attached to cell */
 .pw-cell{position:relative}
 .sugs{position:absolute;top:100%;left:50%;transform:translateX(-50%);z-index:50;background:var(--panel);border:1px solid var(--border);border-radius:8px;min-width:110px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .sug{padding:8px 12px;font-size:13px;cursor:pointer;transition:background .12s;text-align:left}
@@ -147,10 +148,6 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
 <div class="topbar">
   <div class="tl">
     <button class="btn-primary" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Trade</button>
-    <div class="save-ind" id="saveInd">
-      <div class="dot"></div>
-      <span id="saveIndText">Saving…</span>
-    </div>
   </div>
   <label class="atoggle-label" onclick="toggleAnalytics()">
     <div class="tswitch" id="aToggle"></div>
@@ -253,7 +250,7 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
 <div id="toast"><i id="toastIcon" class="fa-solid fa-circle-check"></i><span id="toastMsg"></span></div>
 
 <script>
-// ── Theme ──────────────────────────────────────────────────────
+// ── Theme ─────────────────────────────────────────────────────
 function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
 (()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
 window.addEventListener('message',e=>{
@@ -263,26 +260,29 @@ window.addEventListener('message',e=>{
   if(e.data?.type==='tz_flush_request')flushAll();
 });
 
-// ── State ─────────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────
 const jid=sessionStorage.getItem('tz_current_journal')||(()=>{try{return parent?.sessionStorage?.getItem('tz_current_journal');}catch(e){return null;}})();
 let currentUser=null,trades=[],settings=null,userIsPro=false;
 let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
 let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null;
 
-// ── Auto-save: per-trade debounce timers ───────────────────────
-// Every edit updates trades[] immediately and schedules a short debounced save.
-// On blur/change (discrete events), saves are committed immediately — no debounce.
-// The parent (journal.html) calls flushAndAck() before navigating away,
-// which flushes all pending saves and posts 'tz_flushed' back when done.
-const _saveTimers={};  // tradeId → timerId
-const _pending=new Set(); // tradeIds with unsaved changes
+// ── Auto-save: only commit on blur, never while typing ────────
+// _pending = set of tradeIds that have unsaved changes
+// We ONLY save when the user blurs (clicks outside) an input,
+// or when the parent requests a flush before navigation.
+const _saveTimers={};
+const _pending=new Set();
 
-function scheduleSave(id){
+// Schedule a save with a SHORT debounce (used only on blur-triggered commits)
+function scheduleSave(id,immediate=false){
   _pending.add(id);
   clearTimeout(_saveTimers[id]);
-  // Short 300ms debounce for oninput — aggressive enough to save before most navigations
-  _saveTimers[id]=setTimeout(()=>commitSave(id),300);
-  setSaveInd('saving');
+  if(immediate){
+    commitSave(id);
+  } else {
+    // 800ms debounce — long enough user won't notice, short enough to catch nav
+    _saveTimers[id]=setTimeout(()=>commitSave(id),800);
+  }
 }
 
 async function commitSave(id){
@@ -294,40 +294,29 @@ async function commitSave(id){
   try{
     await updateTrade(id,t);
     _pending.delete(id);
-    if(_pending.size===0)setSaveInd('saved');
   }catch(e){
     showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');
   }
 }
 
-// Flush all dirty trades — called by parent before navigating away.
-// Posts 'tz_flushed' back to parent when done so parent knows it's safe to navigate.
 async function flushAll(){
   const ids=[..._pending];
-  if(!ids.length){
-    try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}
-    return;
-  }
-  try{
-    await Promise.all(ids.map(id=>commitSave(id)));
-  }finally{
-    try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}
-  }
+  if(!ids.length){try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}return;}
+  try{await Promise.all(ids.map(id=>commitSave(id)));}
+  finally{try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}}
 }
 
-// Listen for flush request from parent (before navigation)
-
-// Save indicator
-let _savedTimer=null;
-function setSaveInd(state){
-  const el=document.getElementById('saveInd'),txt=document.getElementById('saveIndText');
-  clearTimeout(_savedTimer);
-  if(state==='saving'){el.classList.add('show','saving');el.classList.remove('saved');if(txt)txt.textContent='Saving…';}
-  else if(state==='saved'){el.classList.remove('saving');el.classList.add('show','saved');if(txt)txt.textContent='All saved';_savedTimer=setTimeout(()=>el.classList.remove('show','saved'),2500);}
-  else{el.classList.remove('show','saving','saved');}
+// ── Today's date in local timezone (fixes the -1 day UTC bug) ─
+function todayLocal(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function nowTimeLocal(){
+  const d=new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 
-// ── Boot ──────────────────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────────────
 (async()=>{
   const{data:{user}}=await db.auth.getUser();
   currentUser=user;
@@ -347,24 +336,22 @@ function setSaveInd(state){
     document.getElementById('logsUpgradeNudge').style.display='flex';
     try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
   }
-  // Realtime: only re-render when no local edits are pending
   subscribeTrades(jid,()=>{if(_pending.size===0)refreshTrades();});
 })();
 
 async function reloadSettings(){settings=await getJournalSettings(jid);render();}
 async function refreshTrades(){const r=await getTrades(jid);trades=r.map(dbToTrade);render();}
 
-// ── Helpers ───────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────
 function moodStyle(m){const c=(settings?.mood_colors||{})[m];if(!c)return'';const[r,g,b]=[c.slice(1,3),c.slice(3,5),c.slice(5,7)].map(x=>parseInt(x,16));return`background:rgba(${r},${g},${b},.15);color:${c};border-color:rgba(${r},${g},${b},.35)`;}
-function getTags(type){const k={strategy:'strategies',timeframe:'timeframes',pair:'pairs',mood:'moods'}[type];return settings?.[k]||[];}
+function getTags(type){const k={strategy:'strategies',timeframe:'timeframes',mood:'moods'}[type];return settings?.[k]||[];}
+// Pair tags: always pull from previously entered pairs in trades (free, no settings limit)
+function getPairSuggestions(){return[...new Set(trades.map(t=>(t.pair||'').toUpperCase()).filter(Boolean))].sort();}
 function fmtVal(v,type){const n=parseFloat(v);if(isNaN(n)||v==null||v==='')return'';return type==='pnl'?(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2):(n>=0?'+':'')+n.toFixed(2)+'R';}
 function pnlCol(v){const n=parseFloat(v);return n>0?'var(--accent)':n<0?'#ff5f6d':'var(--muted)';}
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
-// ── Render ─────────────────────────────────────────────────────
-// render() rebuilds the entire tbody from trades[].
-// Called only on initial load, after realtime sync (when no local edits pending),
-// or after delete. NEVER called mid-edit.
+// ── Render ───────────────────────────────────────────────────
 function render(){
   const tb=document.getElementById('tbody');
   if(!trades.length){tb.innerHTML='<tr class="er"><td colspan="13"><i class="fa-solid fa-inbox" style="font-size:28px;display:block;margin-bottom:12px;opacity:.3"></i>No trades yet. Click "+ Add Trade" to begin.</td></tr>';updateAnalytics();return;}
@@ -377,10 +364,27 @@ function buildRow(t,num){
   const tr=document.createElement('tr');
   tr.dataset.id=t.id;
   const hasN=(t.notes&&t.notes.trim())||(t.images&&t.images.length>0);
+
+  // Date display
+  const dateFmt=t.date?t.date:'—';
+  const timeFmt=t.time?t.time:'—';
+
   tr.innerHTML=`
     <td style="color:var(--muted);font-size:11px">${num}</td>
-    <td><div class="dtc"><input class="ci dti" type="date" value="${t.date||''}" onchange="updField('${t.id}','date',this.value)"><i class="fa-solid fa-pencil di"></i></div></td>
-    <td><div class="dtc"><input class="ci dti" type="time" value="${t.time||''}" onchange="updField('${t.id}','time',this.value)" style="min-width:56px"><i class="fa-solid fa-pencil di"></i></div></td>
+    <td>
+      <div class="dt-cell" id="dcel_${t.id}">
+        <span class="dt-val${t.date?'':' empty'}" id="dval_${t.id}">${dateFmt}</span>
+        <button class="dt-pencil" id="dpen_${t.id}" onclick="toggleDtEdit('${t.id}','date')" title="Edit date"><i class="fa-solid fa-pencil"></i></button>
+        <input class="dt-input" type="date" id="dinp_${t.id}" value="${t.date||''}" onblur="commitDtEdit('${t.id}','date')" onkeydown="dtKey(event,'${t.id}','date')">
+      </div>
+    </td>
+    <td>
+      <div class="dt-cell" id="tcel_${t.id}">
+        <span class="dt-val${t.time?'':' empty'}" id="tval_${t.id}">${timeFmt}</span>
+        <button class="dt-pencil" id="tpen_${t.id}" onclick="toggleDtEdit('${t.id}','time')" title="Edit time"><i class="fa-solid fa-pencil"></i></button>
+        <input class="dt-input" type="time" id="tinp_${t.id}" value="${t.time||''}" onblur="commitDtEdit('${t.id}','time')" onkeydown="dtKey(event,'${t.id}','time')">
+      </div>
+    </td>
     <td class="pw-cell">
       <input class="ci" value="${esc(t.pair||'')}" placeholder="EURUSD"
         oninput="onPairInput(this,'${t.id}')"
@@ -403,10 +407,81 @@ function buildRow(t,num){
 function buildPills(arr,type){const a=arr||[];if(!a.length)return'<span class="pill ep"><i class="fa-solid fa-plus" style="font-size:9px"></i></span>';return a.map(s=>`<span class="pill">${esc(s)}</span>`).join('');}
 function buildMoodPills(arr){const a=arr||[];if(!a.length)return'<span class="pill ep"><i class="fa-solid fa-plus" style="font-size:9px"></i></span>';return a.map(m=>`<span class="pill" style="${moodStyle(m)}">${esc(m)}</span>`).join('');}
 
-// ── Field update functions ─────────────────────────────────────
-// All edits update trades[] immediately then schedule/commit a save.
-// The DOM row is NEVER removed or re-created during editing.
+// ── Date/Time edit mode ──────────────────────────────────────
+// Track which cell is currently in edit mode: {id, field}
+let _dtEditing=null;
 
+function toggleDtEdit(id,field){
+  const prefix=field==='date'?'d':'t';
+  const valEl=document.getElementById(prefix+'val_'+id);
+  const penEl=document.getElementById(prefix+'pen_'+id);
+  const inpEl=document.getElementById(prefix+'inp_'+id);
+
+  // If this cell is already editing, commit and close
+  if(_dtEditing&&_dtEditing.id===id&&_dtEditing.field===field){
+    commitDtEdit(id,field);
+    return;
+  }
+  // If another cell is editing, commit it first
+  if(_dtEditing){
+    commitDtEdit(_dtEditing.id,_dtEditing.field);
+  }
+  // Open this cell
+  _dtEditing={id,field};
+  valEl.style.display='none';
+  penEl.classList.add('editing');
+  inpEl.classList.add('active');
+  inpEl.style.pointerEvents='';
+  // Focus and show picker
+  setTimeout(()=>{
+    inpEl.focus();
+    // For date/time, opening the picker helps
+    try{inpEl.showPicker();}catch(e){}
+  },30);
+}
+
+function commitDtEdit(id,field){
+  const prefix=field==='date'?'d':'t';
+  const valEl=document.getElementById(prefix+'val_'+id);
+  const penEl=document.getElementById(prefix+'pen_'+id);
+  const inpEl=document.getElementById(prefix+'inp_'+id);
+  if(!valEl||!penEl||!inpEl)return;
+
+  const val=inpEl.value;
+  // Update display
+  valEl.textContent=val||'—';
+  valEl.classList.toggle('empty',!val);
+  valEl.style.display='';
+  penEl.classList.remove('editing');
+  inpEl.classList.remove('active');
+
+  // Update data and save
+  localUpd(id,field,val);
+  scheduleSave(id,true); // immediate on explicit commit
+
+  if(_dtEditing&&_dtEditing.id===id&&_dtEditing.field===field){
+    _dtEditing=null;
+  }
+}
+
+function dtKey(e,id,field){
+  if(e.key==='Enter'||e.key==='Tab'||e.key==='Escape'){
+    e.preventDefault();
+    commitDtEdit(id,field);
+  }
+}
+
+// Close edit mode if user clicks elsewhere
+document.addEventListener('click',function(e){
+  if(!_dtEditing)return;
+  const {id,field}=_dtEditing;
+  const prefix=field==='date'?'d':'t';
+  const cel=document.getElementById(prefix+'cel_'+id);
+  if(cel&&cel.contains(e.target))return;
+  commitDtEdit(id,field);
+},{capture:true});
+
+// ── Field updates — save ONLY on blur, not oninput ──────────
 function localUpd(id,field,val){
   const t=trades.find(x=>x.id===id);if(!t)return;
   t[field]=val;
@@ -414,60 +489,63 @@ function localUpd(id,field,val){
   updateAnalytics();
 }
 
-// date/time pickers — onchange (discrete, commit immediately)
-function updField(id,f,v){localUpd(id,f,v);scheduleSave(id);commitSave(id);}
+function updPos(sel,id){localUpd(id,'position',sel.value);sel.style.color=sel.value==='Short'?'#ff5f6d':'var(--accent)';scheduleSave(id,true);}
 
-// position select — onchange
-function updPos(sel,id){localUpd(id,'position',sel.value);sel.style.color=sel.value==='Short'?'#ff5f6d':'var(--accent)';scheduleSave(id);commitSave(id);}
+function onPairInput(el,id){
+  // Just update local state and show suggestions — NO save while typing
+  const t=trades.find(x=>x.id===id);if(t)t.pair=el.value.toUpperCase();
+  showSug(el,id);
+}
 
-// pair — oninput
-function onPairInput(el,id){localUpd(id,'pair',el.value.toUpperCase());showSug(el,id);scheduleSave(id);}
+// oninput for pnl/r — update local state + color, but do NOT save yet
+function onValInput(id,field,val){
+  localUpd(id,field,val);
+  // Do NOT schedule save here — wait for blur
+}
 
-// pnl / r — oninput (update trades[] + color, debounced save)
-function onValInput(id,field,val){localUpd(id,field,val);scheduleSave(id);}
-
-// pnl / r — onfocus (strip formatting)
+// onfocus — strip formatting
 function vFocus(el){const n=parseFloat(el.value.replace(/[^0-9.+-]/g,''));el.value=isNaN(n)?'':n;el.style.color='var(--text)';el.select();}
 
-// pnl / r — onblur (reformat + commit immediately)
+// onblur — reformat + commit save
 function vBlur(el,id,field){
   const raw=el.value.trim(),n=parseFloat(raw);
   if(!isNaN(n)&&raw!==''){el.value=fmtVal(n,field);el.style.color=pnlCol(n);}else{el.value='';el.style.color='var(--muted)';}
   localUpd(id,field,raw);
-  commitSave(id); // flush immediately on blur — no waiting
+  scheduleSave(id,true); // save on blur
 }
 
-// pair — onblur
-function confirmPair(id,el){const v=el.value.trim().toUpperCase();el.value=v;if(v){localUpd(id,'pair',v);commitSave(id);}}
+// pair onblur
+function confirmPair(id,el){
+  const v=el.value.trim().toUpperCase();
+  el.value=v;
+  if(v){localUpd(id,'pair',v);}
+  scheduleSave(id,true); // save on blur
+}
 
-// stars — immediate
+// stars — immediate discrete action
 function setConf(id,n){
   localUpd(id,'confidence',n);
   document.querySelectorAll(`[data-id="${id}"] .star`).forEach((s,i)=>s.classList.toggle('on',i<n));
-  scheduleSave(id);commitSave(id);
+  scheduleSave(id,true);
 }
 
-// ── Add / Delete ───────────────────────────────────────────────
+// ── Add / Delete ─────────────────────────────────────────────
 async function addRow(){
-  setSaveInd('saving');
-  const now=new Date(),date=now.toISOString().split('T')[0],time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const date=todayLocal(),time=nowTimeLocal();
   try{
     const row=await createTrade(currentUser.id,jid,{date,time,pair:'',position:'Long',strategy:[],timeframe:[],pnl:'',r:'',confidence:0,mood:[],notes:'',images:[]});
     const newTrade={id:row.id,date,time,pair:'',position:'Long',strategy:[],timeframe:[],pnl:'',r:'',confidence:0,mood:[],notes:'',images:[]};
     trades.unshift(newTrade);
-    // Insert row at top of DOM — no render() call
     const tb=document.getElementById('tbody');
     const emptyRow=tb.querySelector('.er');if(emptyRow)emptyRow.remove();
     const tr=buildRow(newTrade,1);
     tr.classList.add('new-row');
     tb.firstChild?tb.insertBefore(tr,tb.firstChild):tb.appendChild(tr);
-    // Re-number
     tb.querySelectorAll('tr[data-id]').forEach((r,i)=>{const td=r.querySelector('td:first-child');if(td)td.textContent=i+1;});
     updateAnalytics();
     setTimeout(()=>tr.classList.remove('new-row'),3000);
     setTimeout(()=>tr.querySelector('.pw-cell input')?.focus(),60);
-    setSaveInd('saved');
-  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');setSaveInd('');}
+  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
 function askDel(id){pendingDelId=id;document.getElementById('cOverlay').classList.add('open');}
@@ -485,27 +563,49 @@ async function confirmDelete(){
   }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
-// ── Pair suggestions ───────────────────────────────────────────
-function allPairs(){return[...new Set([...getTags('pair'),...trades.map(t=>(t.pair||'').toUpperCase()).filter(Boolean)])].sort();}
-function showSug(el,id){const v=el.value.toUpperCase().trim(),box=document.getElementById('sug_'+id),all=allPairs(),m=v?all.filter(p=>p.includes(v)&&p!==v):all.filter(p=>p!==v);if(!m.length){box.style.display='none';return;}box.innerHTML=m.slice(0,8).map(p=>`<div class="sug" onmousedown="pickPair('${id}','${p}')">${p}</div>`).join('');box.style.display='block';}
+// ── Pair suggestions (from existing trade rows — always free) ─
+function showSug(el,id){
+  const v=el.value.toUpperCase().trim();
+  const box=document.getElementById('sug_'+id);
+  const all=getPairSuggestions();
+  const m=v?all.filter(p=>p.includes(v)&&p!==v):all.filter(p=>p!==v);
+  if(!m.length){box.style.display='none';return;}
+  box.innerHTML=m.slice(0,8).map(p=>`<div class="sug" onmousedown="pickPair('${id}','${p}')">${p}</div>`).join('');
+  box.style.display='block';
+}
 function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>s.style.display='none'),180);}
-function pickPair(id,p){localUpd(id,'pair',p);const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;document.getElementById('sug_'+id).style.display='none';commitSave(id);}
+function pickPair(id,p){
+  localUpd(id,'pair',p);
+  const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;
+  document.getElementById('sug_'+id).style.display='none';
+  scheduleSave(id,true);
+}
 
-// ── Pill popup ─────────────────────────────────────────────────
-function openPP(e,id,field){e.stopPropagation();const rect=e.currentTarget.getBoundingClientRect(),pop=document.getElementById('pp');activePill={id,field};renderPP(id,field,'');pop.style.display='block';let top=rect.bottom+window.scrollY+4,left=rect.left,pw=pop.offsetWidth||200;if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;pop.style.top=top+'px';pop.style.left=Math.max(4,left)+'px';pop.querySelector('.pps')?.focus();}
-function renderPP(id,field,filter){const pop=document.getElementById('pp'),t=trades.find(x=>x.id===id),sel=t?t[field]||[]:[],all=getTags(field),fil=filter?all.filter(l=>l.toLowerCase().includes(filter.toLowerCase())):all;
-pop.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">${field}</span><button onclick="closePP()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px"><i class="fa-solid fa-xmark"></i></button></div>
+// ── Pill popup ───────────────────────────────────────────────
+function openPP(e,id,field){
+  e.stopPropagation();
+  const rect=e.currentTarget.getBoundingClientRect(),pop=document.getElementById('pp');
+  activePill={id,field};renderPP(id,field,'');pop.style.display='block';
+  let top=rect.bottom+window.scrollY+4,left=rect.left,pw=pop.offsetWidth||200;
+  if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;
+  pop.style.top=top+'px';pop.style.left=Math.max(4,left)+'px';
+  pop.querySelector('.pps')?.focus();
+}
+function renderPP(id,field,filter){
+  const pop=document.getElementById('pp'),t=trades.find(x=>x.id===id),sel=t?t[field]||[]:[],all=getTags(field),fil=filter?all.filter(l=>l.toLowerCase().includes(filter.toLowerCase())):all;
+  pop.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">${field}</span><button onclick="closePP()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px"><i class="fa-solid fa-xmark"></i></button></div>
 <input class="pps" placeholder="Search or add…" value="${esc(filter)}" oninput="renderPP('${id}','${field}',this.value)" onkeydown="ppKey(event,'${id}','${field}',this.value)">
 <div class="ppills">${fil.length?fil.map(tag=>`<span class="ppl${sel.includes(tag)?' sel':''}" style="${field==='mood'?moodStyle(tag):''}" onclick="toggleTag('${id}','${field}','${esc(tag)}')">${esc(tag)}</span>`).join(''):'<span style="font-size:12px;color:var(--muted)">No tags. Type to create.</span>'}</div>
-${filter&&!all.find(t=>t.toLowerCase()===filter.toLowerCase())?`<div class="pnew"><div class="pnew-lbl">Create new</div><span class="ppl" style="border-style:dashed" onclick="createTagAndAdd('${id}','${field}','${esc(filter)}')">${esc(filter)}</span></div>`:''}`;}
+${filter&&!all.find(t=>t.toLowerCase()===filter.toLowerCase())?`<div class="pnew"><div class="pnew-lbl">Create new</div><span class="ppl" style="border-style:dashed" onclick="createTagAndAdd('${id}','${field}','${esc(filter)}')">${esc(filter)}</span></div>`:''}`;
+}
 function ppKey(e,id,field,val){if(e.key==='Enter'&&val.trim()){const ex=getTags(field).find(t=>t.toLowerCase()===val.trim().toLowerCase());if(ex)toggleTag(id,field,ex);else createTagAndAdd(id,field,val.trim());}if(e.key==='Escape')closePP();}
 async function toggleTag(id,field,val){const t=trades.find(x=>x.id===id);if(!t)return;if(!t[field])t[field]=[];const idx=t[field].indexOf(val);if(idx>-1)t[field].splice(idx,1);else t[field].push(val);if(activePill){const f=document.querySelector('#pp .pps')?.value||'';renderPP(id,field,f);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}});}updateTagCell(id,field,t[field]);await commitSave(id);}
-async function createTagAndAdd(id,field,val){const v=val.trim();if(!v||!settings)return;const k={strategy:'strategies',timeframe:'timeframes',pair:'pairs',mood:'moods'}[field];if(!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){settings[k]=[...settings[k],v];await updateJournalSettings(jid,{[k]:settings[k]});}toggleTag(id,field,v);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.value='';i.focus();renderPP(id,field,'');}});}
+async function createTagAndAdd(id,field,val){const v=val.trim();if(!v||!settings)return;const k={strategy:'strategies',timeframe:'timeframes',mood:'moods'}[field];if(k&&!settings[k].find(x=>x.toLowerCase()===v.toLowerCase())){settings[k]=[...settings[k],v];await updateJournalSettings(jid,{[k]:settings[k]});}toggleTag(id,field,v);requestAnimationFrame(()=>{const i=document.querySelector('#pp .pps');if(i){i.value='';i.focus();renderPP(id,field,'');}});}
 function updateTagCell(id,field,sel){const pre={strategy:'st_',timeframe:'tf_',mood:'md_'}[field]||'st_';const c=document.getElementById(pre+id);if(!c)return;c.innerHTML=field==='mood'?buildMoodPills(sel):buildPills(sel,field);}
 function closePP(){document.getElementById('pp').style.display='none';activePill=null;}
 document.addEventListener('click',()=>{if(document.getElementById('pp').style.display!=='none')closePP();});
 
-// ── Notes Modal ────────────────────────────────────────────────
+// ── Notes Modal ──────────────────────────────────────────────
 async function openNotes(id){
   const t=trades.find(x=>x.id===id);if(!t)return;
   activeNotesId=id;
@@ -524,16 +624,10 @@ async function saveNotes(){
   if(!activeNotesId)return;
   const t=trades.find(x=>x.id===activeNotesId);if(!t)return;
   const newNotes=document.getElementById('nmText').value;
-  setSaveInd('saving');
   try{
-    // Update notes in local trade object first
     t.notes=newNotes;
-
-    // Handle image deletions
     const keepIds=new Set(imgBuffer.filter(i=>i.id).map(i=>i.id));
     for(const img of(t.images||[])){if(img.id&&!keepIds.has(img.id))await deleteTradeImage(img.id);}
-
-    // Upload any new images
     const final=[];
     for(const img of imgBuffer){
       if(img.id){final.push(img);}
@@ -543,16 +637,11 @@ async function saveNotes(){
       }
     }
     t.images=final;
-
-    // Save FULL trade object — prevents mood/strategy/etc from being wiped
+    // Save full trade to preserve mood/strategy/etc
     await updateTrade(activeNotesId,t);
-
-    // Update the notes button in the row
     const tr=document.querySelector(`tr[data-id="${activeNotesId}"]`);
     if(tr){const btn=tr.querySelector('.notes-btn');if(btn){const hasN=(newNotes&&newNotes.trim())||final.length>0;btn.className=`notes-btn${hasN?' hc':''}`;btn.innerHTML=hasN?`<i class="fa-solid fa-note-sticky"></i> View${final.length?`<span style="font-size:10px;background:var(--accent2);color:#0b0f0c;border-radius:10px;padding:1px 5px;font-weight:700">${final.length}</span>`:''}`:`<i class="fa-regular fa-note-sticky"></i> Add`;}}
-
     closeNotes();
-    setSaveInd('saved');
   }catch(e){showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 function renderImgs(){
@@ -567,18 +656,14 @@ function renderImgs(){
 function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
 function handleUpload(e){[...e.target.files].forEach(f=>{if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(f);});e.target.value='';}
 document.addEventListener('paste',e=>{if(!document.getElementById('nOverlay').classList.contains('open'))return;if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}[...e.clipboardData.items].forEach(item=>{if(item.type.startsWith('image/')){const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(item.getAsFile());}});});
-function openLb(src){
-  const lbImg=document.getElementById('lbImg');
-  lbImg.src=src||'';
-  document.getElementById('lb').classList.add('open');
-}
+function openLb(src){document.getElementById('lbImg').src=src||'';document.getElementById('lb').classList.add('open');}
 
-// ── Analytics ──────────────────────────────────────────────────
+// ── Analytics ────────────────────────────────────────────────
 function toggleAnalytics(){analyticsOn=!analyticsOn;localStorage.setItem('tl_analytics_on',analyticsOn);applyAnalyticsState();updateAnalytics();}
 function applyAnalyticsState(){document.getElementById('aToggle').classList.toggle('on',analyticsOn);document.getElementById('aBar').classList.toggle('show',analyticsOn);}
 function updateAnalytics(){if(!analyticsOn)return;const vld=trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))),wins=vld.filter(t=>parseFloat(t.pnl)>0),losses=vld.filter(t=>parseFloat(t.pnl)<0),total=vld.reduce((s,t)=>s+parseFloat(t.pnl),0),rv=trades.filter(t=>t.r&&!isNaN(parseFloat(t.r))).map(t=>parseFloat(t.r)),avgR=rv.length?rv.reduce((a,b)=>a+b,0)/rv.length:0,wr=vld.length?wins.length/vld.length*100:0;let mxW=0,mxL=0,cW=0,cL=0;vld.forEach(t=>{const p=parseFloat(t.pnl);if(p>0){cW++;cL=0;if(cW>mxW)mxW=cW;}else if(p<0){cL++;cW=0;if(cL>mxL)mxL=cL;}else{cW=0;cL=0;}});document.getElementById('sTrades').textContent=trades.length;document.getElementById('sWR').textContent=vld.length?wr.toFixed(1)+'%':'—';document.getElementById('sW').textContent=wins.length;document.getElementById('sL').textContent=losses.length;document.getElementById('sWS').textContent=mxW;document.getElementById('sLS').textContent=mxL;document.getElementById('sR').textContent=rv.length?(avgR>=0?'+':'')+avgR.toFixed(2)+'R':'—';const pe=document.getElementById('sP');if(vld.length){pe.textContent=(total>=0?'+':'-')+'$'+Math.abs(total).toFixed(2);pe.className='sval '+(total>=0?'pos':'neg');}else{pe.textContent='—';pe.className='sval';}}
 
-// ── Toast ──────────────────────────────────────────────────────
+// ── Toast ────────────────────────────────────────────────────
 let _tt;
 function showToast(msg,icon='fa-solid fa-circle-check',type=''){const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.className='show'+(type==='green'?' toast-green':type==='red'?' toast-red':'');clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3500);}
 
