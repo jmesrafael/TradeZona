@@ -9,7 +9,7 @@
     { "source": "/logs",           "destination": "/logs.html" },
     { "source": "/analytics",      "destination": "/analytics.html" },
     { "source": "/calendar",       "destination": "/calendar.html" },
-    { "source": "/gallery",        "destination": "/gallery.html" },
+    { "source": "/notes",        "destination": "/notes.html" },
     { "source": "/calculator",     "destination": "/calculator.html" },
     { "source": "/subscription",   "destination": "/subscription.html" },
     { "source": "/confirm",        "destination": "/confirm.html" },
