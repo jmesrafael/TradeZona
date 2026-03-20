@@ -42,20 +42,26 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .day-data{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;flex:1;width:100%}
 .day-cnt{font-size:10px;color:var(--muted);line-height:1}
 .day-pnl{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;line-height:1}
-.day-pnl.pos{color:var(--accent)}.day-pnl.neg{color:var(--red)}.day-pnl.be{color:var(--muted)}
+/* Hardcoded green/red for PNL — not theme-dependent */
+.day-pnl.pos{color:#19c37d}
+.day-pnl.neg{color:#ff5f6d}
+.day-pnl.be{color:var(--muted)}
 .day-bar{position:absolute;bottom:0;left:0;right:0;height:3px}
-.day-bar.pos{background:var(--accent)}.day-bar.neg{background:var(--red)}
+.day-bar.pos{background:#19c37d}
+.day-bar.neg{background:#ff5f6d}
 /* Summary bar */
 .sum-bar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:14px}
 .sum-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:68px;flex:1}
 .sum-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;text-align:center}
 .sum-val{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:15px;font-weight:700;text-align:center}
-.sum-val.pos{color:var(--accent)}.sum-val.neg{color:var(--red)}
+/* Hardcoded green/red for summary values */
+.sum-val.pos{color:#19c37d}
+.sum-val.neg{color:#ff5f6d}
 /* Free banner */
 .free-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-lg);margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.5}
 .free-banner i{color:var(--amber);flex-shrink:0}
 .free-banner a{color:var(--accent2);text-decoration:none;font-weight:600}
-/* Pro lock — full month message, not per-cell */
+/* Pro lock */
 .pro-lock-month{display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 20px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.2);border-radius:var(--radius-lg);margin-top:12px;text-align:center}
 .pro-lock-month.show{display:flex}
 /* Day detail modal */
@@ -71,11 +77,14 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .dm-trade{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);margin-bottom:6px;gap:8px;flex-wrap:wrap}
 .dm-trade:last-child{margin-bottom:0}
 .dp-pair{font-weight:600;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px}
+/* Long always green, Short always red — hardcoded */
 .dp-pos{font-size:10px;padding:1px 7px;border-radius:var(--radius-pill);font-weight:600}
-.dp-pos.long{background:rgba(var(--accent-rgb),.12);color:var(--accent2)}
-.dp-pos.short{background:rgba(255,95,109,.1);color:var(--red)}
+.dp-pos.long{background:rgba(25,195,125,.12);color:#19c37d}
+.dp-pos.short{background:rgba(255,95,109,.1);color:#ff5f6d}
+/* PNL in day modal — hardcoded green/red */
 .dp-pnl{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-weight:700;font-size:13px}
-.dp-pnl.pos{color:var(--accent)}.dp-pnl.neg{color:var(--red)}
+.dp-pnl.pos{color:#19c37d}
+.dp-pnl.neg{color:#ff5f6d}
 /* Ads */
 .cal-nudge-bar{background:rgba(var(--accent-rgb,0,255,136),.04);border:1px solid rgba(var(--accent-rgb,0,255,136),.15)}
 @media(max-width:600px){
@@ -131,7 +140,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
     <div class="cal-grid" id="calGrid"></div>
   </div>
 
-  <!-- Shown when free user tries to go beyond 90 days -->
   <div class="pro-lock-month" id="proLockMsg">
     <i class="fa-solid fa-lock" style="font-size:26px;color:var(--amber);opacity:.7"></i>
     <div>
@@ -139,7 +147,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
       <div style="font-size:13px;color:var(--muted);line-height:1.6;max-width:280px;margin:0 auto">Free plan shows the last 90 days only. Upgrade to Pro to view your full trading history.</div>
     </div>
     <a href="/subscription" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:9px 18px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:700;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-      <i class="fa-solid fa-arrow-up"></i> Upgrade to Pro
+      <i class="fa-solid fa-chevron-up"></i> Upgrade to Pro
     </a>
   </div>
 
@@ -155,7 +163,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
   </div>
 </div>
 
-<!-- Day detail floating modal -->
+<!-- Day detail modal -->
 <div class="day-modal-overlay" id="dayModalOverlay" onclick="closeDayModal(event)">
   <div class="day-modal">
     <div class="dm-hdr">
@@ -180,6 +188,9 @@ let allTrades=[], curYear=new Date().getFullYear(), curMonth=new Date().getMonth
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 let _proLocked=false;
+
+// Hardcoded PNL colors — independent of theme
+const G='#19c37d', R='#ff5f6d';
 
 function buildDowHeader(id){
   const el=document.getElementById(id);if(!el)return;el.innerHTML='';
@@ -217,7 +228,6 @@ function renderMonth(){
   document.getElementById('monthLbl').textContent=MONTHS[curMonth]+' '+curYear;
   document.getElementById('proLockMsg').classList.remove('show');
 
-  // If entire month is locked for free users, show lock message instead
   if(isMonthLocked(curYear,curMonth)){
     _proLocked=true;
     document.getElementById('calGrid').innerHTML='';
@@ -286,13 +296,21 @@ function renderMonth(){
   if(tradeCnt>0){
     document.getElementById('sumBar').style.display='flex';
     const wr=(winDays+lossDays)>0?(winDays/(winDays+lossDays)*100).toFixed(0)+'%':'—';
-    const ps=document.getElementById('sumPnl');ps.textContent=fP(monthPnl)||'—';ps.className='sum-val '+(monthPnl>0?'pos':monthPnl<0?'neg':'');
+    const ps=document.getElementById('sumPnl');
+    ps.textContent=fP(monthPnl)||'—';
+    // Hardcoded green/red for summary PNL
+    ps.style.color=monthPnl>0?G:monthPnl<0?R:'';
+    ps.className='sum-val';
     document.getElementById('sumTrades').textContent=tradeCnt;
-    document.getElementById('sumWin').textContent=winDays;
-    document.getElementById('sumLoss').textContent=lossDays;
-    document.getElementById('sumWR').textContent=wr;
-    document.getElementById('sumBest').textContent=bestDay!==null?fP(bestDay):'—';
-    document.getElementById('sumWorst').textContent=worstDay!==null?fP(worstDay):'—';
+    document.getElementById('sumWin').textContent=winDays;   // already .pos class = #19c37d
+    document.getElementById('sumLoss').textContent=lossDays; // already .neg class = #ff5f6d
+    // Win rate — green if >=50%, red if below
+    const wrEl=document.getElementById('sumWR');
+    const wrNum=winDays+lossDays>0?winDays/(winDays+lossDays)*100:null;
+    wrEl.textContent=wr;
+    wrEl.style.color=wrNum!==null?(wrNum>=50?G:R):'';
+    document.getElementById('sumBest').textContent=bestDay!==null?fP(bestDay):'—';   // .pos = #19c37d
+    document.getElementById('sumWorst').textContent=worstDay!==null?fP(worstDay):'—'; // .neg = #ff5f6d
   } else {
     document.getElementById('sumBar').style.display='none';
   }
@@ -303,26 +321,51 @@ function showDayModal(dayNum,dateStr,trades){
   document.getElementById('dmTitle').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const dayPnl=trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))).reduce((s,t)=>s+parseFloat(t.pnl),0);
   const body=document.getElementById('dmBody');body.innerHTML='';
-  // Summary line
+
+  // Summary line — hardcoded green/red for total PNL
   const sum=document.createElement('div');sum.className='dm-summary';
   const sc=document.createElement('span');sc.style.cssText='font-size:12px;color:var(--muted)';sc.textContent=trades.length+' trade'+(trades.length>1?'s':'');
-  const sp=document.createElement('span');sp.style.cssText='font-family:var(--font-mono,"Space Grotesk",sans-serif);font-size:15px;font-weight:700;color:'+(dayPnl>0?'var(--accent)':dayPnl<0?'var(--red)':'var(--muted)');sp.textContent=fP(dayPnl)||'—';
+  const sp=document.createElement('span');
+  sp.style.cssText=`font-family:var(--font-mono,"Space Grotesk",sans-serif);font-size:15px;font-weight:700;color:${dayPnl>0?G:dayPnl<0?R:'var(--muted)'}`;
+  sp.textContent=fP(dayPnl)||'—';
   sum.appendChild(sc);sum.appendChild(sp);body.appendChild(sum);
+
   trades.forEach(t=>{
     const row=document.createElement('div');row.className='dm-trade';
     const left=document.createElement('div');left.style.cssText='display:flex;align-items:center;gap:7px;flex-wrap:wrap';
     const pair=document.createElement('span');pair.className='dp-pair';pair.textContent=t.pair||'—';
-    const pos=document.createElement('span');pos.className='dp-pos '+((t.position||'Long').toLowerCase());pos.textContent=t.position||'Long';
+    // Long always green, Short always red
+    const pos=document.createElement('span');
+    pos.className='dp-pos '+((t.position||'Long').toLowerCase());
+    pos.textContent=t.position||'Long';
     left.appendChild(pair);left.appendChild(pos);
-    (t.strategy||[]).forEach(s=>{const tag=document.createElement('span');tag.style.cssText='font-size:10px;background:rgba(var(--accent2-rgb,25,195,125),.1);color:var(--accent2);border-radius:4px;padding:1px 6px';tag.textContent=s;left.appendChild(tag);});
+    // Strategy tags — theme-based (not hardcoded)
+    (t.strategy||[]).forEach(s=>{
+      const tag=document.createElement('span');
+      tag.style.cssText='font-size:10px;background:rgba(var(--accent2-rgb,25,195,125),.1);color:var(--accent2);border-radius:4px;padding:1px 6px';
+      tag.textContent=s;left.appendChild(tag);
+    });
     const right=document.createElement('div');right.style.cssText='display:flex;align-items:center;gap:8px';
     if(t.time){const time=document.createElement('span');time.style.cssText='font-size:11px;color:var(--muted)';time.textContent=t.time;right.appendChild(time);}
-    const pnlN=parseFloat(t.pnl);const pnlEl=document.createElement('span');pnlEl.className='dp-pnl '+(pnlN>0?'pos':pnlN<0?'neg':'');pnlEl.textContent=fP(t.pnl)||'—';right.appendChild(pnlEl);
-    if(t.r){const rEl=document.createElement('span');rEl.style.cssText='font-size:11px;font-family:var(--font-mono,"Space Grotesk",sans-serif);color:'+(parseFloat(t.r)>0?'var(--accent2)':'var(--red)');rEl.textContent=(parseFloat(t.r)>0?'+':'')+parseFloat(t.r).toFixed(2)+'R';right.appendChild(rEl);}
+    // Trade PNL — hardcoded green/red
+    const pnlN=parseFloat(t.pnl);
+    const pnlEl=document.createElement('span');
+    pnlEl.className='dp-pnl '+(pnlN>0?'pos':pnlN<0?'neg':'');
+    pnlEl.textContent=fP(t.pnl)||'—';
+    right.appendChild(pnlEl);
+    // R factor — hardcoded green/red
+    if(t.r){
+      const rEl=document.createElement('span');
+      const rv=parseFloat(t.r);
+      rEl.style.cssText=`font-size:11px;font-family:var(--font-mono,"Space Grotesk",sans-serif);color:${rv>0?G:rv<0?R:'var(--muted)'}`;
+      rEl.textContent=(rv>0?'+':'')+rv.toFixed(2)+'R';
+      right.appendChild(rEl);
+    }
     row.appendChild(left);row.appendChild(right);body.appendChild(row);
   });
   document.getElementById('dayModalOverlay').classList.add('open');
 }
+
 function closeDayModal(e){if(e.target===document.getElementById('dayModalOverlay'))closeDayModalDirect();}
 function closeDayModalDirect(){document.getElementById('dayModalOverlay').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDayModalDirect();});
