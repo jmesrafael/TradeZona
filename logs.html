@@ -129,7 +129,93 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
 #toast.toast-green{border-color:rgba(0,255,136,.4);background:rgba(0,255,136,.07)}
 #toast.toast-red{border-color:rgba(255,95,109,.4);background:rgba(255,95,109,.07)}
-@media(max-width:768px){body{padding:12px}.topbar{flex-direction:column;align-items:stretch}.tl{justify-content:space-between}table{min-width:740px}th{padding:8px 5px;font-size:9px}td{padding:5px 4px;font-size:12px}}
+/* ── Filter bar ───────────────────────────────────────────── */
+.filter-bar{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.fb-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border:1px solid var(--border);border-radius:20px;
+  background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;
+  cursor:pointer;transition:all .15s;white-space:nowrap;position:relative;user-select:none;
+}
+.fb-btn:hover{border-color:var(--accent2);color:var(--text)}
+.fb-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(0,255,136,.07)}
+.fb-btn i.fa-chevron-down{font-size:9px;opacity:.6;transition:transform .15s}
+.fb-btn.open i.fa-chevron-down{transform:rotate(180deg)}
+.fb-badge{
+  background:var(--accent2);color:#0b0f0c;
+  border-radius:10px;padding:0 5px;font-size:10px;font-weight:700;min-width:16px;text-align:center;line-height:16px;height:16px;
+}
+.fb-clear{
+  display:none;align-items:center;gap:4px;padding:5px 10px;
+  border:1px solid rgba(255,95,109,.35);border-radius:20px;
+  background:rgba(255,95,109,.06);color:#ff5f6d;
+  font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.fb-clear:hover{background:rgba(255,95,109,.14)}
+.fb-clear.show{display:flex}
+.fb-count{font-size:11px;color:var(--muted);margin-left:4px;white-space:nowrap}
+
+/* Filter dropdowns */
+.fd{
+  position:fixed;z-index:8000;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:10px;min-width:200px;max-width:260px;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+  display:none;
+}
+.fd.open{display:block}
+.fd-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;font-weight:600}
+/* Date range specific */
+.fd-date{min-width:220px}
+.fd-row{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.fd-lbl{font-size:11px;color:var(--muted)}
+.fd-input{
+  background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  padding:7px 10px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;
+  outline:none;width:100%;transition:border-color .2s;
+}
+.fd-input:focus{border-color:var(--accent2)}
+.fd-sep{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;padding:2px 0}
+/* Checkbox list */
+.fd-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.fd-item{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;
+  cursor:pointer;transition:background .12s;font-size:13px;
+}
+.fd-item:hover{background:rgba(255,255,255,.05)}
+.fd-item input[type=checkbox]{
+  accent-color:var(--accent2);width:14px;height:14px;cursor:pointer;flex-shrink:0;
+}
+.fd-item.checked{color:var(--accent2)}
+/* PNL range */
+.fd-pnl{min-width:210px}
+.fd-pnl-row{display:flex;gap:6px;align-items:center}
+.fd-pnl-inp{
+  flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  padding:7px 8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;
+  outline:none;transition:border-color .2s;min-width:0;
+}
+.fd-pnl-inp:focus{border-color:var(--accent2)}
+/* Confidence stars */
+.fd-stars{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0}
+.fd-star-opt{
+  display:flex;align-items:center;gap:4px;padding:5px 10px;
+  border:1px solid var(--border);border-radius:20px;cursor:pointer;
+  font-size:12px;color:var(--muted);transition:all .12s;
+}
+.fd-star-opt:hover{border-color:var(--accent2);color:var(--text)}
+.fd-star-opt.sel{border-color:var(--accent2);color:var(--accent2);background:rgba(0,255,136,.07)}
+/* Apply btn */
+.fd-apply{
+  width:100%;margin-top:8px;padding:7px;
+  background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;
+  font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:opacity .15s;
+}
+.fd-apply:hover{opacity:.85}
+
+@media(max-width:768px){body{padding:12px}.topbar{flex-direction:column;align-items:stretch}.tl{justify-content:space-between}table{min-width:740px}th{padding:8px 5px;font-size:9px}td{padding:5px 4px;font-size:12px}.filter-bar{gap:4px}.fb-btn{font-size:11px;padding:4px 9px}}
 </style>
 </head>
 <body>
@@ -139,6 +225,117 @@ td{padding:7px 7px;vertical-align:middle;text-align:center}
   <div class="tl">
     <button class="btn-primary" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Trade</button>
   </div>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar" id="filterBar">
+  <!-- Date -->
+  <button class="fb-btn" id="fbDate" onclick="toggleFD('date',this)">
+    <i class="fa-solid fa-calendar-days"></i> Date <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Pair -->
+  <button class="fb-btn" id="fbPair" onclick="toggleFD('pair',this)">
+    <i class="fa-solid fa-arrow-right-arrow-left"></i> Pair <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Position -->
+  <button class="fb-btn" id="fbPosition" onclick="toggleFD('position',this)">
+    <i class="fa-solid fa-arrows-up-down"></i> Position <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Strategy -->
+  <button class="fb-btn" id="fbStrategy" onclick="toggleFD('strategy',this)">
+    <i class="fa-solid fa-chess-knight"></i> Strategy <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Timeframe -->
+  <button class="fb-btn" id="fbTimeframe" onclick="toggleFD('timeframe',this)">
+    <i class="fa-solid fa-clock"></i> Timeframe <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- PNL -->
+  <button class="fb-btn" id="fbPnl" onclick="toggleFD('pnl',this)">
+    <i class="fa-solid fa-dollar-sign"></i> PNL <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Confidence -->
+  <button class="fb-btn" id="fbConfidence" onclick="toggleFD('confidence',this)">
+    <i class="fa-solid fa-star"></i> Confidence <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Mood -->
+  <button class="fb-btn" id="fbMood" onclick="toggleFD('mood',this)">
+    <i class="fa-solid fa-face-smile"></i> Mood <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <!-- Clear -->
+  <button class="fb-clear" id="fbClear" onclick="clearAllFilters()"><i class="fa-solid fa-xmark"></i> Clear Filters</button>
+  <span class="fb-count" id="fbCount"></span>
+</div>
+
+<!-- Filter Dropdowns (appended to body, positioned via JS) -->
+<!-- Date -->
+<div class="fd fd-date" id="fd-date">
+  <div class="fd-title"><i class="fa-solid fa-calendar" style="margin-right:5px;color:var(--accent2)"></i>Date Range</div>
+  <div class="fd-row"><div class="fd-lbl">From</div><input class="fd-input" type="date" id="fd-date-from"></div>
+  <div class="fd-sep"><i class="fa-solid fa-arrows-up-down" style="font-size:9px"></i></div>
+  <div class="fd-row" style="margin-bottom:0"><div class="fd-lbl">To</div><input class="fd-input" type="date" id="fd-date-to"></div>
+  <button class="fd-apply" onclick="applyFD('date')">Apply</button>
+</div>
+<!-- Pair -->
+<div class="fd" id="fd-pair">
+  <div class="fd-title"><i class="fa-solid fa-arrow-right-arrow-left" style="margin-right:5px;color:var(--accent2)"></i>Select Pairs</div>
+  <div class="fd-list" id="fd-pair-list"></div>
+  <button class="fd-apply" onclick="applyFD('pair')">Apply</button>
+</div>
+<!-- Position -->
+<div class="fd" id="fd-position" style="min-width:160px">
+  <div class="fd-title"><i class="fa-solid fa-arrows-up-down" style="margin-right:5px;color:var(--accent2)"></i>Position</div>
+  <div class="fd-list">
+    <label class="fd-item"><input type="checkbox" value="Long" id="fd-pos-long"><span style="color:var(--accent2)">Long</span></label>
+    <label class="fd-item"><input type="checkbox" value="Short" id="fd-pos-short"><span style="color:#ff5f6d">Short</span></label>
+  </div>
+  <button class="fd-apply" onclick="applyFD('position')">Apply</button>
+</div>
+<!-- Strategy -->
+<div class="fd" id="fd-strategy">
+  <div class="fd-title"><i class="fa-solid fa-chess-knight" style="margin-right:5px;color:var(--accent2)"></i>Strategy</div>
+  <div class="fd-list" id="fd-strategy-list"></div>
+  <button class="fd-apply" onclick="applyFD('strategy')">Apply</button>
+</div>
+<!-- Timeframe -->
+<div class="fd" id="fd-timeframe">
+  <div class="fd-title"><i class="fa-solid fa-clock" style="margin-right:5px;color:var(--accent2)"></i>Timeframe</div>
+  <div class="fd-list" id="fd-timeframe-list"></div>
+  <button class="fd-apply" onclick="applyFD('timeframe')">Apply</button>
+</div>
+<!-- PNL -->
+<div class="fd fd-pnl" id="fd-pnl">
+  <div class="fd-title"><i class="fa-solid fa-dollar-sign" style="margin-right:5px;color:var(--accent2)"></i>PNL Range</div>
+  <div class="fd-row">
+    <div class="fd-lbl">Min ($)</div>
+    <div class="fd-pnl-row">
+      <input class="fd-pnl-inp" type="number" id="fd-pnl-min" placeholder="e.g. -100" step="0.01">
+    </div>
+  </div>
+  <div class="fd-row" style="margin-bottom:0">
+    <div class="fd-lbl">Max ($)</div>
+    <div class="fd-pnl-row">
+      <input class="fd-pnl-inp" type="number" id="fd-pnl-max" placeholder="e.g. 500" step="0.01">
+    </div>
+  </div>
+  <button class="fd-apply" onclick="applyFD('pnl')">Apply</button>
+</div>
+<!-- Confidence -->
+<div class="fd" id="fd-confidence" style="min-width:190px">
+  <div class="fd-title"><i class="fa-solid fa-star" style="margin-right:5px;color:var(--accent2)"></i>Min Confidence</div>
+  <div class="fd-stars" id="fd-confidence-stars">
+    <div class="fd-star-opt" data-v="1" onclick="fdStarClick(1)">★</div>
+    <div class="fd-star-opt" data-v="2" onclick="fdStarClick(2)">★★</div>
+    <div class="fd-star-opt" data-v="3" onclick="fdStarClick(3)">★★★</div>
+    <div class="fd-star-opt" data-v="4" onclick="fdStarClick(4)">★★★★</div>
+    <div class="fd-star-opt" data-v="5" onclick="fdStarClick(5)">★★★★★</div>
+  </div>
+  <button class="fd-apply" onclick="applyFD('confidence')">Apply</button>
+</div>
+<!-- Mood -->
+<div class="fd" id="fd-mood">
+  <div class="fd-title"><i class="fa-solid fa-face-smile" style="margin-right:5px;color:var(--accent2)"></i>Mood</div>
+  <div class="fd-list" id="fd-mood-list"></div>
+  <button class="fd-apply" onclick="applyFD('mood')">Apply</button>
 </div>
 
 <div class="abar" id="aBar">
@@ -325,10 +522,189 @@ function fmtVal(v,type){const n=parseFloat(v);if(isNaN(n)||v==null||v==='')retur
 function pnlCol(v){const n=parseFloat(v);return n>0?'var(--accent)':n<0?'#ff5f6d':'var(--muted)';}
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
+// ── Filter system ─────────────────────────────────────────────
+const fState={
+  date:{from:'',to:''},
+  pair:[],position:[],strategy:[],timeframe:[],mood:[],
+  pnl:{min:'',max:''},
+  confidence:0
+};
+let _openFD=null; // currently open dropdown key
+
+function toggleFD(key,btn){
+  if(_openFD===key){closeAllFD();return;}
+  closeAllFD();
+  _openFD=key;
+  btn.classList.add('open');
+  // Populate dynamic lists before showing
+  if(key==='pair')_populateList('pair',getPairSuggestions());
+  if(key==='strategy')_populateList('strategy',settings?.strategies||[]);
+  if(key==='timeframe')_populateList('timeframe',settings?.timeframes||[]);
+  if(key==='mood')_populateMoodList();
+  // Position dropdown
+  const dEl=document.getElementById('fd-'+key);
+  if(!dEl)return;
+  // Position it below the button
+  const rect=btn.getBoundingClientRect();
+  let left=rect.left+window.scrollX;
+  dEl.style.display='block';
+  dEl.classList.add('open');
+  const dw=dEl.offsetWidth;
+  if(left+dw>window.innerWidth-8)left=window.innerWidth-dw-8;
+  dEl.style.top=(rect.bottom+window.scrollY+4)+'px';
+  dEl.style.left=Math.max(4,left)+'px';
+}
+
+function closeAllFD(){
+  document.querySelectorAll('.fd').forEach(d=>{d.classList.remove('open');d.style.display='none';});
+  document.querySelectorAll('.fb-btn').forEach(b=>b.classList.remove('open'));
+  _openFD=null;
+}
+
+function _populateList(key,items){
+  const el=document.getElementById('fd-'+key+'-list');if(!el)return;
+  const sel=fState[key]||[];
+  if(!items.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 8px">No tags yet</div>';return;}
+  el.innerHTML=items.map(item=>`
+    <label class="fd-item${sel.includes(item)?' checked':''}">
+      <input type="checkbox" value="${esc(item)}" ${sel.includes(item)?'checked':''}>
+      <span>${esc(item)}</span>
+    </label>`).join('');
+}
+
+function _populateMoodList(){
+  const el=document.getElementById('fd-mood-list');if(!el)return;
+  const moods=settings?.moods||[];
+  const colors=settings?.mood_colors||{};
+  const sel=fState.mood||[];
+  if(!moods.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 8px">No moods yet</div>';return;}
+  el.innerHTML=moods.map(m=>{
+    const c=colors[m]||'#8fa39a';
+    return`<label class="fd-item${sel.includes(m)?' checked':''}">
+      <input type="checkbox" value="${esc(m)}" ${sel.includes(m)?'checked':''}>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></span>${esc(m)}</span>
+    </label>`;
+  }).join('');
+}
+
+let _fdConfSel=0;
+function fdStarClick(v){
+  _fdConfSel=_fdConfSel===v?0:v;
+  document.querySelectorAll('.fd-star-opt').forEach(s=>s.classList.toggle('sel',parseInt(s.dataset.v)===_fdConfSel));
+}
+
+function applyFD(key){
+  if(key==='date'){
+    fState.date.from=document.getElementById('fd-date-from').value;
+    fState.date.to=document.getElementById('fd-date-to').value;
+  } else if(key==='pnl'){
+    fState.pnl.min=document.getElementById('fd-pnl-min').value;
+    fState.pnl.max=document.getElementById('fd-pnl-max').value;
+  } else if(key==='confidence'){
+    fState.confidence=_fdConfSel;
+  } else if(key==='position'){
+    fState.position=[];
+    if(document.getElementById('fd-pos-long').checked)fState.position.push('Long');
+    if(document.getElementById('fd-pos-short').checked)fState.position.push('Short');
+  } else {
+    fState[key]=[...document.querySelectorAll(`#fd-${key}-list input:checked`)].map(c=>c.value);
+  }
+  closeAllFD();
+  updateFilterBtns();
+  render();
+}
+
+function updateFilterBtns(){
+  // Per-button active state + badge
+  const checks={
+    date:!!(fState.date.from||fState.date.to),
+    pair:fState.pair.length>0,
+    position:fState.position.length>0,
+    strategy:fState.strategy.length>0,
+    timeframe:fState.timeframe.length>0,
+    pnl:!!(fState.pnl.min!==''||fState.pnl.max!==''),
+    confidence:fState.confidence>0,
+    mood:fState.mood.length>0,
+  };
+  const keys=['date','pair','position','strategy','timeframe','pnl','confidence','mood'];
+  let anyActive=false;
+  keys.forEach(k=>{
+    const btn=document.getElementById('fb'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(!btn)return;
+    const isActive=checks[k];
+    if(isActive)anyActive=true;
+    btn.classList.toggle('active',isActive);
+    // badge count
+    const existBadge=btn.querySelector('.fb-badge');
+    if(existBadge)existBadge.remove();
+    let count=0;
+    if(k==='date'){if(fState.date.from&&fState.date.to)count=1;else if(fState.date.from||fState.date.to)count=1;}
+    else if(k==='pnl'){if(fState.pnl.min!==''&&fState.pnl.max!=='')count=1;else if(fState.pnl.min!==''||fState.pnl.max!=='')count=1;}
+    else if(k==='confidence'){count=fState.confidence>0?1:0;}
+    else if(Array.isArray(fState[k])){count=fState[k].length;}
+    if(count>0){
+      const b=document.createElement('span');b.className='fb-badge';b.textContent=count;
+      btn.insertBefore(b,btn.querySelector('i.fa-chevron-down'));
+    }
+  });
+  const clearBtn=document.getElementById('fbClear');
+  clearBtn.classList.toggle('show',anyActive);
+  // Filtered count
+  const total=getFilteredTrades().length;
+  const countEl=document.getElementById('fbCount');
+  if(anyActive){countEl.textContent=`${total} of ${trades.length} trade${trades.length!==1?'s':''}`;}
+  else{countEl.textContent='';}
+}
+
+function clearAllFilters(){
+  fState.date={from:'',to:''};
+  fState.pair=[];fState.position=[];fState.strategy=[];fState.timeframe=[];fState.mood=[];
+  fState.pnl={min:'',max:''};fState.confidence=0;_fdConfSel=0;
+  document.getElementById('fd-date-from').value='';
+  document.getElementById('fd-date-to').value='';
+  document.getElementById('fd-pnl-min').value='';
+  document.getElementById('fd-pnl-max').value='';
+  document.getElementById('fd-pos-long').checked=false;
+  document.getElementById('fd-pos-short').checked=false;
+  document.querySelectorAll('.fd-star-opt').forEach(s=>s.classList.remove('sel'));
+  updateFilterBtns();render();
+}
+
+function getFilteredTrades(){
+  let items=trades;
+  const f=fState;
+  if(f.date.from)items=items.filter(t=>t.date&&t.date>=f.date.from);
+  if(f.date.to)items=items.filter(t=>t.date&&t.date<=f.date.to);
+  if(f.pair.length)items=items.filter(t=>f.pair.includes((t.pair||'').toUpperCase()));
+  if(f.position.length)items=items.filter(t=>f.position.includes(t.position));
+  if(f.strategy.length)items=items.filter(t=>(t.strategy||[]).some(s=>f.strategy.includes(s)));
+  if(f.timeframe.length)items=items.filter(t=>(t.timeframe||[]).some(s=>f.timeframe.includes(s)));
+  if(f.mood.length)items=items.filter(t=>(t.mood||[]).some(s=>f.mood.includes(s)));
+  if(f.pnl.min!==''){const mn=parseFloat(f.pnl.min);items=items.filter(t=>!isNaN(parseFloat(t.pnl))&&parseFloat(t.pnl)>=mn);}
+  if(f.pnl.max!==''){const mx=parseFloat(f.pnl.max);items=items.filter(t=>!isNaN(parseFloat(t.pnl))&&parseFloat(t.pnl)<=mx);}
+  if(f.confidence>0)items=items.filter(t=>(t.confidence||0)>=f.confidence);
+  return items;
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click',e=>{
+  if(!_openFD)return;
+  const dEl=document.getElementById('fd-'+_openFD);
+  const btn=document.getElementById('fb'+_openFD.charAt(0).toUpperCase()+_openFD.slice(1));
+  if(dEl&&!dEl.contains(e.target)&&btn&&!btn.contains(e.target))closeAllFD();
+},{capture:false});
+
 function render(){
   const tb=document.getElementById('tbody');
-  if(!trades.length){tb.innerHTML='<tr class="er"><td colspan="13"><i class="fa-solid fa-inbox" style="font-size:28px;display:block;margin-bottom:12px;opacity:.3"></i>No trades yet. Click "+ Add Trade" to begin.</td></tr>';updateAnalytics();return;}
-  tb.innerHTML='';trades.forEach((t,i)=>tb.appendChild(buildRow(t,i+1)));updateAnalytics();
+  const filtered=getFilteredTrades();
+  if(!filtered.length){
+    const msg=trades.length?'No trades match your filters.':'No trades yet. Click "+ Add Trade" to begin.';
+    const icon=trades.length?'fa-solid fa-filter':'fa-solid fa-inbox';
+    tb.innerHTML=`<tr class="er"><td colspan="13"><i class="${icon}" style="font-size:28px;display:block;margin-bottom:12px;opacity:.3"></i>${msg}</td></tr>`;
+    updateAnalytics();updateFilterBtns();return;
+  }
+  tb.innerHTML='';filtered.forEach((t,i)=>tb.appendChild(buildRow(t,i+1)));
+  updateAnalytics();updateFilterBtns();
 }
 
 function buildRow(t,num){
@@ -624,7 +1000,22 @@ document.addEventListener('paste',e=>{
 function openLb(src){document.getElementById('lbImg').src=src||'';document.getElementById('lb').classList.add('open');}
 
 function applyAnalyticsState(){document.getElementById('aBar').classList.toggle('show',analyticsOn);}
-function updateAnalytics(){if(!analyticsOn)return;const vld=trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))),wins=vld.filter(t=>parseFloat(t.pnl)>0),losses=vld.filter(t=>parseFloat(t.pnl)<0),total=vld.reduce((s,t)=>s+parseFloat(t.pnl),0),rv=trades.filter(t=>t.r&&!isNaN(parseFloat(t.r))).map(t=>parseFloat(t.r)),avgR=rv.length?rv.reduce((a,b)=>a+b,0)/rv.length:0,wr=vld.length?wins.length/vld.length*100:0;let mxW=0,mxL=0,cW=0,cL=0;vld.forEach(t=>{const p=parseFloat(t.pnl);if(p>0){cW++;cL=0;if(cW>mxW)mxW=cW;}else if(p<0){cL++;cW=0;if(cL>mxL)mxL=cL;}else{cW=0;cL=0;}});document.getElementById('sTrades').textContent=trades.length;document.getElementById('sWR').textContent=vld.length?wr.toFixed(1)+'%':'—';document.getElementById('sW').textContent=wins.length;document.getElementById('sL').textContent=losses.length;document.getElementById('sWS').textContent=mxW;document.getElementById('sLS').textContent=mxL;document.getElementById('sR').textContent=rv.length?(avgR>=0?'+':'')+avgR.toFixed(2)+'R':'—';const pe=document.getElementById('sP');if(vld.length){pe.textContent=(total>=0?'+':'-')+'$'+Math.abs(total).toFixed(2);pe.className='sval '+(total>=0?'pos':'neg');}else{pe.textContent='—';pe.className='sval';}}
+function updateAnalytics(){
+  if(!analyticsOn)return;
+  const src=getFilteredTrades();
+  const vld=src.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl))),wins=vld.filter(t=>parseFloat(t.pnl)>0),losses=vld.filter(t=>parseFloat(t.pnl)<0),total=vld.reduce((s,t)=>s+parseFloat(t.pnl),0),rv=src.filter(t=>t.r&&!isNaN(parseFloat(t.r))).map(t=>parseFloat(t.r)),avgR=rv.length?rv.reduce((a,b)=>a+b,0)/rv.length:0,wr=vld.length?wins.length/vld.length*100:0;
+  let mxW=0,mxL=0,cW=0,cL=0;vld.forEach(t=>{const p=parseFloat(t.pnl);if(p>0){cW++;cL=0;if(cW>mxW)mxW=cW;}else if(p<0){cL++;cW=0;if(cL>mxL)mxL=cL;}else{cW=0;cL=0;}});
+  document.getElementById('sTrades').textContent=src.length;
+  document.getElementById('sWR').textContent=vld.length?wr.toFixed(1)+'%':'—';
+  document.getElementById('sW').textContent=wins.length;
+  document.getElementById('sL').textContent=losses.length;
+  document.getElementById('sWS').textContent=mxW;
+  document.getElementById('sLS').textContent=mxL;
+  document.getElementById('sR').textContent=rv.length?(avgR>=0?'+':'')+avgR.toFixed(2)+'R':'—';
+  const pe=document.getElementById('sP');
+  if(vld.length){pe.textContent=(total>=0?'+':'-')+'$'+Math.abs(total).toFixed(2);pe.className='sval '+(total>=0?'pos':'neg');}
+  else{pe.textContent='—';pe.className='sval';}
+}
 
 let _tt;
 function showToast(msg,icon='fa-solid fa-circle-check',type=''){const t=document.getElementById('toast');document.getElementById('toastIcon').className=icon;document.getElementById('toastMsg').textContent=msg;t.className='show'+(type==='green'?' toast-green':type==='red'?' toast-red':'');clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3500);}
