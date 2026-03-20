@@ -7,12 +7,12 @@
 <title>TradeZona — Journal</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="theme.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column}
@@ -84,7 +84,6 @@ iframe.ready{opacity:1}
 .tag-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
 .tag-input:focus{border-color:var(--accent2)}
 .tag-add-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.tag-hint{font-size:11px;margin-top:6px;display:flex;align-items:flex-start;gap:4px;line-height:1.4;color:var(--muted)}
 .pin-box{padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:9px}
 .pin-status-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .pin-badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;flex-shrink:0}
@@ -93,8 +92,8 @@ iframe.ready{opacity:1}
 .pin-badge.pro-only{background:rgba(143,163,154,.08);color:var(--muted);border:1px solid var(--border)}
 .btn-pin{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 12px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;border:1px solid var(--border);background:var(--bg);color:var(--muted);white-space:nowrap}
 .btn-pin:hover{border-color:var(--accent2);color:var(--accent2)}
-.btn-pin-danger{border-color:rgba(255,95,109,.3);color:#ff5f6d;background:rgba(255,95,109,.06)}
-.btn-pin-danger:hover{background:rgba(255,95,109,.12);border-color:#ff5f6d}
+.btn-pin-danger{border-color:rgba(255,95,109,.3);color:var(--red);background:rgba(255,95,109,.06)}
+.btn-pin-danger:hover{background:rgba(255,95,109,.12);border-color:var(--red)}
 .pin-form{display:none;flex-direction:column;gap:7px;margin-top:10px}
 .pin-form.show{display:flex}
 .mood-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;min-height:28px}
@@ -122,14 +121,14 @@ iframe.ready{opacity:1}
 .io-note{font-size:11px;color:var(--muted);padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;display:flex;align-items:flex-start;gap:7px;line-height:1.6}
 .io-note i{color:var(--accent2);flex-shrink:0;margin-top:1px}
 .danger-sec{border-color:rgba(255,95,109,.25)!important}
-.danger-sec .ssec-title{color:#ff5f6d}
-.danger-sec .ssec-title i{color:#ff5f6d}
-.btn-danger{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,95,109,.4);color:#ff5f6d;border-radius:8px;padding:9px 15px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s}
-.btn-danger:hover{background:rgba(255,95,109,.1);border-color:#ff5f6d}
+.danger-sec .ssec-title{color:var(--red)}
+.danger-sec .ssec-title i{color:var(--red)}
+.btn-danger{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,95,109,.4);color:var(--red);border-radius:8px;padding:9px 15px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-danger:hover{background:rgba(255,95,109,.1);border-color:var(--red)}
 .unsaved-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:2px solid rgba(245,158,11,.5);padding:12px 20px;z-index:500;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
 .unsaved-bar.show{display:flex}
 .unsaved-text{font-size:13px;display:flex;align-items:center;gap:7px}
-.unsaved-text i{color:#f59e0b}
+.unsaved-text i{color:var(--amber)}
 .btn-discard{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .btn-discard:hover{border-color:var(--muted);color:var(--text)}
 .btn-save-now{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:5px}
@@ -174,7 +173,7 @@ iframe.ready{opacity:1}
 .file-badge.show{display:flex}
 .file-badge .fn{font-size:13px;font-weight:500;color:var(--accent2);word-break:break-all}
 .file-badge .clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 5px;border-radius:4px;transition:color .15s;flex-shrink:0}
-.file-badge .clr:hover{color:#ff5f6d}
+.file-badge .clr:hover{color:var(--red)}
 .mode-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .mode-opt{padding:11px 10px;background:var(--bg);border:2px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;transition:all .15s}
@@ -189,7 +188,7 @@ iframe.ready{opacity:1}
 .pv-row:last-child{border-bottom:none}
 .pv-lbl{color:var(--muted)}
 .pv-val{font-weight:600;font-family:'Space Grotesk',sans-serif}
-.pv-ok{color:var(--accent)}.pv-warn{color:#f59e0b}.pv-info{color:var(--muted)}
+.pv-ok{color:var(--accent)}.pv-warn{color:var(--amber)}.pv-info{color:var(--muted)}
 .restore-row{display:none;margin-bottom:4px}
 .restore-row.show{display:block}
 .restore-lbl{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text)}
@@ -228,11 +227,11 @@ iframe.ready{opacity:1}
 </header>
 
 <nav>
+  <!-- FIX: removed the duplicate "Notes" (gallery) tab. Now: Logs, Calendar, Notes, Analytics, Calculator, Settings -->
   <button class="tab active" data-tab="logs"       onclick="switchTab('logs')"><i class="fa-solid fa-table-list"></i>Logs</button>
   <button class="tab"        data-tab="calendar"   onclick="switchTab('calendar')"><i class="fa-solid fa-calendar-days"></i>Calendar</button>
-  <button class="tab"        data-tab="gallery"    onclick="switchTab('gallery')"><i class="fa-solid fa-note-sticky"></i>Notes</button>
-  <button class="tab"        data-tab="analytics"  onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i>Analytics</button>
   <button class="tab"        data-tab="notes"      onclick="switchTab('notes')"><i class="fa-solid fa-note-sticky"></i>Notes</button>
+  <button class="tab"        data-tab="analytics"  onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i>Analytics</button>
   <button class="tab"        data-tab="calculator" onclick="switchTab('calculator')"><i class="fa-solid fa-calculator"></i>Calculator<span class="pro-tab-badge" id="calcBadge" style="display:none">PRO</span></button>
   <div class="tab-spacer"></div>
   <button class="tab"        data-tab="settings"   onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
@@ -248,20 +247,15 @@ iframe.ready{opacity:1}
   <div class="tab-loader" id="loader-calendar"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading calendar…</span></div>
   <iframe id="calFrame" onload="frameReady('calendar')"></iframe>
 </div>
-<!-- Tab: Gallery -->
-<div class="tab-content" id="tab-gallery">
-  <div class="tab-loader" id="loader-gallery"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading gallery…</span></div>
-  <iframe id="galFrame" onload="frameReady('gallery')"></iframe>
+<!-- Tab: Notes -->
+<div class="tab-content" id="tab-notes">
+  <div class="tab-loader" id="loader-notes"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading notes…</span></div>
+  <iframe id="notesFrame" onload="frameReady('notes')"></iframe>
 </div>
 <!-- Tab: Analytics -->
 <div class="tab-content" id="tab-analytics">
   <div class="tab-loader" id="loader-analytics"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading analytics…</span></div>
   <iframe id="analyticsFrame" onload="frameReady('analytics')"></iframe>
-</div>
-<!-- Tab: Notes — full notes management page -->
-<div class="tab-content" id="tab-notes">
-  <div class="tab-loader" id="loader-notes"><div class="tab-loader-spin"></div><span class="tab-loader-label">Loading notes…</span></div>
-  <iframe id="notesFrame" onload="frameReady('notes')"></iframe>
 </div>
 <!-- Tab: Calculator — Pro gate wraps the iframe -->
 <div class="tab-content" id="tab-calculator">
@@ -293,7 +287,6 @@ iframe.ready{opacity:1}
             <input type="number" class="field-input" id="js-capital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px" oninput="markDirty()">
           </div>
         </div>
-        <!-- PIN -->
         <div class="field-row" style="margin-bottom:0">
           <div class="field-lbl" style="margin-bottom:7px">Journal PIN <span id="pinProNote" style="font-size:10px;color:var(--muted)"></span></div>
           <div class="pin-box">
@@ -304,7 +297,7 @@ iframe.ready{opacity:1}
             <div class="pin-form" id="pinForm">
               <input type="password" class="field-input" id="pinNew" placeholder="New 4-digit PIN" maxlength="6" style="margin-top:8px;letter-spacing:.15em" oninput="onPinInput()">
               <input type="password" class="field-input" id="pinConfirm" placeholder="Confirm PIN" maxlength="6" style="letter-spacing:.15em" oninput="onPinInput()">
-              <p id="pinMismatch" style="font-size:11px;color:#ff5f6d;display:none"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>PINs do not match.</p>
+              <p id="pinMismatch" style="font-size:11px;color:var(--red);display:none"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>PINs do not match.</p>
             </div>
           </div>
         </div>
@@ -330,7 +323,7 @@ iframe.ready{opacity:1}
         </div>
       </div>
 
-      <!-- Strategy Tags — FREE, no limit shown -->
+      <!-- Strategy Tags -->
       <div class="ssec">
         <div class="ssec-title"><i class="fa-solid fa-chess-knight"></i>Strategy Tags</div>
         <div class="tag-list" id="stratList"></div>
@@ -340,7 +333,7 @@ iframe.ready{opacity:1}
         </div>
       </div>
 
-      <!-- Timeframe Tags — FREE, no limit shown -->
+      <!-- Timeframe Tags -->
       <div class="ssec">
         <div class="ssec-title"><i class="fa-solid fa-clock"></i>Timeframe Tags</div>
         <div class="tag-list" id="tfList"></div>
@@ -350,7 +343,7 @@ iframe.ready{opacity:1}
         </div>
       </div>
 
-      <!-- Pair Tags — FREE, no limit shown -->
+      <!-- Pair Tags -->
       <div class="ssec">
         <div class="ssec-title"><i class="fa-solid fa-arrow-right-arrow-left"></i>Pair Suggestions</div>
         <div class="tag-list" id="pairList"></div>
@@ -360,7 +353,7 @@ iframe.ready{opacity:1}
         </div>
       </div>
 
-      <!-- Mood Tags — FREE, no limit shown -->
+      <!-- Mood Tags -->
       <div class="ssec full">
         <div class="ssec-title"><i class="fa-solid fa-face-smile"></i>Mood Tags &amp; Colors</div>
         <div class="mood-grid" id="moodGrid"></div>
@@ -379,7 +372,7 @@ iframe.ready{opacity:1}
         <div id="exportImportContent"></div>
       </div>
 
-      <!-- Danger Zone — journal deletion only -->
+      <!-- Danger Zone -->
       <div class="ssec full danger-sec">
         <div class="ssec-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
@@ -480,18 +473,18 @@ iframe.ready{opacity:1}
 <div class="overlay" id="delOverlay">
   <div class="del-journal-inner">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <i class="fa-solid fa-trash" style="color:#ff5f6d;font-size:18px"></i>
+      <i class="fa-solid fa-trash" style="color:var(--red);font-size:18px"></i>
       <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600">Delete Journal?</h3>
     </div>
     <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:6px">Permanently delete <strong id="delJournalName" style="color:var(--text)">this journal</strong> and all its data?</p>
-    <p style="font-size:12px;color:#ff5f6d;margin-bottom:18px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>All trades, notes and images will be erased. No undo.</p>
+    <p style="font-size:12px;color:var(--red);margin-bottom:18px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>All trades, notes and images will be erased. No undo.</p>
     <div style="margin-bottom:14px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Type the journal name to confirm:</div>
-      <input type="text" id="delConfirmInput" class="field-input" placeholder="Journal name…" oninput="checkDel()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s">
+      <input type="text" id="delConfirmInput" class="field-input" placeholder="Journal name…" oninput="checkDel()" style="width:100%">
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="closeDelJournal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
-      <button id="delConfirmBtn" onclick="executeDelete()" disabled style="flex:1;background:#ff5f6d;color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-trash" style="margin-right:6px"></i>Delete Forever</button>
+      <button id="delConfirmBtn" onclick="executeDelete()" disabled style="flex:1;background:var(--red);color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:not-allowed;opacity:.4;transition:all .2s"><i class="fa-solid fa-trash" style="margin-right:6px"></i>Delete Forever</button>
     </div>
   </div>
 </div>
@@ -502,15 +495,17 @@ iframe.ready{opacity:1}
 // ════════════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════════════
-const TABS=['logs','calendar','gallery','analytics','notes','calculator','settings'];
+// FIX: removed 'gallery' from TABS — only 5 content tabs + settings
+const TABS=['logs','calendar','notes','analytics','calculator','settings'];
 let activeTab='logs', journalId=sessionStorage.getItem('tz_current_journal');
 let journalObj=null, settings=null, currentUser=null, userIsPro=false, isDirty=false;
 let exportScope='full', importMode='replace', importPayload=null;
 let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
 
-// ── Theme ──────────────────────────────────────────
-function applyTheme(t){const r=document.documentElement,dark=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dark){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
-applyTheme(localStorage.getItem('tl_theme')||'dark');
+// ── Theme: fully delegated to theme.js TZ engine ─────────────
+// theme.js loaded in <head> auto-applies on load.
+// The TZ engine already listens for postMessage({ type:'tz_theme' }).
+// We only need to push the saved theme into iframes on frameReady.
 
 // ── Boot ───────────────────────────────────────────
 (async()=>{
@@ -539,25 +534,20 @@ applyTheme(localStorage.getItem('tl_theme')||'dark');
   setTimeout(()=>{const pl=document.getElementById('pageLoader');if(pl)pl.style.display='none';},400);
   const lf=document.getElementById('logsFrame');
   if(lf?.contentDocument?.readyState==='complete')frameReady('logs');
-  // Silently preload all other tabs in background
   _preloadTabs();
 })();
 
 // ── Tab preloading ─────────────────────────────────
-// Loads all iframes immediately after boot so tab switches are instant.
 function _preloadTabs(){
   const loads=[
     {id:'calFrame',      src:'calendar.html'},
-    {id:'galFrame',      src:'notes.html'},
-    {id:'analyticsFrame',src:'analytics.html'},
     {id:'notesFrame',    src:'notes.html'},
+    {id:'analyticsFrame',src:'analytics.html'},
   ];
   if(userIsPro) loads.push({id:'calcFrame',src:'calculator.html'});
   loads.forEach(({id,src})=>{
     const f=document.getElementById(id);
-    if(f && !f.src){
-      f.src=src+'?preload=1';
-    }
+    if(f && !f.src){f.src=src+'?preload=1';}
   });
 }
 
@@ -580,6 +570,10 @@ window.addEventListener('message',e=>{
     const dest=_flushTarget;_flushTarget=null;
     location.href=dest;
   }
+  if(e.data?.type==='tz_analytics_state'){
+    const sw=document.getElementById('analyticsToggleSwitch');
+    if(sw)sw.classList.toggle('on',!!e.data.on);
+  }
 });
 
 function goBack(){
@@ -598,12 +592,10 @@ function switchTab(name){
   });
   activeTab=name;
 
-  // Frame map for tabs that use iframes
   const frameMap={
     calendar:{id:'calFrame',src:'calendar.html'},
-    gallery:{id:'galFrame',src:'gallery.html'},
-    analytics:{id:'analyticsFrame',src:'analytics.html'},
     notes:{id:'notesFrame',src:'notes.html'},
+    analytics:{id:'analyticsFrame',src:'analytics.html'},
     calculator:{id:'calcFrame',src:'calculator.html'},
   };
 
@@ -611,16 +603,13 @@ function switchTab(name){
     const{id,src}=frameMap[name];
     const f=document.getElementById(id);
     if(f){
-      // If already preloaded and ready — just show, no reload
       if(!f.src||f.src==='about:blank'){
         showTabLoader(name);
         f.classList.remove('ready');
         f.src=src+'?t='+Date.now();
       } else if(!f.classList.contains('ready')){
-        // Preloaded but not yet ready — show loader until onload fires
         showTabLoader(name);
       }
-      // Already ready — tab-content visibility handles the rest, no action needed
     }
   }
 
@@ -630,9 +619,11 @@ function switchTab(name){
 
 function showTabLoader(n){const l=document.getElementById('loader-'+n);if(l){l.style.display='';l.classList.remove('hidden');}}
 function frameReady(n){
-  const map={logs:'logsFrame',calendar:'calFrame',gallery:'galFrame',analytics:'analyticsFrame',notes:'notesFrame',calculator:'calcFrame'};
+  const map={logs:'logsFrame',calendar:'calFrame',notes:'notesFrame',analytics:'analyticsFrame',calculator:'calcFrame'};
   const f=document.getElementById(map[n]);
-  try{if(f?.contentWindow?.applyTheme)f.contentWindow.applyTheme(localStorage.getItem('tl_theme')||'dark');}catch(e){}
+  // Push current theme into the iframe via TZ postMessage
+  const t=localStorage.getItem('tl_theme')||'dark';
+  try{if(f?.contentWindow)f.contentWindow.postMessage({type:'tz_theme',theme:t},'*');}catch(e){}
   try{if(f?.contentWindow)f.contentWindow.postMessage({type:'tz_plan',isPro:userIsPro},'*');}catch(e){}
   if(f){
     f.classList.add('ready');
@@ -640,7 +631,7 @@ function frameReady(n){
     if(l){l.classList.add('hidden');setTimeout(()=>{if(l.classList.contains('hidden'))l.style.display='none';},350);}
   }
 }
-function bcast(msg){['logsFrame','calFrame','galFrame','analyticsFrame','notesFrame','calcFrame'].forEach(id=>{const f=document.getElementById(id);try{if(f?.contentWindow)f.contentWindow.postMessage(msg,'*');}catch(e){}});}
+function bcast(msg){['logsFrame','calFrame','notesFrame','analyticsFrame','calcFrame'].forEach(id=>{const f=document.getElementById(id);try{if(f?.contentWindow)f.contentWindow.postMessage(msg,'*');}catch(e){}});}
 
 // ── Dirty tracking ─────────────────────────────────
 function markDirty(){isDirty=true;document.getElementById('unsavedBar').classList.add('show');}
@@ -654,7 +645,6 @@ function populateSettings(){
   document.getElementById('js-capital').value=journalObj.capital||'';
   document.getElementById('showPnlToggle').classList.toggle('on',journalObj.show_pnl!==false);
   document.getElementById('showCapToggle').classList.toggle('on',journalObj.show_capital!==false);
-  // Sync analytics toggle from localStorage
   const analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
   const sw=document.getElementById('analyticsToggleSwitch');
   if(sw)sw.classList.toggle('on',analyticsOn);
@@ -729,18 +719,16 @@ async function toggleFlag(field){
   showToast('Display setting updated.','fa-solid fa-circle-check','green');
 }
 
-// ── Tags — ALL FREE, no plan limits ───────────────
+// ── Tags ───────────────────────────────────────────
 function renderTagLists(){
   renderTagList('strategies','stratList');
   renderTagList('timeframes','tfList');
   renderTagList('pairs','pairList');
 }
-
 function renderTagList(key,listId){
   const list=settings?.[key]||[];
   document.getElementById(listId).innerHTML=list.map(t=>`<span class="stag">${esc(t)}<button class="rm" onclick="removeTag('${key}','${esc(t)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></span>`).join('');
 }
-
 async function addTag(key,inputId){
   const inp=document.getElementById(inputId);
   let val=inp.value.trim();if(!val)return;
@@ -754,7 +742,6 @@ async function addTag(key,inputId){
   }
   inp.value='';
 }
-
 async function removeTag(key,val){
   _lastRemovedTag=val; _lastRemovedKey=key;
   settings[key]=(settings[key]||[]).filter(t=>t!==val);
@@ -766,7 +753,6 @@ async function removeTag(key,val){
   t.className='show toast-red';
   _undoTimer=setTimeout(()=>{t.classList.remove('show','toast-red');_lastRemovedTag=null;_lastRemovedKey=null;},3500);
 }
-
 async function undoTagRemove(){
   if(!_lastRemovedTag||!_lastRemovedKey)return;
   const key=_lastRemovedKey,val=_lastRemovedTag;
@@ -777,7 +763,7 @@ async function undoTagRemove(){
   showToast(`Tag "${val}" restored.`,'fa-solid fa-rotate-left','green');
 }
 
-// ── Moods — ALL FREE, Pro gets color editing ───────
+// ── Moods ──────────────────────────────────────────
 function renderMoodGrid(){
   const moods=settings?.moods||[], colors=settings?.mood_colors||{};
   const grid=document.getElementById('moodGrid');
@@ -790,7 +776,6 @@ function renderMoodGrid(){
     return`<div class="mtag" style="background:rgba(${r},${g},${b},.15);color:${col};border-color:rgba(${r},${g},${b},.35)">${colorEl}<span>${esc(m)}</span><button class="mtag-rm" onclick="removeMoodTag('${esc(m)}')"><i class="fa-solid fa-xmark" style="font-size:9px"></i></button></div>`;
   }).join(''):'<span style="font-size:12px;color:var(--muted)">No moods yet.</span>';
 }
-
 async function addMoodTag(){
   const inp=document.getElementById('moodInput'),col=document.getElementById('moodColor').value,val=inp.value.trim();if(!val)return;
   const moods=settings.moods||[];
@@ -802,7 +787,6 @@ async function addMoodTag(){
   }
   inp.value='';document.getElementById('moodColor').value='#8fa39a';
 }
-
 async function removeMoodTag(val){
   _lastRemovedTag=val;_lastRemovedKey='moods';
   settings.moods=settings.moods.filter(m=>m!==val);
@@ -816,7 +800,6 @@ async function removeMoodTag(val){
   t.className='show toast-red';
   _undoTimer=setTimeout(()=>{t.classList.remove('show','toast-red');_lastRemovedTag=null;_lastRemovedKey=null;},3500);
 }
-
 async function updateMoodColor(mood,color){
   settings.mood_colors={...settings.mood_colors,[mood]:color};
   await updateJournalSettings(journalId,{mood_colors:settings.mood_colors});
@@ -833,7 +816,7 @@ async function exportCSV(){
   try{
     const trades=await getTrades(journalId),rows=trades.map(dbToTrade);
     const headers=['Date','Time','Pair','Position','Strategy','Timeframe','PnL','R Factor','Confidence','Mood','Notes'];
-    const e2=v=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`  :s;};
+    const e2=v=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:s;};
     const lines=[headers.join(','),...rows.map(t=>[t.date,t.time,t.pair,t.position,(t.strategy||[]).join(';'),(t.timeframe||[]).join(';'),t.pnl,t.r,t.confidence,(t.mood||[]).join(';'),t.notes].map(e2).join(','))];
     const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
@@ -901,9 +884,8 @@ function showToast(msg,icon='fa-solid fa-circle-check',type=''){
 }
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-// ── Analytics toggle (wired to logs iframe) ────────
+// ── Analytics toggle ───────────────────────────────
 function toggleAnalyticsBar(){
-  // Read current state from localStorage then flip
   const cur=localStorage.getItem('tl_analytics_on')!=='false';
   const next=!cur;
   localStorage.setItem('tl_analytics_on',next);
@@ -911,13 +893,6 @@ function toggleAnalyticsBar(){
   if(sw)sw.classList.toggle('on',next);
   bcast({type:'tz_analytics_toggle',on:next});
 }
-// Receive current analytics state from logs iframe on boot
-window.addEventListener('message',e=>{
-  if(e.data?.type==='tz_analytics_state'){
-    const sw=document.getElementById('analyticsToggleSwitch');
-    if(sw)sw.classList.toggle('on',!!e.data.on);
-  }
-});
 
 // Enter keys for tag inputs
 document.addEventListener('keydown',e=>{

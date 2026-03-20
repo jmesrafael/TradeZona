@@ -6,11 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Calculator</title>
+<script src="theme.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0b0f0c;--panel:#111816;--accent:#00ff88;--accent2:#19c37d;--border:#1c2a25;--text:#e6f2ec;--muted:#8fa39a}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:20px;min-height:100vh}
 .pw{max-width:980px;margin:0 auto}
 .calc-hero{background:linear-gradient(135deg,rgba(0,255,136,.06),rgba(25,195,125,.03));border:1px solid rgba(0,255,136,.15);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
@@ -48,7 +48,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;paddi
 .rl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
 .rl i{font-size:9px}
 .rv{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);line-height:1}
-.rv.pos{color:var(--accent)}.rv.neg{color:#ff5f6d}.rv.warn{color:#f59e0b}
+.rv.pos{color:var(--accent)}.rv.neg{color:var(--red)}.rv.warn{color:var(--amber)}
 .rs{font-size:11px;color:var(--muted);margin-top:3px}
 .pnl-sec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 .pnl-title{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
@@ -197,9 +197,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;paddi
 </div>
 
 <script>
-function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#f4f7f5');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0fa86a');r.style.setProperty('--border','#dde8e3');r.style.setProperty('--text','#0f1c17');r.style.setProperty('--muted','#6b8578');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');}}
-(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
-window.addEventListener('message',e=>{if(e.data?.theme)applyTheme(e.data.theme);});
+// ── Theme: fully delegated to theme.js TZ engine ─────────────
+// theme.js loaded in <head> auto-applies on load.
+// TZ already handles postMessage({ type:'tz_theme' }) natively.
 
 let assetType='crypto';
 
@@ -219,102 +219,62 @@ function isJPY(){return getPair().includes('JPY');}
 function isSpecial(){return['XAUUSD','US30','NAS100'].includes(getPair());}
 
 function calc(){
-  const balance = parseFloat(document.getElementById('balance').value);
-  const riskPct = parseFloat(document.getElementById('riskPct').value);
-  const entry   = parseFloat(document.getElementById('entry').value);
-  const sl      = parseFloat(document.getElementById('stopLoss').value);
-  const tp      = parseFloat(document.getElementById('takeProfit').value);
+  const balance=parseFloat(document.getElementById('balance').value);
+  const riskPct=parseFloat(document.getElementById('riskPct').value);
+  const entry=parseFloat(document.getElementById('entry').value);
+  const sl=parseFloat(document.getElementById('stopLoss').value);
+  const tp=parseFloat(document.getElementById('takeProfit').value);
 
-  // STEP 1: Risk Amount = balance × (risk% / 100)
-  const riskAmt = (!isNaN(balance)&&!isNaN(riskPct)&&balance>0&&riskPct>0)
-    ? balance*(riskPct/100) : null;
-
-  document.getElementById('rRiskAmt').textContent = riskAmt!==null ? fmtD(riskAmt) : '—';
-  document.getElementById('rRiskPct').textContent = (!isNaN(riskPct)&&riskPct>0) ? riskPct.toFixed(1)+'% of balance' : '—% of balance';
+  const riskAmt=(!isNaN(balance)&&!isNaN(riskPct)&&balance>0&&riskPct>0)?balance*(riskPct/100):null;
+  document.getElementById('rRiskAmt').textContent=riskAmt!==null?fmtD(riskAmt):'—';
+  document.getElementById('rRiskPct').textContent=(!isNaN(riskPct)&&riskPct>0)?riskPct.toFixed(1)+'% of balance':'—% of balance';
 
   if(riskAmt===null||isNaN(entry)||isNaN(sl)||entry===sl||entry<=0||sl<=0){clearResults();return;}
 
-  // STEP 2: SL Distance = |entry - stop_loss|
-  const distance = Math.abs(entry - sl);
+  const distance=Math.abs(entry-sl);
   if(distance===0){clearResults();return;}
 
-  let posSize, posUnit, slDistStr, slDistUnit, maxLoss, profit=null, rr=null, formulaStr;
+  let posSize,posUnit,slDistStr,slDistUnit,maxLoss,profit=null,rr=null,formulaStr;
 
   if(assetType==='crypto'){
-    // ── CRYPTO: price-based ──────────────────────────────────
-    // position_size = risk_amount / distance
-    posSize    = riskAmt / distance;
-    maxLoss    = posSize * distance; // === riskAmt
-    posUnit    = 'units';
-    slDistStr  = fmt(distance, distance<1?6:2);
-    slDistUnit = 'price difference';
-    formulaStr = `${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,6)} units`;
-
-    if(!isNaN(tp)&&tp>0&&tp!==entry){
-      const tpDist = Math.abs(tp-entry);
-      profit = posSize * tpDist;
-      rr = profit / riskAmt;
-    }
-
+    posSize=riskAmt/distance;
+    maxLoss=posSize*distance;
+    posUnit='units';
+    slDistStr=fmt(distance,distance<1?6:2);
+    slDistUnit='price difference';
+    formulaStr=`${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,6)} units`;
+    if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);profit=posSize*tpDist;rr=profit/riskAmt;}
   } else {
-    // ── FOREX ────────────────────────────────────────────────
     if(isSpecial()){
-      // Gold / Indices: direct price difference (like crypto)
-      posSize    = riskAmt / distance;
-      maxLoss    = riskAmt;
-      posUnit    = getPair()==='XAUUSD' ? 'oz' : 'contracts';
-      slDistStr  = fmt(distance,2);
-      slDistUnit = 'price distance';
-      formulaStr = `${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,4)} ${posUnit}`;
-
-      if(!isNaN(tp)&&tp>0&&tp!==entry){
-        const tpDist = Math.abs(tp-entry);
-        profit = posSize * tpDist;
-        rr = profit / riskAmt;
-      }
-
+      posSize=riskAmt/distance;maxLoss=riskAmt;
+      posUnit=getPair()==='XAUUSD'?'oz':'contracts';
+      slDistStr=fmt(distance,2);slDistUnit='price distance';
+      formulaStr=`${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,4)} ${posUnit}`;
+      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);profit=posSize*tpDist;rr=profit/riskAmt;}
     } else {
-      // Standard Forex pairs
-      // Step 3B.1: pips = distance × multiplier
-      const mult = isJPY() ? 100 : 10000;
-      const pips = distance * mult;
-
-      // Step 3B.2: pip value = $10 per pip per standard lot (USD-quoted)
-      const pipVal = 10;
-
-      // Step 3B.3: position_size_lots = risk / (pips × pip_value_per_lot)
-      posSize    = riskAmt / (pips * pipVal);
-      maxLoss    = posSize * pips * pipVal; // === riskAmt
-      posUnit    = 'standard lots';
-      slDistStr  = fmt(pips,1);
-      slDistUnit = 'pips';
-      formulaStr = `${fmt(pips,1)} pips × $${pipVal}/pip/lot → ${fmt(posSize,4)} lots`;
-
-      if(!isNaN(tp)&&tp>0&&tp!==entry){
-        const tpDist = Math.abs(tp-entry);
-        const tpPips = tpDist * mult;
-        profit = posSize * tpPips * pipVal;
-        rr = profit / riskAmt;
-      }
+      const mult=isJPY()?100:10000;
+      const pips=distance*mult;const pipVal=10;
+      posSize=riskAmt/(pips*pipVal);maxLoss=posSize*pips*pipVal;
+      posUnit='standard lots';slDistStr=fmt(pips,1);slDistUnit='pips';
+      formulaStr=`${fmt(pips,1)} pips × $${pipVal}/pip/lot → ${fmt(posSize,4)} lots`;
+      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);const tpPips=tpDist*mult;profit=posSize*tpPips*pipVal;rr=profit/riskAmt;}
     }
   }
 
-  // Update DOM
-  document.getElementById('rPositionSize').textContent = fmt(posSize, posSize<0.001?6:posSize<1?4:2);
-  document.getElementById('rPositionUnit').textContent = posUnit;
-  document.getElementById('rSLDist').textContent       = slDistStr;
-  document.getElementById('rSLDistUnit').textContent   = slDistUnit;
-  document.getElementById('rMaxLoss').textContent      = fmtD(maxLoss);
-  document.getElementById('formulaNote').textContent   = formulaStr;
+  document.getElementById('rPositionSize').textContent=fmt(posSize,posSize<0.001?6:posSize<1?4:2);
+  document.getElementById('rPositionUnit').textContent=posUnit;
+  document.getElementById('rSLDist').textContent=slDistStr;
+  document.getElementById('rSLDistUnit').textContent=slDistUnit;
+  document.getElementById('rMaxLoss').textContent=fmtD(maxLoss);
+  document.getElementById('formulaNote').textContent=formulaStr;
 
-  // PnL
   if(profit!==null){
     document.getElementById('pnlSec').style.display='block';
-    document.getElementById('rLoss2').textContent  = fmtD(riskAmt);
-    document.getElementById('rProfit').textContent = fmtD(profit);
+    document.getElementById('rLoss2').textContent=fmtD(riskAmt);
+    document.getElementById('rProfit').textContent=fmtD(profit);
     if(rr!==null){
       document.getElementById('rrSec').style.display='block';
-      const col=rr>=3?'var(--accent)':rr>=2?'var(--accent2)':rr>=1?'#f59e0b':'#ff5f6d';
+      const col=rr>=3?'var(--accent)':rr>=2?'var(--accent2)':rr>=1?'var(--amber)':'var(--red)';
       const rrEl=document.getElementById('rRR');rrEl.textContent='1 : '+fmt(rr,2);rrEl.style.color=col;
       const bar=document.getElementById('rrBar');bar.style.width=Math.min((rr/3)*100,100)+'%';bar.style.background=col;
     } else document.getElementById('rrSec').style.display='none';

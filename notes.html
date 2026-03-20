@@ -7,18 +7,12 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Notes</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="theme.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0b0f0c;--panel:#111816;--panel2:#161d1a;
-  --accent:#00ff88;--accent2:#19c37d;
-  --border:#1c2a25;--border2:#243530;
-  --text:#e6f2ec;--muted:#8fa39a;--muted2:#5c7068;
-  --red:#ff5f6d;--amber:#f59e0b;
-}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -38,26 +32,19 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .search-inp:focus{border-color:var(--accent2)}
 .search-inp::placeholder{color:var(--muted)}
 
-/* ── Filter bar — same style as logs.html ── */
 .filter-bar{display:flex;align-items:center;gap:5px;padding:10px 18px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;flex-wrap:wrap}
 .filter-bar::-webkit-scrollbar{display:none}
-.fb-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 12px;border:1px solid var(--border);border-radius:20px;
-  background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;
-  cursor:pointer;transition:all .15s;white-space:nowrap;position:relative;user-select:none;
-}
+.fb-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;position:relative;user-select:none}
 .fb-btn:hover{border-color:var(--accent2);color:var(--text)}
 .fb-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(0,255,136,.07)}
 .fb-btn i.fa-chevron-down{font-size:9px;opacity:.5;transition:transform .15s}
 .fb-btn.open i.fa-chevron-down{transform:rotate(180deg)}
 .fb-badge{background:var(--accent2);color:#0b0f0c;border-radius:10px;padding:0 5px;font-size:10px;font-weight:700;min-width:16px;text-align:center;line-height:16px;height:16px}
-.fb-clear{display:none;align-items:center;gap:4px;padding:5px 10px;border:1px solid rgba(255,95,109,.35);border-radius:20px;background:rgba(255,95,109,.06);color:#ff5f6d;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fb-clear{display:none;align-items:center;gap:4px;padding:5px 10px;border:1px solid rgba(255,95,109,.35);border-radius:20px;background:rgba(255,95,109,.06);color:var(--red);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .fb-clear:hover{background:rgba(255,95,109,.14)}
 .fb-clear.show{display:flex}
 .fb-count{font-size:11px;color:var(--muted);white-space:nowrap}
 
-/* Filter dropdowns */
 .fd{position:fixed;z-index:8000;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px;min-width:190px;max-width:250px;box-shadow:0 8px 28px rgba(0,0,0,.5);display:none}
 .fd.open{display:block}
 .fd-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;font-weight:600}
@@ -75,11 +62,9 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .fd-apply{width:100%;margin-top:8px;padding:7px;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .fd-apply:hover{opacity:.85}
 
-/* Main content */
 .main{flex:1;padding:18px;overflow:auto}
 .pw{max-width:1200px;margin:0 auto}
 
-/* Skeleton */
 .skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .skel-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .skel-img{height:130px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
@@ -87,10 +72,8 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .skel-line{height:11px;border-radius:4px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
 .skel-line.s{width:55%}.skel-line.m{width:75%}
 
-/* Notes Grid */
 .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 
-/* Note Card */
 .nc{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .18s,transform .18s,box-shadow .18s;animation:fadeUp .3s ease both;position:relative;display:flex;flex-direction:column}
 .nc:hover{border-color:var(--accent2);transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.35)}
 .nc-img{width:100%;height:130px;object-fit:cover;display:block;background:var(--panel2);flex-shrink:0}
@@ -108,13 +91,11 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .nc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .nc-tag{background:rgba(25,195,125,.1);color:var(--accent2);border-radius:4px;padding:1px 6px;font-size:10px}
 
-/* Empty state */
 .empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:12px}
 .empty-state .ei{font-size:48px;opacity:.2;line-height:1}
 .empty-state h3{font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--text);font-weight:600}
 .empty-state p{font-size:13px;line-height:1.7;max-width:320px}
 
-/* Detail Modal */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px)}
 .overlay.open{display:flex;animation:fadeIn .2s ease}
 .modal{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:760px;margin:auto;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.6)}
@@ -164,7 +145,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 .add-img-btn:hover{border-color:var(--accent2);color:var(--text)}
 .img-hint{font-size:10px;color:var(--muted2);margin-top:4px}
 
-/* Lightbox */
 .lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1000;align-items:center;justify-content:center;padding:20px}
 .lb.open{display:flex;animation:fadeIn .2s}
 .lb img{max-width:92vw;max-height:88vh;border-radius:8px;object-fit:contain}
@@ -200,7 +180,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     </div>
   </div>
 
-  <!-- Filter bar — same pattern as logs.html, no icons on buttons -->
   <div class="filter-bar" id="filterBar">
     <button class="fb-btn active" id="fbAll" onclick="setQuickFilter('all',this)">All</button>
     <button class="fb-btn" id="fbHasNote" onclick="setQuickFilter('has_note',this)">Has Note</button>
@@ -215,7 +194,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     <span class="fb-count" id="nfbCount"></span>
   </div>
 
-  <!-- Dropdowns -->
   <div class="fd" id="nfd-pair">
     <div class="fd-title">Pair</div>
     <div class="fd-list" id="nfd-pair-list"></div>
@@ -225,7 +203,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
     <div class="fd-title">Position</div>
     <div class="fd-list">
       <label class="fd-item"><input type="checkbox" value="Long" id="nfd-pos-long"><span class="fd-radio"></span><span style="color:var(--accent2)">Long</span></label>
-      <label class="fd-item"><input type="checkbox" value="Short" id="nfd-pos-short"><span class="fd-radio"></span><span style="color:#ff5f6d">Short</span></label>
+      <label class="fd-item"><input type="checkbox" value="Short" id="nfd-pos-short"><span class="fd-radio"></span><span style="color:var(--red)">Short</span></label>
     </div>
     <button class="fd-apply" onclick="applyNFD('position')">Apply</button>
   </div>
@@ -304,19 +282,21 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:'Inter
 <div id="toast"><i id="toastIcon"></i><span id="toastMsg"></span></div>
 
 <script>
-function applyTheme(t){const r=document.documentElement,dk=t==='dark'||(t==='system'&&!window.matchMedia('(prefers-color-scheme:light)').matches);if(!dk){r.style.setProperty('--bg','#eef3f0');r.style.setProperty('--panel','#ffffff');r.style.setProperty('--panel2','#e8f0ec');r.style.setProperty('--accent','#19c37d');r.style.setProperty('--accent2','#0a9460');r.style.setProperty('--border','#c4d4cc');r.style.setProperty('--border2','#b5c8bf');r.style.setProperty('--text','#0a1812');r.style.setProperty('--muted','#2e5044');r.style.setProperty('--muted2','#4a7065');}else{r.style.setProperty('--bg','#0b0f0c');r.style.setProperty('--panel','#111816');r.style.setProperty('--panel2','#161d1a');r.style.setProperty('--accent','#00ff88');r.style.setProperty('--accent2','#19c37d');r.style.setProperty('--border','#1c2a25');r.style.setProperty('--border2','#243530');r.style.setProperty('--text','#e6f2ec');r.style.setProperty('--muted','#8fa39a');r.style.setProperty('--muted2','#5c7068');}}
-(()=>applyTheme(localStorage.getItem('tl_theme')||'dark'))();
-window.addEventListener('message',e=>{
-  if(e.data?.theme)applyTheme(e.data.theme);
-  if(e.data?.type==='tz_plan'&&e.data.isPro!==undefined)userIsPro=e.data.isPro;
+// ── Theme: fully delegated to theme.js TZ engine ─────────────
+// theme.js is loaded in <head> and auto-applies on load.
+// TZ already listens for postMessage({ type:'tz_theme' }) natively.
+// We only need to handle the tz_plan message here.
+window.addEventListener('message', e => {
+  if (e.data?.type === 'tz_plan' && e.data.isPro !== undefined) userIsPro = e.data.isPro;
 });
 
-const jid=sessionStorage.getItem('tz_current_journal')||(()=>{try{return parent?.sessionStorage?.getItem('tz_current_journal');}catch(e){return null;}})();
-let allTrades=[],displayItems=[],currentTradeId=null,modalImgBuffer=[],lbImgs=[],lbIdx=0,userIsPro=false,saveTimer=null,_saveIndicatorTimer=null,settings=null;
+const jid = sessionStorage.getItem('tz_current_journal') || (()=>{
+  try { return parent?.sessionStorage?.getItem('tz_current_journal'); } catch(e) { return null; }
+})();
 
-// Quick filter state (pill buttons)
+let allTrades=[], displayItems=[], currentTradeId=null, modalImgBuffer=[], lbImgs=[], lbIdx=0, userIsPro=false, saveTimer=null, _saveIndicatorTimer=null, settings=null;
+
 let quickFilter='all';
-// Dropdown filter state
 const nfState={pair:[],position:[],strategy:[],mood:[]};
 let _openNFD=null;
 
@@ -336,10 +316,14 @@ function validateImg(file){if(!ALLOWED_IMG.includes(file.type)){showToast('Only 
   document.getElementById('notesGrid').style.display='';
   applyFilters();
   document.body.style.visibility='visible';
-  subscribeTrades(jid,async()=>{const r=await getTrades(jid);allTrades=await Promise.all(r.map(dbToTrade).map(async t=>{const imgs=await Promise.all((t.images||[]).map(async img=>{const url=img._previewUrl||img.data||(typeof getImageUrl==='function'?await getImageUrl(img):null);return{...img,_previewUrl:url};}));return{...t,images:imgs};}));applyFilters();if(currentTradeId&&document.getElementById('overlay').classList.contains('open')){const u=allTrades.find(t=>t.id===currentTradeId);if(u)_refreshModalMeta(u);}});
+  subscribeTrades(jid,async()=>{
+    const r=await getTrades(jid);
+    allTrades=await Promise.all(r.map(dbToTrade).map(async t=>{const imgs=await Promise.all((t.images||[]).map(async img=>{const url=img._previewUrl||img.data||(typeof getImageUrl==='function'?await getImageUrl(img):null);return{...img,_previewUrl:url};}));return{...t,images:imgs};}));
+    applyFilters();
+    if(currentTradeId&&document.getElementById('overlay').classList.contains('open')){const u=allTrades.find(t=>t.id===currentTradeId);if(u)_refreshModalMeta(u);}
+  });
 })();
 
-// ── Quick filter pills ────────────────────────────────────────
 const quickBtns={all:'fbAll',has_note:'fbHasNote',has_img:'fbHasImg',win:'fbWin',loss:'fbLoss'};
 function setQuickFilter(f,btn){
   quickFilter=f;
@@ -348,7 +332,6 @@ function setQuickFilter(f,btn){
   applyFilters();
 }
 
-// ── Dropdown filters ─────────────────────────────────────────
 function toggleNFD(key,btn){
   if(_openNFD===key){closeAllNFD();return;}
   closeAllNFD();
@@ -404,23 +387,18 @@ document.addEventListener('click',e=>{
   if(dEl&&!dEl.contains(e.target)&&btn&&!btn.contains(e.target))closeAllNFD();
 });
 
-// ── Combined filter ───────────────────────────────────────────
 function applyFilters(){
   const q=(document.getElementById('searchInp').value||'').toLowerCase().trim();
   let items=allTrades;
-  // Base: only trades with notes/images
   items=items.filter(t=>(t.notes&&t.notes.trim())||(t.images&&t.images.length));
-  // Quick filter
   if(quickFilter==='has_note')items=items.filter(t=>t.notes&&t.notes.trim());
   if(quickFilter==='has_img')items=items.filter(t=>t.images&&t.images.length>0);
   if(quickFilter==='win')items=items.filter(t=>parseFloat(t.pnl)>0);
   if(quickFilter==='loss')items=items.filter(t=>parseFloat(t.pnl)<0);
-  // Dropdown filters
   if(nfState.pair.length)items=items.filter(t=>nfState.pair.includes((t.pair||'').toUpperCase()));
   if(nfState.position.length)items=items.filter(t=>nfState.position.includes(t.position));
   if(nfState.strategy.length)items=items.filter(t=>(t.strategy||[]).some(s=>nfState.strategy.includes(s)));
   if(nfState.mood.length)items=items.filter(t=>(t.mood||[]).some(s=>nfState.mood.includes(s)));
-  // Search
   if(q)items=items.filter(t=>(t.pair||'').toLowerCase().includes(q)||(t.notes||'').toLowerCase().includes(q)||(t.strategy||[]).join(' ').toLowerCase().includes(q)||(t.mood||[]).join(' ').toLowerCase().includes(q)||(t.date||'').includes(q));
   displayItems=items;
   renderGrid();updateNFilterBtns();
