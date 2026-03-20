@@ -10,7 +10,6 @@ window.TZ = window.TZ || {};
 // ══════════════════════════════════════════════════════════════
 //  1. COLOR TOKENS
 //  Private keys prefixed with _ are not injected as CSS vars.
-//  _font_heading, _font_body, _font_url  → per-theme font overrides
 // ══════════════════════════════════════════════════════════════
 TZ.tokens = {
 
@@ -64,7 +63,6 @@ TZ.tokens = {
 
   // ──────────────────────────────────────────────────────────
   //  GOLDEN HOUR — warm champagne dark, rich gold accent
-  //  Elegant serif headings. Feels like a premium trading desk.
   //  Pro only
   // ──────────────────────────────────────────────────────────
   'golden': {
@@ -81,14 +79,10 @@ TZ.tokens = {
     '--red':     '#e05c5c',
     '--amber':   '#f59e0b',
     '--blue':    '#7eb8d4',
-    _font_heading: "'Playfair Display', serif",
-    _font_body:    "'DM Sans', sans-serif",
-    _font_url:     'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap',
   },
 
   // ──────────────────────────────────────────────────────────
   //  VOID — pure black, crisp white borders, zero glow
-  //  High contrast. No tints. Clinical mono headings.
   //  Pro only
   // ──────────────────────────────────────────────────────────
   'void': {
@@ -105,9 +99,6 @@ TZ.tokens = {
     '--red':     '#ff4444',
     '--amber':   '#ccaa00',
     '--blue':    '#88aaff',
-    _font_heading: "'IBM Plex Mono', monospace",
-    _font_body:    "'IBM Plex Sans', sans-serif",
-    _font_url:     'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap',
   },
 };
 
@@ -166,7 +157,66 @@ TZ.themeList = [
 ];
 
 // ══════════════════════════════════════════════════════════════
-//  3. DEFAULT TYPOGRAPHY  (overridden per-theme via _font_* keys)
+//  3. FONT PAIRINGS  — independent of color themes
+//  heading: used for titles, labels, nav
+//  body:    used for body copy, inputs, UI text
+//  url:     Google Fonts import URL (null = already loaded)
+// ══════════════════════════════════════════════════════════════
+TZ.fontList = [
+  {
+    id:      'default',
+    label:   'Default',
+    desc:    'Space Grotesk + Inter',
+    pro:     false,
+    heading: "'Space Grotesk', sans-serif",
+    body:    "'Inter', sans-serif",
+    url:     'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap',
+    preview: { heading: 'Space Grotesk', body: 'Inter' },
+  },
+  {
+    id:      'mono-sharp',
+    label:   'Mono Sharp',
+    desc:    'IBM Plex Mono + IBM Plex Sans',
+    pro:     true,
+    heading: "'IBM Plex Mono', monospace",
+    body:    "'IBM Plex Sans', sans-serif",
+    url:     'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap',
+    preview: { heading: 'IBM Plex Mono', body: 'IBM Plex Sans' },
+  },
+  {
+    id:      'editorial',
+    label:   'Editorial',
+    desc:    'Playfair Display + DM Sans',
+    pro:     true,
+    heading: "'Playfair Display', serif",
+    body:    "'DM Sans', sans-serif",
+    url:     'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap',
+    preview: { heading: 'Playfair Display', body: 'DM Sans' },
+  },
+  {
+    id:      'humanist',
+    label:   'Humanist',
+    desc:    'Cabinet Grotesk + Satoshi',
+    pro:     true,
+    heading: "'Cabinet Grotesk', sans-serif",
+    body:    "'Satoshi', sans-serif",
+    url:     'https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&f[]=satoshi@400,500&display=swap',
+    preview: { heading: 'Cabinet Grotesk', body: 'Satoshi' },
+  },
+  {
+    id:      'technical',
+    label:   'Technical',
+    desc:    'Geist Mono + Geist',
+    pro:     true,
+    heading: "'Geist Mono', monospace",
+    body:    "'Geist', sans-serif",
+    url:     'https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500&display=swap',
+    preview: { heading: 'Geist Mono', body: 'Geist' },
+  },
+];
+
+// ══════════════════════════════════════════════════════════════
+//  4. DEFAULT TYPOGRAPHY  (fallback if no font pref saved)
 // ══════════════════════════════════════════════════════════════
 TZ.fonts = {
   heading: "'Space Grotesk', sans-serif",
@@ -174,7 +224,7 @@ TZ.fonts = {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  4. SHAPE TOKENS
+//  5. SHAPE TOKENS
 // ══════════════════════════════════════════════════════════════
 TZ.shape = {
   radius:  { sm:'6px', md:'8px', lg:'10px', xl:'12px', pill:'20px' },
@@ -182,7 +232,7 @@ TZ.shape = {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  5. RGB HELPER
+//  6. RGB HELPER
 // ══════════════════════════════════════════════════════════════
 TZ._hexToRgb = function(hex) {
   const h    = hex.replace('#', '');
@@ -194,7 +244,7 @@ TZ._hexToRgb = function(hex) {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  6. FONT INJECTION
+//  7. FONT INJECTION
 // ══════════════════════════════════════════════════════════════
 TZ._injectedFontUrls = new Set();
 
@@ -208,7 +258,33 @@ TZ._injectFont = function(url) {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  7. THEME ENGINE
+//  8. FONT ENGINE
+// ══════════════════════════════════════════════════════════════
+
+TZ.applyFont = function(fontId) {
+  const id     = fontId || localStorage.getItem('tl_font') || 'default';
+  const meta   = TZ.fontList.find(f => f.id === id) || TZ.fontList[0];
+  const root   = document.documentElement;
+
+  if (meta.url) TZ._injectFont(meta.url);
+
+  root.style.setProperty('--font-heading', meta.heading);
+  root.style.setProperty('--font-body',    meta.body);
+  if (document.body) document.body.style.fontFamily = meta.body;
+
+  TZ.currentFont = id;
+};
+
+TZ.setFont = function(fontId) {
+  localStorage.setItem('tl_font', fontId);
+  TZ.applyFont(fontId);
+  document.querySelectorAll('iframe').forEach(f => {
+    try { f.contentWindow.postMessage({ type:'tz_font', font:fontId }, '*'); } catch(e) {}
+  });
+};
+
+// ══════════════════════════════════════════════════════════════
+//  9. THEME ENGINE
 // ══════════════════════════════════════════════════════════════
 
 TZ._resolveTokens = function(mode) {
@@ -233,16 +309,6 @@ TZ.applyTheme = function(mode) {
   if (tokens['--accent'])  root.style.setProperty('--accent-rgb',  TZ._hexToRgb(tokens['--accent']));
   if (tokens['--accent2']) root.style.setProperty('--accent2-rgb', TZ._hexToRgb(tokens['--accent2']));
 
-  // Per-theme font overrides — stored as CSS vars AND applied to body
-  const headingFont = tokens._font_heading || TZ.fonts.heading;
-  const bodyFont    = tokens._font_body    || TZ.fonts.body;
-  root.style.setProperty('--font-heading', headingFont);
-  root.style.setProperty('--font-body',    bodyFont);
-  if (document.body) document.body.style.fontFamily = bodyFont;
-
-  // Inject theme-specific Google Fonts
-  if (tokens._font_url) TZ._injectFont(tokens._font_url);
-
   const themeClass = (pref === 'light') ? 'light' : 'dark';
   root.dataset.theme   = themeClass;
   root.dataset.variant = pref;
@@ -265,18 +331,22 @@ TZ.setTheme = function(mode) {
   });
 };
 
-// ── Listen for theme messages from parent ─────────────────
+// ── Listen for theme/font messages from parent ─────────────────
 window.addEventListener('message', function(e) {
   if (e.data?.type === 'tz_theme') TZ.applyTheme(e.data.theme);
+  if (e.data?.type === 'tz_font')  TZ.applyFont(e.data.font);
   if (e.data?.theme && !e.data?.type) TZ.applyTheme(e.data.theme);
 });
 
 window.applyTheme = TZ.applyTheme;
+window.applyFont  = TZ.applyFont;
 
+// Apply both on load
 TZ.applyTheme();
+TZ.applyFont();
 
 // ══════════════════════════════════════════════════════════════
-//  8. PAGE LOADER
+//  10. PAGE LOADER
 // ══════════════════════════════════════════════════════════════
 (function() {
   const s = document.createElement('style');

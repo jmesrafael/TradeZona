@@ -98,39 +98,56 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .set-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .set-title i{color:var(--accent2)}
 
-/* ── Theme picker — button + dropdown list ─────────────────
-   Replaces the old card grid. One trigger button shows a
-   popover list of all themes with swatches and Pro badges.   */
-.theme-trigger{
+/* ── Appearance sub-labels ─────────────────────────────────── */
+.appear-label{
+  font-size:10px;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:.7px;font-weight:600;margin-bottom:7px;
+  display:flex;align-items:center;gap:6px;
+}
+.appear-label i{color:var(--muted);font-size:9px}
+.appear-group{margin-bottom:16px}
+.appear-group:last-child{margin-bottom:0}
+
+/* ── Shared trigger/dropdown styles ─────────────────────────
+   Used by both the theme picker and the font picker.          */
+.tz-trigger{
   display:flex;align-items:center;justify-content:space-between;
   width:100%;padding:11px 14px;
   background:var(--bg);border:1px solid var(--border);border-radius:9px;
   cursor:pointer;transition:border-color .2s;
   font-family:var(--font-body,'Inter',sans-serif);font-size:13px;color:var(--text);
 }
-.theme-trigger:hover{border-color:var(--accent2)}
-.theme-trigger-left{display:flex;align-items:center;gap:10px}
+.tz-trigger:hover{border-color:var(--accent2)}
+.tz-trigger-left{display:flex;align-items:center;gap:10px}
+.tz-trigger-right{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.tz-trigger-right i.chev{font-size:10px;transition:transform .2s}
+.tz-trigger.open .tz-trigger-right i.chev{transform:rotate(180deg)}
+
+/* Swatches (theme trigger only) */
 .theme-trigger-swatches{display:flex;gap:3px}
 .theme-trigger-swatch{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,.08)}
 .theme-trigger-name{font-weight:500}
-.theme-trigger-right{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
-.theme-trigger-right i{font-size:10px;transition:transform .2s}
-.theme-trigger.open .theme-trigger-right i{transform:rotate(180deg)}
 
-/* Dropdown */
-.theme-dropdown{
+/* Font trigger preview */
+.font-trigger-preview{display:flex;flex-direction:column;gap:1px}
+.ftp-heading{font-size:13px;font-weight:600;line-height:1.2;color:var(--text)}
+.ftp-body{font-size:10px;color:var(--muted);line-height:1.2}
+
+/* Dropdown shared */
+.tz-dropdown{
   display:none;margin-top:4px;
   background:var(--panel);border:1px solid var(--border);border-radius:10px;
   overflow:hidden;
   box-shadow:0 8px 32px rgba(0,0,0,.4);
   animation:dropIn .18s ease;
 }
-.theme-dropdown.open{display:block}
+.tz-dropdown.open{display:block}
 
+/* ── Theme rows ─────────────────────────────────────────────── */
 .theme-row{
   display:flex;align-items:center;gap:12px;
   padding:11px 14px;cursor:pointer;
-  transition:background .12s;position:relative;
+  transition:background .12s;
   border-bottom:1px solid var(--border);
 }
 .theme-row:last-child{border-bottom:none}
@@ -141,7 +158,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 
 .tr-swatches{display:flex;gap:3px;flex-shrink:0}
 .tr-swatch{width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.1)}
-.tr-swatch:last-child{/* accent */border-width:2px}
+.tr-swatch:last-child{border-width:2px}
 
 .tr-info{flex:1;min-width:0}
 .tr-name{font-size:13px;font-weight:500;color:var(--text);line-height:1.2}
@@ -150,21 +167,40 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .tr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .tr-check{color:var(--accent2);font-size:13px}
 .tr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
-
-/* Pro badge colors per theme — shown as static preview colors */
 .tr-pro.electric{background:rgba(0,229,255,.12);color:#00e5ff;border:1px solid rgba(0,229,255,.3)}
 .tr-pro.golden{background:rgba(245,200,66,.12);color:#d4a017;border:1px solid rgba(245,200,66,.3)}
 .tr-pro.void{background:rgba(200,200,200,.1);color:#aaaaaa;border:1px solid rgba(200,200,200,.25)}
 
-/* Pro upsell hint below dropdown */
-.theme-pro-hint{
+/* ── Font rows ──────────────────────────────────────────────── */
+.font-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;cursor:pointer;
+  transition:background .12s;
+  border-bottom:1px solid var(--border);
+}
+.font-row:last-child{border-bottom:none}
+.font-row:hover{background:rgba(255,255,255,.04)}
+.font-row.active{background:rgba(var(--accent-rgb,0,255,136),.05)}
+.font-row.locked{opacity:.55;cursor:not-allowed}
+.font-row.locked:hover{background:none}
+
+.fr-preview{flex:1;min-width:0}
+.fr-heading-preview{font-size:14px;font-weight:600;line-height:1.25;color:var(--text)}
+.fr-body-preview{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.3}
+.fr-meta{font-size:10px;color:var(--muted2);margin-top:3px;font-family:'Inter',sans-serif}
+.fr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.fr-check{color:var(--accent2);font-size:13px}
+.fr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:rgba(var(--accent-rgb,0,255,136),.1);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.25)}
+
+/* Pro upsell hints */
+.tz-pro-hint{
   display:none;margin-top:8px;padding:9px 12px;
   background:rgba(var(--accent-rgb,0,255,136),.04);
   border:1px solid rgba(var(--accent-rgb,0,255,136),.15);
   border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6;
 }
-.theme-pro-hint.show{display:block}
-.theme-pro-hint a{color:var(--accent2);font-weight:600;text-decoration:none}
+.tz-pro-hint.show{display:block}
+.tz-pro-hint a{color:var(--accent2);font-weight:600;text-decoration:none}
 
 /* Plan rows */
 .plan-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -289,25 +325,42 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <div class="set-sec">
         <div class="set-title"><i class="fa-solid fa-palette"></i>Appearance</div>
 
-        <!-- Theme trigger button -->
-        <button class="theme-trigger" id="themeTrigger" onclick="toggleThemeDropdown()">
-          <div class="theme-trigger-left">
-            <div class="theme-trigger-swatches" id="triggerSwatches"></div>
-            <span class="theme-trigger-name" id="triggerName">Dark</span>
+        <!-- Color Theme -->
+        <div class="appear-group">
+          <div class="appear-label"><i class="fa-solid fa-droplet"></i>Color Theme</div>
+          <button class="tz-trigger" id="themeTrigger" onclick="toggleThemeDropdown()">
+            <div class="tz-trigger-left">
+              <div class="theme-trigger-swatches" id="triggerSwatches"></div>
+              <span class="theme-trigger-name" id="triggerName">Dark</span>
+            </div>
+            <div class="tz-trigger-right">
+              <span id="triggerDesc" style="color:var(--muted);font-size:11px"></span>
+              <i class="fa-solid fa-chevron-down chev"></i>
+            </div>
+          </button>
+          <div class="tz-dropdown" id="themeDropdown"></div>
+          <div class="tz-pro-hint" id="themeProHint">
+            <i class="fa-solid fa-lock" style="margin-right:6px;opacity:.6"></i>
+            Pro themes unlock with a <a href="/subscription">Pro plan</a>. Golden Hour, Void, and Electric included.
           </div>
-          <div class="theme-trigger-right">
-            <span id="triggerDesc" style="color:var(--muted);font-size:11px"></span>
-            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+
+        <!-- Font -->
+        <div class="appear-group">
+          <div class="appear-label"><i class="fa-solid fa-font"></i>Font</div>
+          <button class="tz-trigger" id="fontTrigger" onclick="toggleFontDropdown()">
+            <div class="tz-trigger-left" id="fontTriggerLeft">
+              <!-- populated by JS -->
+            </div>
+            <div class="tz-trigger-right">
+              <i class="fa-solid fa-chevron-down chev"></i>
+            </div>
+          </button>
+          <div class="tz-dropdown" id="fontDropdown"></div>
+          <div class="tz-pro-hint" id="fontProHint">
+            <i class="fa-solid fa-lock" style="margin-right:6px;opacity:.6"></i>
+            All font pairings beyond Default require a <a href="/subscription">Pro plan</a>.
           </div>
-        </button>
-
-        <!-- Theme dropdown list -->
-        <div class="theme-dropdown" id="themeDropdown"></div>
-
-        <!-- Pro upsell hint (shown when free user hovers a pro theme) -->
-        <div class="theme-pro-hint" id="themeProHint">
-          <i class="fa-solid fa-lock" style="margin-right:6px;opacity:.6"></i>
-          Pro themes unlock with a <a href="/subscription">Pro plan</a>. Golden Hour, Void, and Electric included.
         </div>
       </div>
 
@@ -370,7 +423,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
           <button class="upgrade-btn" id="settingsUpgradeBtn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
         </div>
         <div class="plan-row">
-          <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals, calculator, full analytics, all themes</div></div>
+          <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals, calculator, full analytics, all themes &amp; fonts</div></div>
           <i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i>
         </div>
       </div>
@@ -430,12 +483,11 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 <script>
 let currentUser=null, journals=[], pnlMap={};
 let isPro=false;
-let _themeDropOpen=false;
+let _themeDropOpen=false, _fontDropOpen=false;
 
-// ── Theme picker ──────────────────────────────────────────────
-// All theme metadata lives in TZ.themeList (theme.js).
-// We render the dropdown from that list so adding new themes
-// only requires editing theme.js.
+// ═══════════════════════════════════════════════════════════
+//  THEME PICKER
+// ═══════════════════════════════════════════════════════════
 
 function _buildThemeDropdown(){
   const dd=document.getElementById('themeDropdown');
@@ -448,15 +500,8 @@ function _buildThemeDropdown(){
     const row=document.createElement('div');
     row.className='theme-row'+(active?' active':'')+(locked?' locked':'');
     row.dataset.id=th.id;
-
-    // 3 swatches: bg, panel, accent
     const swatchHtml=th.swatches.map(c=>`<span class="tr-swatch" style="background:${c}"></span>`).join('');
-
-    // Pro badge label/color per theme
-    const proBadgeClass={
-      'blue-electric':'electric','golden':'golden','void':'void'
-    }[th.id]||'electric';
-
+    const proBadgeClass={'blue-electric':'electric','golden':'golden','void':'void'}[th.id]||'electric';
     row.innerHTML=`
       <div class="tr-swatches">${swatchHtml}</div>
       <div class="tr-info">
@@ -465,14 +510,10 @@ function _buildThemeDropdown(){
       </div>
       <div class="tr-right">
         ${active?'<i class="fa-solid fa-check tr-check"></i>':''}
-        ${th.pro?`<span class="tr-pro ${proBadgeClass}">${locked?'PRO':'PRO'}</span>`:''}
+        ${th.pro?`<span class="tr-pro ${proBadgeClass}">PRO</span>`:''}
       </div>`;
-
     if(!locked){
-      row.addEventListener('click',()=>{
-        _applyThemeSelection(th.id);
-        closeThemeDropdown();
-      });
+      row.addEventListener('click',()=>{ _applyThemeSelection(th.id); closeThemeDropdown(); });
     } else {
       row.addEventListener('click',()=>{
         document.getElementById('themeProHint').classList.add('show');
@@ -483,7 +524,7 @@ function _buildThemeDropdown(){
   });
 }
 
-function _updateTrigger(themeId){
+function _updateThemeTrigger(themeId){
   const cur=themeId||localStorage.getItem('tl_theme')||'dark';
   const meta=TZ.themeList?.find(t=>t.id===cur)||TZ.themeList?.[1]||{label:'Dark',desc:'',swatches:['#111','#1a1a1a','#aaa']};
   const swEl=document.getElementById('triggerSwatches');
@@ -497,11 +538,13 @@ function _updateTrigger(themeId){
 function _applyThemeSelection(id){
   if(window.TZ) TZ.setTheme(id);
   else localStorage.setItem('tl_theme',id);
-  _updateTrigger(id);
-  _buildThemeDropdown(); // re-render to update checkmark
+  _updateThemeTrigger(id);
+  _buildThemeDropdown();
 }
 
 function toggleThemeDropdown(){
+  // Close font dropdown if open
+  if(_fontDropOpen) closeFontDropdown();
   const dd=document.getElementById('themeDropdown');
   const btn=document.getElementById('themeTrigger');
   _themeDropOpen=!_themeDropOpen;
@@ -509,7 +552,6 @@ function toggleThemeDropdown(){
   btn.classList.toggle('open',_themeDropOpen);
   if(_themeDropOpen){
     _buildThemeDropdown();
-    // Hide pro hint when opening fresh
     document.getElementById('themeProHint').classList.remove('show');
   }
 }
@@ -520,12 +562,100 @@ function closeThemeDropdown(){
   document.getElementById('themeTrigger')?.classList.remove('open');
 }
 
-// Close dropdown on outside click
+// ═══════════════════════════════════════════════════════════
+//  FONT PICKER
+// ═══════════════════════════════════════════════════════════
+
+function _buildFontDropdown(){
+  const dd=document.getElementById('fontDropdown');
+  if(!dd||!window.TZ)return;
+  const cur=localStorage.getItem('tl_font')||'default';
+  dd.innerHTML='';
+
+  // Inject font stylesheets for preview rendering
+  TZ.fontList.forEach(f=>{ if(f.url) TZ._injectFont(f.url); });
+
+  TZ.fontList.forEach(f=>{
+    const locked=f.pro&&!isPro;
+    const active=f.id===cur;
+    const row=document.createElement('div');
+    row.className='font-row'+(active?' active':'')+(locked?' locked':'');
+
+    row.innerHTML=`
+      <div class="fr-preview">
+        <div class="fr-heading-preview" style="font-family:${f.heading}">${f.preview.heading}</div>
+        <div class="fr-body-preview" style="font-family:${f.body}">${f.preview.body}</div>
+        <div class="fr-meta">${f.desc}</div>
+      </div>
+      <div class="fr-right">
+        ${active?'<i class="fa-solid fa-check fr-check"></i>':''}
+        ${f.pro?'<span class="fr-pro">PRO</span>':''}
+      </div>`;
+
+    if(!locked){
+      row.addEventListener('click',()=>{ _applyFontSelection(f.id); closeFontDropdown(); });
+    } else {
+      row.addEventListener('click',()=>{
+        document.getElementById('fontProHint').classList.add('show');
+        showToast(`${f.label} is a Pro font. Upgrade to unlock it.`,'fa-solid fa-crown','red');
+      });
+    }
+    dd.appendChild(row);
+  });
+}
+
+function _updateFontTrigger(fontId){
+  const cur=fontId||localStorage.getItem('tl_font')||'default';
+  const meta=TZ.fontList?.find(f=>f.id===cur)||TZ.fontList?.[0];
+  if(!meta) return;
+  const el=document.getElementById('fontTriggerLeft');
+  if(!el) return;
+  el.innerHTML=`
+    <div class="font-trigger-preview">
+      <span class="ftp-heading" style="font-family:${meta.heading}">${meta.preview.heading}</span>
+      <span class="ftp-body" style="font-family:${meta.body}">${meta.preview.body} · ${meta.desc}</span>
+    </div>`;
+}
+
+function _applyFontSelection(id){
+  if(window.TZ) TZ.setFont(id);
+  else localStorage.setItem('tl_font',id);
+  _updateFontTrigger(id);
+  _buildFontDropdown();
+}
+
+function toggleFontDropdown(){
+  // Close theme dropdown if open
+  if(_themeDropOpen) closeThemeDropdown();
+  const dd=document.getElementById('fontDropdown');
+  const btn=document.getElementById('fontTrigger');
+  _fontDropOpen=!_fontDropOpen;
+  dd.classList.toggle('open',_fontDropOpen);
+  btn.classList.toggle('open',_fontDropOpen);
+  if(_fontDropOpen){
+    _buildFontDropdown();
+    document.getElementById('fontProHint').classList.remove('show');
+  }
+}
+
+function closeFontDropdown(){
+  _fontDropOpen=false;
+  document.getElementById('fontDropdown')?.classList.remove('open');
+  document.getElementById('fontTrigger')?.classList.remove('open');
+}
+
+// Close dropdowns on outside click
 document.addEventListener('click',e=>{
-  if(!_themeDropOpen)return;
-  const dd=document.getElementById('themeDropdown');
-  const btn=document.getElementById('themeTrigger');
-  if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target)) closeThemeDropdown();
+  if(_themeDropOpen){
+    const dd=document.getElementById('themeDropdown');
+    const btn=document.getElementById('themeTrigger');
+    if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target)) closeThemeDropdown();
+  }
+  if(_fontDropOpen){
+    const dd=document.getElementById('fontDropdown');
+    const btn=document.getElementById('fontTrigger');
+    if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target)) closeFontDropdown();
+  }
 });
 
 function toggleEye(id,btn){
@@ -554,8 +684,8 @@ function toggleEye(id,btn){
     try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
   }
   if(window.posthog) posthog.identify(currentUser.id,{email:currentUser.email,plan:isPro?'pro':'free',name:profile?.name});
-  // Init trigger display
-  _updateTrigger(localStorage.getItem('tl_theme')||'dark');
+  _updateThemeTrigger(localStorage.getItem('tl_theme')||'dark');
+  _updateFontTrigger(localStorage.getItem('tl_font')||'default');
   await loadJournals();
   TZ.hideLoader();
 })();
@@ -633,14 +763,20 @@ document.getElementById('createModal').addEventListener('click',function(e){if(e
 // ── Settings ───────────────────────────────────────────────────
 function openSettings(){
   closeThemeDropdown();
+  closeFontDropdown();
   collapseAcctSection('email');
   collapseAcctSection('pass');
   const emailDisplay=document.getElementById('emailCurrentDisplay');
   if(emailDisplay&&currentUser?.email)emailDisplay.textContent=currentUser.email;
-  _updateTrigger(localStorage.getItem('tl_theme')||'dark');
+  _updateThemeTrigger(localStorage.getItem('tl_theme')||'dark');
+  _updateFontTrigger(localStorage.getItem('tl_font')||'default');
   document.getElementById('settingsModal').classList.add('open');
 }
-function closeSettings(){document.getElementById('settingsModal').classList.remove('open');closeThemeDropdown();}
+function closeSettings(){
+  document.getElementById('settingsModal').classList.remove('open');
+  closeThemeDropdown();
+  closeFontDropdown();
+}
 document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)closeSettings();});
 
 // ── Account section toggle ──────────────────────────────────────
