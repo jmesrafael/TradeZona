@@ -1,4 +1,4 @@
-<!-- calculator.html -->
+<!-- calculator.html — Floating draggable modal + standalone fallback -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,279 +10,352 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);padding:20px;min-height:100vh}
-.pw{max-width:980px;margin:0 auto}
-.calc-hero{background:linear-gradient(135deg,rgba(var(--accent-rgb,0,255,136),.06),rgba(var(--accent2-rgb,25,195,125),.03));border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:var(--radius-xl);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
-.calc-hero-icon{width:40px;height:40px;background:rgba(var(--accent-rgb,0,255,136),.12);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:17px;flex-shrink:0}
-.calc-hero-text h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:14px;font-weight:600;margin-bottom:3px}
-.calc-hero-text p{font-size:12px;color:var(--muted);line-height:1.5}
-.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:680px){.calc-layout{grid-template-columns:1fr}}
-.cpanel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl);padding:18px}
-.cpanel-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+/* ── Floating trigger button ── */
+#calcFab{position:fixed;bottom:22px;right:22px;z-index:9000;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#0b0f0c;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.45);transition:transform .18s,opacity .18s}
+#calcFab:hover{transform:scale(1.08)}
+#calcFab.open{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+/* ── Draggable modal ── */
+#calcModal{display:none;position:fixed;z-index:8990;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:0 18px 60px rgba(0,0,0,.6);width:min(680px,95vw);max-height:90vh;overflow:hidden;flex-direction:column}
+#calcModal.open{display:flex}
+.calc-drag-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border);cursor:grab;user-select:none;flex-shrink:0}
+.calc-drag-hdr:active{cursor:grabbing}
+.calc-drag-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;pointer-events:none}
+.calc-drag-title i{color:var(--accent2)}
+.calc-drag-grip{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;pointer-events:none}
+.calc-modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;width:28px;height:28px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.calc-modal-close:hover{background:var(--border);color:var(--text)}
+.calc-modal-body{overflow-y:auto;padding:16px;flex:1}
+/* ── Standalone page (when loaded directly) ── */
+body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);min-height:100vh}
+.page-wrap{max-width:980px;margin:0 auto;padding:20px;display:none}
+body.standalone .page-wrap{display:block}
+body.standalone #calcFab{display:none}
+body.standalone #calcModal{display:flex;position:static;width:100%;max-height:none;box-shadow:none;border:none;border-radius:0}
+body.standalone .calc-drag-hdr{display:none}
+body.standalone .calc-modal-body{overflow:visible;padding:0}
+/* ── Calculator inner UI ── */
+.calc-hero{background:linear-gradient(135deg,rgba(var(--accent-rgb,0,255,136),.06),rgba(var(--accent2-rgb,25,195,125),.03));border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:var(--radius-xl);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.calc-hero-icon{width:38px;height:38px;background:rgba(var(--accent-rgb,0,255,136),.12);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:16px;flex-shrink:0}
+.calc-hero-text h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;margin-bottom:2px}
+.calc-hero-text p{font-size:11px;color:var(--muted);line-height:1.5}
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.calc-layout{grid-template-columns:1fr}}
+.cpanel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xl);padding:14px}
+.cpanel-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .cpanel-title i{color:var(--accent2)}
-.field{margin-bottom:12px}
-.field-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
-.tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--muted);font-size:9px;cursor:help;position:relative;flex-shrink:0}
-.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#000;color:#e6f2ec;font-size:10px;padding:5px 8px;border-radius:var(--radius-md);z-index:99;max-width:200px;text-align:center;width:180px;line-height:1.4;pointer-events:none;border:1px solid var(--border);white-space:normal}
+.field{margin-bottom:10px}
+.field-label{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.tip{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:var(--border);color:var(--muted);font-size:8px;cursor:help;position:relative;flex-shrink:0}
+.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#0b0f0c;color:#e6f2ec;font-size:10px;padding:5px 8px;border-radius:var(--radius-md);z-index:99;max-width:190px;text-align:center;width:170px;line-height:1.4;pointer-events:none;border:1px solid var(--border);white-space:normal}
 .input-wrap{position:relative;display:flex;align-items:center}
 .input-pre,.input-suf{position:absolute;font-size:12px;color:var(--muted);pointer-events:none;z-index:1}
-.input-pre{left:12px}.input-suf{right:12px}
-.ci{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;transition:border-color var(--transition-base);-moz-appearance:textfield}
+.input-pre{left:10px}.input-suf{right:10px}
+.ci{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:13px;outline:none;transition:border-color .15s;-moz-appearance:textfield}
 .ci::-webkit-outer-spin-button,.ci::-webkit-inner-spin-button{-webkit-appearance:none}
 .ci:focus{border-color:var(--accent2)}
-.ci.pre{padding-left:26px}.ci.suf{padding-right:26px}
-.csel{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color var(--transition-base)}
+.ci.pre{padding-left:24px}.ci.suf{padding-right:24px}
+.csel{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color .15s}
 .csel:focus{border-color:var(--accent2)}
 .csel option{background:var(--panel)}
-.asset-toggle{display:flex;gap:6px;margin-bottom:12px}
-.asset-btn{flex:1;padding:9px 8px;border:1px solid var(--border);border-radius:var(--radius-md);background:none;color:var(--muted);font-size:13px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-weight:600;cursor:pointer;transition:all var(--transition-fast);text-align:center}
+.asset-toggle{display:flex;gap:5px;margin-bottom:10px}
+.asset-btn{flex:1;padding:8px 6px;border:1px solid var(--border);border-radius:var(--radius-md);background:none;color:var(--muted);font-size:12px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
 .asset-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(var(--accent2-rgb,25,195,125),.07)}
-.cdiv{border:none;border-top:1px solid var(--border);margin:12px 0}
-.rg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:360px){.rg{grid-template-columns:1fr}}
-.rc{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px}
+.cdiv{border:none;border-top:1px solid var(--border);margin:10px 0}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:11px}
 .rc.hi{border-color:rgba(var(--accent-rgb,0,255,136),.3);background:rgba(var(--accent-rgb,0,255,136),.04)}
 .rc.danger{border-color:rgba(255,95,109,.25);background:rgba(255,95,109,.04)}
-.rl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
-.rl i{font-size:9px}
-.rv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:20px;font-weight:700;color:var(--text);line-height:1}
-.rv.pos{color:var(--accent)}.rv.neg{color:var(--red)}.rv.warn{color:var(--amber)}
-.rs{font-size:11px;color:var(--muted);margin-top:3px}
-.pnl-sec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.pnl-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.rl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;display:flex;align-items:center;gap:3px}
+.rv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:17px;font-weight:700;color:var(--text);line-height:1}
+.rv.pos{color:var(--accent)}.rv.neg{color:var(--red)}
+.rs{font-size:10px;color:var(--muted);margin-top:2px}
+.pnl-sec{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.pnl-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:5px}
 .pnl-title i{color:var(--accent2)}
-.rr-wrap{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0 3px}
-.rr-bar{height:100%;border-radius:3px;transition:width .4s,background var(--transition-base)}
-.formula-box{margin-top:14px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);font-size:11px;color:var(--muted);line-height:1.6}
-.formula-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
-.disclaimer{font-size:11px;color:var(--muted);line-height:1.5;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:12px;opacity:.7}
-.disclaimer i{color:var(--accent2);margin-right:4px}
+.rr-wrap{height:4px;background:var(--border);border-radius:3px;overflow:hidden;margin:5px 0 3px}
+.rr-bar{height:100%;border-radius:3px;transition:width .4s,background .2s}
+.formula-box{margin-top:12px;padding:9px 11px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);font-size:10px;color:var(--muted);line-height:1.6}
+.formula-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:10px;font-weight:600;color:var(--text);margin-bottom:2px}
+.disclaimer{font-size:10px;color:var(--muted);line-height:1.5;padding:8px 11px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:10px;opacity:.7}
+.disclaimer i{color:var(--accent2);margin-right:3px}
 .forex-only{display:none}
 .forex-only.show{display:block}
 </style>
 </head>
 <body>
-<div class="pw">
+<!-- Standalone page wrapper (hidden unless loaded directly) -->
+<div class="page-wrap" id="pageWrap">
+  <div id="calcInner"></div>
+</div>
+
+<!-- FAB trigger button -->
+<button id="calcFab" onclick="toggleCalc()" title="Open Calculator">
+  <i class="fa-solid fa-calculator" id="calcFabIcon"></i>
+</button>
+
+<!-- Floating draggable modal -->
+<div id="calcModal">
+  <div class="calc-drag-hdr" id="calcDragHdr">
+    <div class="calc-drag-title"><i class="fa-solid fa-calculator"></i> Risk Calculator</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="calc-drag-grip"><i class="fa-solid fa-up-down-left-right"></i> drag</span>
+      <button class="calc-modal-close" onclick="toggleCalc()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div class="calc-modal-body">
+    <div id="calcInnerModal"></div>
+  </div>
+</div>
+
+<script>
+// ── Determine if running standalone ──────────────────────────────────────────
+(function(){
+  const isStandalone = window.self === window.top && !window.parent._isTradingJournalFrame;
+  if(isStandalone){
+    document.body.classList.add('standalone');
+    document.getElementById('pageWrap').style.display='block';
+    buildCalcUI('calcInner');
+  } else {
+    buildCalcUI('calcInnerModal');
+  }
+})();
+
+// ── Build calculator UI into a container ────────────────────────────────────
+function buildCalcUI(containerId){
+  const el=document.getElementById(containerId);if(!el)return;
+  el.innerHTML=`
   <div class="calc-hero">
     <div class="calc-hero-icon"><i class="fa-solid fa-calculator"></i></div>
     <div class="calc-hero-text">
       <h2>Trading Risk Calculator</h2>
-      <p>Position size based on your exact risk. Correct formulas for Crypto and Forex. Updates in real-time.</p>
+      <p>Position size based on exact risk. Correct formulas for Crypto & Forex. Live updates.</p>
     </div>
   </div>
-
   <div class="calc-layout">
     <div class="cpanel">
       <div class="cpanel-title"><i class="fa-solid fa-sliders"></i> Trade Inputs</div>
-
       <div class="field">
         <div class="field-label">Asset Type</div>
         <div class="asset-toggle">
-          <button class="asset-btn active" id="btnCrypto" onclick="setAsset('crypto')"><i class="fa-brands fa-bitcoin" style="margin-right:5px"></i>Crypto</button>
-          <button class="asset-btn" id="btnForex" onclick="setAsset('forex')"><i class="fa-solid fa-dollar-sign" style="margin-right:5px"></i>Forex</button>
+          <button class="asset-btn active" id="btnCrypto_${containerId}" onclick="setAsset('crypto','${containerId}')"><i class="fa-brands fa-bitcoin" style="margin-right:4px"></i>Crypto</button>
+          <button class="asset-btn" id="btnForex_${containerId}" onclick="setAsset('forex','${containerId}')"><i class="fa-solid fa-dollar-sign" style="margin-right:4px"></i>Forex</button>
         </div>
       </div>
-
-      <div class="field forex-only" id="forexPairField">
-        <div class="field-label">Currency Pair <span class="tip" data-tip="JPY pairs use ×100 pip multiplier. Gold/Indices use direct price difference.">?</span></div>
-        <select class="csel" id="forexPair" onchange="calc()">
+      <div class="field forex-only" id="forexPairField_${containerId}">
+        <div class="field-label">Currency Pair <span class="tip" data-tip="JPY pairs use ×100 pip multiplier. Gold/Indices use direct price.">?</span></div>
+        <select class="csel" id="forexPair_${containerId}" onchange="calcFor('${containerId}')">
           <option value="EURUSD">EURUSD</option>
           <option value="GBPUSD">GBPUSD</option>
           <option value="AUDUSD">AUDUSD</option>
           <option value="NZDUSD">NZDUSD</option>
           <option value="USDCAD">USDCAD</option>
           <option value="USDCHF">USDCHF</option>
-          <option value="USDJPY">USDJPY (JPY pair)</option>
-          <option value="EURJPY">EURJPY (JPY pair)</option>
-          <option value="GBPJPY">GBPJPY (JPY pair)</option>
+          <option value="USDJPY">USDJPY (JPY)</option>
+          <option value="EURJPY">EURJPY (JPY)</option>
+          <option value="GBPJPY">GBPJPY (JPY)</option>
           <option value="XAUUSD">XAU/USD (Gold)</option>
-          <option value="US30">US30 / Dow Jones</option>
+          <option value="US30">US30 / Dow</option>
           <option value="NAS100">NAS100 / Nasdaq</option>
         </select>
       </div>
-
       <div class="field">
-        <div class="field-label">Account Balance <span class="tip" data-tip="Your total trading account balance in USD">?</span></div>
-        <div class="input-wrap"><span class="input-pre">$</span><input class="ci pre" type="number" id="balance" value="1000" min="0" oninput="calc()"></div>
+        <div class="field-label">Account Balance <span class="tip" data-tip="Total trading account balance in USD">?</span></div>
+        <div class="input-wrap"><span class="input-pre">$</span><input class="ci pre" type="number" id="balance_${containerId}" value="1000" min="0" oninput="calcFor('${containerId}')"></div>
       </div>
-
       <div class="field">
-        <div class="field-label">Risk Per Trade <span class="tip" data-tip="% of balance you risk. Most pros use 1–2%">?</span></div>
-        <div class="input-wrap"><input class="ci suf" type="number" id="riskPct" value="1" min="0.01" max="100" step="0.1" oninput="calc()"><span class="input-suf">%</span></div>
+        <div class="field-label">Risk Per Trade <span class="tip" data-tip="% of balance you risk. Pros use 1–2%">?</span></div>
+        <div class="input-wrap"><input class="ci suf" type="number" id="riskPct_${containerId}" value="1" min="0.01" max="100" step="0.1" oninput="calcFor('${containerId}')"><span class="input-suf">%</span></div>
       </div>
-
       <hr class="cdiv">
-
-      <div class="field">
-        <div class="field-label">Entry Price</div>
-        <input class="ci" type="number" id="entry" placeholder="e.g. 70116.1" step="any" oninput="calc()">
-      </div>
-
-      <div class="field">
-        <div class="field-label">Stop Loss Price <span class="tip" data-tip="Position size is calculated so that hitting SL exactly equals your risk amount">?</span></div>
-        <input class="ci" type="number" id="stopLoss" placeholder="e.g. 70007.1" step="any" oninput="calc()">
-      </div>
-
-      <div class="field">
-        <div class="field-label">Take Profit <span style="font-size:10px;color:var(--muted)">(optional)</span></div>
-        <input class="ci" type="number" id="takeProfit" placeholder="e.g. 70500" step="any" oninput="calc()">
-      </div>
+      <div class="field"><div class="field-label">Entry Price</div><input class="ci" type="number" id="entry_${containerId}" placeholder="e.g. 70116.1" step="any" oninput="calcFor('${containerId}')"></div>
+      <div class="field"><div class="field-label">Stop Loss Price <span class="tip" data-tip="Hitting SL exactly equals your risk amount">?</span></div><input class="ci" type="number" id="stopLoss_${containerId}" placeholder="e.g. 70007.1" step="any" oninput="calcFor('${containerId}')"></div>
+      <div class="field"><div class="field-label">Take Profit <span style="font-size:10px;color:var(--muted)">(optional)</span></div><input class="ci" type="number" id="takeProfit_${containerId}" placeholder="e.g. 70500" step="any" oninput="calcFor('${containerId}')"></div>
     </div>
-
     <div class="cpanel">
       <div class="cpanel-title"><i class="fa-solid fa-chart-bar"></i> Live Results</div>
-
       <div class="rg">
-        <div class="rc hi">
-          <div class="rl"><i class="fa-solid fa-shield-halved"></i> Risk Amount</div>
-          <div class="rv pos" id="rRiskAmt">—</div>
-          <div class="rs" id="rRiskPct">—% of balance</div>
-        </div>
-        <div class="rc hi">
-          <div class="rl"><i class="fa-solid fa-layer-group"></i> Position Size</div>
-          <div class="rv" id="rPositionSize">—</div>
-          <div class="rs" id="rPositionUnit">—</div>
-        </div>
-        <div class="rc">
-          <div class="rl"><i class="fa-solid fa-arrows-left-right"></i> SL Distance</div>
-          <div class="rv" id="rSLDist">—</div>
-          <div class="rs" id="rSLDistUnit">—</div>
-        </div>
-        <div class="rc danger">
-          <div class="rl"><i class="fa-solid fa-circle-xmark"></i> Max Loss</div>
-          <div class="rv neg" id="rMaxLoss">—</div>
-          <div class="rs">= risk amount</div>
-        </div>
+        <div class="rc hi"><div class="rl"><i class="fa-solid fa-shield-halved"></i> Risk Amount</div><div class="rv pos" id="rRiskAmt_${containerId}">—</div><div class="rs" id="rRiskPct_${containerId}">—% of balance</div></div>
+        <div class="rc hi"><div class="rl"><i class="fa-solid fa-layer-group"></i> Position Size</div><div class="rv" id="rPositionSize_${containerId}">—</div><div class="rs" id="rPositionUnit_${containerId}">—</div></div>
+        <div class="rc"><div class="rl"><i class="fa-solid fa-arrows-left-right"></i> SL Distance</div><div class="rv" id="rSLDist_${containerId}">—</div><div class="rs" id="rSLDistUnit_${containerId}">—</div></div>
+        <div class="rc danger"><div class="rl"><i class="fa-solid fa-circle-xmark"></i> Max Loss</div><div class="rv neg" id="rMaxLoss_${containerId}">—</div><div class="rs">= risk amount</div></div>
       </div>
-
-      <div class="pnl-sec" id="pnlSec" style="display:none">
+      <div class="pnl-sec" id="pnlSec_${containerId}" style="display:none">
         <div class="pnl-title"><i class="fa-solid fa-chart-line"></i> Profit / Loss Estimate</div>
         <div class="rg">
-          <div class="rc danger">
-            <div class="rl"><i class="fa-solid fa-arrow-trend-down"></i> Max Loss</div>
-            <div class="rv neg" id="rLoss2">—</div>
-            <div class="rs">if SL hit</div>
-          </div>
-          <div class="rc">
-            <div class="rl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
-            <div class="rv pos" id="rProfit">—</div>
-            <div class="rs">if TP hit</div>
-          </div>
+          <div class="rc danger"><div class="rl"><i class="fa-solid fa-arrow-trend-down"></i> Max Loss</div><div class="rv neg" id="rLoss2_${containerId}">—</div><div class="rs">if SL hit</div></div>
+          <div class="rc"><div class="rl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div><div class="rv pos" id="rProfit_${containerId}">—</div><div class="rs">if TP hit</div></div>
         </div>
-        <div id="rrSec" style="display:none;margin-top:12px">
+        <div id="rrSec_${containerId}" style="display:none;margin-top:10px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span style="font-size:11px;color:var(--muted)">Risk / Reward</span>
-            <span style="font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:15px;font-weight:700" id="rRR">—</span>
+            <span style="font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:14px;font-weight:700" id="rRR_${containerId}">—</span>
           </div>
-          <div class="rr-wrap"><div class="rr-bar" id="rrBar"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-            <span>Poor (&lt;1R)</span><span>Good (2R+)</span><span>Great (3R+)</span>
-          </div>
+          <div class="rr-wrap"><div class="rr-bar" id="rrBar_${containerId}"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted)"><span>Poor (&lt;1R)</span><span>Good (2R+)</span><span>Great (3R+)</span></div>
         </div>
       </div>
-
-      <div class="formula-box">
-        <div class="formula-title">Formula used</div>
-        <div id="formulaNote">Position Size = Risk Amount ÷ SL Distance</div>
-      </div>
-
-      <div class="disclaimer">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        Educational use only. Verify with your broker. Pip values may vary by account currency.
-      </div>
+      <div class="formula-box"><div class="formula-title">Formula used</div><div id="formulaNote_${containerId}">Position Size = Risk Amount ÷ SL Distance</div></div>
+      <div class="disclaimer"><i class="fa-solid fa-triangle-exclamation"></i>Educational only. Verify with your broker. Pip values may vary.</div>
     </div>
-  </div>
-</div>
-
-<script>
-let assetType='crypto';
-
-function setAsset(t){
-  assetType=t;
-  document.getElementById('btnCrypto').classList.toggle('active',t==='crypto');
-  document.getElementById('btnForex').classList.toggle('active',t==='forex');
-  document.getElementById('forexPairField').classList.toggle('show',t==='forex');
-  calc();
+  </div>`;
+  // init calc
+  _calcState[containerId]='crypto';
+  calcFor(containerId);
 }
 
+// ── Per-container asset state ────────────────────────────────────────────────
+const _calcState={};
+function setAsset(t,c){
+  _calcState[c]=t;
+  const bc=document.getElementById('btnCrypto_'+c),bf=document.getElementById('btnForex_'+c);
+  if(bc)bc.classList.toggle('active',t==='crypto');
+  if(bf)bf.classList.toggle('active',t==='forex');
+  const fp=document.getElementById('forexPairField_'+c);
+  if(fp)fp.classList.toggle('show',t==='forex');
+  calcFor(c);
+}
+
+function g(id){return document.getElementById(id);}
 function fmt(n,d=2){if(n===null||n===undefined||isNaN(n))return'—';return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function fmtD(n){if(n===null||n===undefined||isNaN(n))return'—';return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function s(id,val){const el=g(id);if(el)el.textContent=val;}
 
-function getPair(){return document.getElementById('forexPair').value;}
-function isJPY(){return getPair().includes('JPY');}
-function isSpecial(){return['XAUUSD','US30','NAS100'].includes(getPair());}
-
-function calc(){
-  const balance=parseFloat(document.getElementById('balance').value);
-  const riskPct=parseFloat(document.getElementById('riskPct').value);
-  const entry=parseFloat(document.getElementById('entry').value);
-  const sl=parseFloat(document.getElementById('stopLoss').value);
-  const tp=parseFloat(document.getElementById('takeProfit').value);
+function calcFor(c){
+  const assetType=_calcState[c]||'crypto';
+  const balance=parseFloat(g('balance_'+c)?.value);
+  const riskPct=parseFloat(g('riskPct_'+c)?.value);
+  const entry=parseFloat(g('entry_'+c)?.value);
+  const sl=parseFloat(g('stopLoss_'+c)?.value);
+  const tp=parseFloat(g('takeProfit_'+c)?.value);
+  const pair=(g('forexPair_'+c)?.value)||'EURUSD';
 
   const riskAmt=(!isNaN(balance)&&!isNaN(riskPct)&&balance>0&&riskPct>0)?balance*(riskPct/100):null;
-  document.getElementById('rRiskAmt').textContent=riskAmt!==null?fmtD(riskAmt):'—';
-  document.getElementById('rRiskPct').textContent=(!isNaN(riskPct)&&riskPct>0)?riskPct.toFixed(1)+'% of balance':'—% of balance';
+  s('rRiskAmt_'+c, riskAmt!==null?fmtD(riskAmt):'—');
+  s('rRiskPct_'+c, (!isNaN(riskPct)&&riskPct>0)?riskPct.toFixed(1)+'% of balance':'—');
 
-  if(riskAmt===null||isNaN(entry)||isNaN(sl)||entry===sl||entry<=0||sl<=0){clearResults();return;}
-
+  if(riskAmt===null||isNaN(entry)||isNaN(sl)||entry===sl||entry<=0||sl<=0){clearRes(c);return;}
   const distance=Math.abs(entry-sl);
-  if(distance===0){clearResults();return;}
+  if(!distance){clearRes(c);return;}
 
+  const isJPY=pair.includes('JPY');
+  const isSpecial=['XAUUSD','US30','NAS100'].includes(pair);
   let posSize,posUnit,slDistStr,slDistUnit,maxLoss,profit=null,rr=null,formulaStr;
 
   if(assetType==='crypto'){
-    posSize=riskAmt/distance;
-    maxLoss=posSize*distance;
-    posUnit='units';
-    slDistStr=fmt(distance,distance<1?6:2);
-    slDistUnit='price difference';
+    posSize=riskAmt/distance;maxLoss=posSize*distance;posUnit='units';
+    slDistStr=fmt(distance,distance<1?6:2);slDistUnit='price diff';
     formulaStr=`${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,6)} units`;
-    if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);profit=posSize*tpDist;rr=profit/riskAmt;}
+    if(!isNaN(tp)&&tp>0&&tp!==entry){const tpD=Math.abs(tp-entry);profit=posSize*tpD;rr=profit/riskAmt;}
   } else {
-    if(isSpecial()){
-      posSize=riskAmt/distance;maxLoss=riskAmt;
-      posUnit=getPair()==='XAUUSD'?'oz':'contracts';
-      slDistStr=fmt(distance,2);slDistUnit='price distance';
+    if(isSpecial){
+      posSize=riskAmt/distance;maxLoss=riskAmt;posUnit=pair==='XAUUSD'?'oz':'contracts';
+      slDistStr=fmt(distance,2);slDistUnit='price dist';
       formulaStr=`${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize,4)} ${posUnit}`;
-      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);profit=posSize*tpDist;rr=profit/riskAmt;}
+      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpD=Math.abs(tp-entry);profit=posSize*tpD;rr=profit/riskAmt;}
     } else {
-      const mult=isJPY()?100:10000;
-      const pips=distance*mult;const pipVal=10;
+      const mult=isJPY?100:10000;const pips=distance*mult;const pipVal=10;
       posSize=riskAmt/(pips*pipVal);maxLoss=posSize*pips*pipVal;
       posUnit='standard lots';slDistStr=fmt(pips,1);slDistUnit='pips';
       formulaStr=`${fmt(pips,1)} pips × $${pipVal}/pip/lot → ${fmt(posSize,4)} lots`;
-      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpDist=Math.abs(tp-entry);const tpPips=tpDist*mult;profit=posSize*tpPips*pipVal;rr=profit/riskAmt;}
+      if(!isNaN(tp)&&tp>0&&tp!==entry){const tpD=Math.abs(tp-entry);const tpPips=tpD*mult;profit=posSize*tpPips*pipVal;rr=profit/riskAmt;}
     }
   }
 
-  document.getElementById('rPositionSize').textContent=fmt(posSize,posSize<0.001?6:posSize<1?4:2);
-  document.getElementById('rPositionUnit').textContent=posUnit;
-  document.getElementById('rSLDist').textContent=slDistStr;
-  document.getElementById('rSLDistUnit').textContent=slDistUnit;
-  document.getElementById('rMaxLoss').textContent=fmtD(maxLoss);
-  document.getElementById('formulaNote').textContent=formulaStr;
+  s('rPositionSize_'+c, fmt(posSize,posSize<0.001?6:posSize<1?4:2));
+  s('rPositionUnit_'+c, posUnit);
+  s('rSLDist_'+c, slDistStr);
+  s('rSLDistUnit_'+c, slDistUnit);
+  s('rMaxLoss_'+c, fmtD(maxLoss));
+  s('formulaNote_'+c, formulaStr);
 
-  if(profit!==null){
-    document.getElementById('pnlSec').style.display='block';
-    document.getElementById('rLoss2').textContent=fmtD(riskAmt);
-    document.getElementById('rProfit').textContent=fmtD(profit);
-    if(rr!==null){
-      document.getElementById('rrSec').style.display='block';
+  const pnlSec=g('pnlSec_'+c);
+  if(profit!==null&&pnlSec){
+    pnlSec.style.display='block';
+    s('rLoss2_'+c, fmtD(riskAmt));
+    s('rProfit_'+c, fmtD(profit));
+    const rrSec=g('rrSec_'+c);
+    if(rr!==null&&rrSec){
+      rrSec.style.display='block';
       const col=rr>=3?'var(--accent)':rr>=2?'var(--accent2)':rr>=1?'var(--amber)':'var(--red)';
-      const rrEl=document.getElementById('rRR');rrEl.textContent='1 : '+fmt(rr,2);rrEl.style.color=col;
-      const bar=document.getElementById('rrBar');bar.style.width=Math.min((rr/3)*100,100)+'%';bar.style.background=col;
-    } else document.getElementById('rrSec').style.display='none';
-  } else document.getElementById('pnlSec').style.display='none';
+      const rrEl=g('rRR_'+c);if(rrEl){rrEl.textContent='1 : '+fmt(rr,2);rrEl.style.color=col;}
+      const bar=g('rrBar_'+c);if(bar){bar.style.width=Math.min((rr/3)*100,100)+'%';bar.style.background=col;}
+    } else if(rrSec) rrSec.style.display='none';
+  } else if(pnlSec) pnlSec.style.display='none';
 }
 
-function clearResults(){
-  ['rPositionSize','rPositionUnit','rSLDist','rSLDistUnit','rMaxLoss'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
-  document.getElementById('pnlSec').style.display='none';
-  document.getElementById('formulaNote').textContent='Position Size = Risk Amount ÷ SL Distance';
+function clearRes(c){
+  ['rPositionSize','rPositionUnit','rSLDist','rSLDistUnit','rMaxLoss'].forEach(k=>s(k+'_'+c,'—'));
+  const p=g('pnlSec_'+c);if(p)p.style.display='none';
+  s('formulaNote_'+c,'Position Size = Risk Amount ÷ SL Distance');
 }
 
-calc();
+// ── Toggle modal open/close ──────────────────────────────────────────────────
+let _calcOpen=false;
+function toggleCalc(){
+  _calcOpen=!_calcOpen;
+  const modal=document.getElementById('calcModal');
+  const fab=document.getElementById('calcFab');
+  const icon=document.getElementById('calcFabIcon');
+  if(_calcOpen){
+    modal.classList.add('open');fab.classList.add('open');
+    icon.className='fa-solid fa-xmark';
+    // Default position — bottom-right above FAB
+    if(!modal.style.bottom){
+      const vw=window.innerWidth,vh=window.innerHeight;
+      const w=Math.min(680,vw*0.95);const h=Math.min(560,vh*0.85);
+      modal.style.width=w+'px';
+      modal.style.right='22px';
+      modal.style.bottom='82px';
+      modal.style.top='auto';
+      modal.style.left='auto';
+    }
+  } else {
+    modal.classList.remove('open');fab.classList.remove('open');
+    icon.className='fa-solid fa-calculator';
+  }
+}
+
+// ── Drag logic ───────────────────────────────────────────────────────────────
+(function(){
+  const modal=document.getElementById('calcModal');
+  const hdr=document.getElementById('calcDragHdr');
+  let dragging=false,ox=0,oy=0;
+  hdr.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    dragging=true;
+    const r=modal.getBoundingClientRect();
+    ox=e.clientX-r.left;oy=e.clientY-r.top;
+    modal.style.right='auto';modal.style.bottom='auto';
+    modal.style.left=r.left+'px';modal.style.top=r.top+'px';
+    document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    let nx=e.clientX-ox,ny=e.clientY-oy;
+    const maxX=window.innerWidth-modal.offsetWidth;const maxY=window.innerHeight-modal.offsetHeight;
+    nx=Math.max(0,Math.min(nx,maxX));ny=Math.max(0,Math.min(ny,maxY));
+    modal.style.left=nx+'px';modal.style.top=ny+'px';
+  });
+  document.addEventListener('mouseup',()=>{dragging=false;document.body.style.userSelect='';});
+  // Touch drag
+  hdr.addEventListener('touchstart',e=>{
+    const r=modal.getBoundingClientRect();
+    ox=e.touches[0].clientX-r.left;oy=e.touches[0].clientY-r.top;
+    modal.style.right='auto';modal.style.bottom='auto';
+    modal.style.left=r.left+'px';modal.style.top=r.top+'px';
+    dragging=true;e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    let nx=e.touches[0].clientX-ox,ny=e.touches[0].clientY-oy;
+    const maxX=window.innerWidth-modal.offsetWidth;const maxY=window.innerHeight-modal.offsetHeight;
+    nx=Math.max(0,Math.min(nx,maxX));ny=Math.max(0,Math.min(ny,maxY));
+    modal.style.left=nx+'px';modal.style.top=ny+'px';
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchend',()=>{dragging=false;});
+})();
 </script>
 </body>
 </html>
