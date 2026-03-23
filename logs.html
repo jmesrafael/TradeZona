@@ -34,7 +34,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .scroll-hint{display:none;font-size:11px;color:var(--muted);text-align:right;margin-bottom:6px}
 @media(max-width:768px){.scroll-hint{display:block}}
 .tw{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);min-height:200px;-webkit-overflow-scrolling:touch;display:none}
-table{width:100%;border-collapse:collapse;min-width:760px}
+table{width:100%;border-collapse:collapse;min-width:700px}
 thead tr{border-bottom:1px solid var(--border)}
 th{padding:10px 6px;text-align:center;font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;background:var(--panel)}
 tbody tr{border-bottom:1px solid var(--border);transition:background var(--transition-fast)}
@@ -46,7 +46,8 @@ td{padding:5px 6px;vertical-align:middle;text-align:center}
 td:nth-child(1){width:30px}
 td:nth-child(2){width:90px}
 td:nth-child(3){width:72px}
-td:nth-child(4){width:110px}  /* Pair — widened from 80px */
+/* FIX: pair column wider — was 80px */
+td:nth-child(4){width:110px}
 td:nth-child(5){width:64px}
 td:nth-child(8){width:80px}
 td:nth-child(9){width:64px}
@@ -225,7 +226,7 @@ td:nth-child(9){width:64px}
   body{padding:10px}
   .topbar{flex-direction:column;align-items:stretch}
   .tl{justify-content:space-between}
-  table{min-width:720px}
+  table{min-width:660px}
   th{padding:8px 4px;font-size:9px}
   td{padding:4px 3px;font-size:11px}
   .filter-bar{gap:4px}
@@ -347,13 +348,13 @@ td:nth-child(9){width:64px}
   </table>
 </div>
 
-<!-- Pill picker — outside table, stops all clicks from bubbling -->
-<div class="pp" id="pp" style="display:none">
+<!-- Pill picker — stopPropagation on the whole popup to prevent document click from closing it -->
+<div class="pp" id="pp" style="display:none" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
   <div class="pp-header">
     <span class="pp-label" id="pp-field-label"></span>
     <div style="display:flex;align-items:center;gap:6px">
       <span class="pp-selected-count" id="pp-sel-count"></span>
-      <button class="pp-close-btn" onclick="closePP()"><i class="fa-solid fa-xmark"></i></button>
+      <button class="pp-close-btn" onmousedown="event.stopPropagation()" onclick="closePP()"><i class="fa-solid fa-xmark"></i></button>
     </div>
   </div>
   <input class="pp-search" id="pp-search" type="text" placeholder="Search or add…" autocomplete="off" spellcheck="false">
@@ -362,7 +363,7 @@ td:nth-child(9){width:64px}
     <div class="pnew-lbl">Create new</div>
     <div id="pp-new-pill"></div>
   </div>
-  <button class="pp-done-btn" onclick="closePP()">Done</button>
+  <button class="pp-done-btn" onmousedown="event.stopPropagation()" onclick="closePP()">Done</button>
 </div>
 
 <div id="logsAdSlot" class="ad-slot">
@@ -603,23 +604,17 @@ function getFilteredTrades(){
   items.sort((a,b)=>{const da=a.date||'',db=b.date||'';return sortDir==='asc'?da.localeCompare(db):db.localeCompare(da);});
   return items;
 }
+// FIX: Use a flag to track whether the click that opened the pill picker should be ignored
+// by the document-level close handler, preventing it from immediately closing.
+let _ppJustOpened=false;
 
-// ─── Global click: close FD dropdowns and PP when clicking outside ───
-document.addEventListener('click', e => {
-  // Close filter dropdowns
-  if (_openFD) {
-    const dEl = document.getElementById('fd-' + _openFD);
-    const btnId = 'fb' + _openFD.charAt(0).toUpperCase() + _openFD.slice(1);
-    const btn = document.getElementById(btnId);
-    if (dEl && !dEl.contains(e.target) && btn && !btn.contains(e.target)) closeAllFD();
-  }
-  // Close pill picker — only if click is truly outside the picker
-  const pop = document.getElementById('pp');
-  if (pop.style.display !== 'none' && !pop.contains(e.target)) {
-    // Also make sure we're not clicking on a .tc cell that's about to re-open it
-    if (!e.target.closest('.tc')) closePP();
-  }
-}, false);
+document.addEventListener('click',e=>{
+  if(!_openFD)return;
+  const dEl=document.getElementById('fd-'+_openFD);
+  const btnId='fb'+_openFD.charAt(0).toUpperCase()+_openFD.slice(1);
+  const btn=document.getElementById(btnId);
+  if(dEl&&!dEl.contains(e.target)&&btn&&!btn.contains(e.target))closeAllFD();
+},{capture:false});
 
 function render(){
   const tb=document.getElementById('tbody');const filtered=getFilteredTrades();
@@ -657,7 +652,7 @@ function buildRow(t,num){
     <td class="pw-cell">
       <input class="ci" value="${esc(t.pair||'')}" placeholder="EURUSD"
         oninput="onPairInput(this,'${t.id}')" onfocus="showSugOnFocus(this,'${t.id}')"
-        onblur="confirmPair('${t.id}',this);hideSug()" style="min-width:78px">
+        onblur="confirmPair('${t.id}',this);hideSug()" style="min-width:80px">
       <div class="sugs" id="sug_${t.id}" style="display:none"></div>
     </td>
     <td>
@@ -666,21 +661,14 @@ function buildRow(t,num){
         <option ${!isLong?'selected':''}>Short</option>
       </select>
     </td>
-    <td><div class="tc" id="st_${t.id}">${buildPills(t.strategy)}</div></td>
-    <td><div class="tc" id="tf_${t.id}">${buildPills(t.timeframe)}</div></td>
+    <td><div class="tc" id="st_${t.id}" onclick="openPP(event,'${t.id}','strategy')">${buildPills(t.strategy)}</div></td>
+    <td><div class="tc" id="tf_${t.id}" onclick="openPP(event,'${t.id}','timeframe')">${buildPills(t.timeframe)}</div></td>
     <td><input class="ci" id="pnl_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.pnl,'pnl')}" placeholder="0.00" onfocus="vFocus(this)" oninput="onValInput('${t.id}','pnl',this.value)" onblur="vBlur(this,'${t.id}','pnl')" style="min-width:58px;font-weight:600;font-family:var(--font-mono,'Space Grotesk',sans-serif);color:${pnlCol(t.pnl)}"></td>
     <td><input class="ci" id="r_${t.id}" type="text" inputmode="decimal" value="${fmtVal(t.r,'r')}" placeholder="+2R" onfocus="vFocus(this)" oninput="onValInput('${t.id}','r',this.value)" onblur="vBlur(this,'${t.id}','r')" style="min-width:40px;font-weight:600;font-family:var(--font-mono,'Space Grotesk',sans-serif);color:${pnlCol(t.r)}"></td>
     <td><div class="stars" id="s_${t.id}">${[1,2,3,4,5].map(n=>`<span class="star${(t.confidence||0)>=n?' on':''}" onclick="setConf('${t.id}',${n})">★</span>`).join('')}</div></td>
-    <td><div class="tc" id="md_${t.id}">${buildMoodPills(t.mood)}</div></td>
+    <td><div class="tc" id="md_${t.id}" onclick="openPP(event,'${t.id}','mood')">${buildMoodPills(t.mood)}</div></td>
     <td><button class="${nb.cls}" onclick="openNotes('${t.id}')">${nb.html}</button></td>
     <td><button class="del-btn" onclick="askDel('${t.id}')"><i class="fa-solid fa-xmark"></i></button></td>`;
-
-  // ── Attach pill-picker click listeners via JS (not inline onclick) so we
-  //    can call stopPropagation properly before the global document handler runs ──
-  tr.querySelector(`#st_${t.id}`).addEventListener('click', e => { e.stopPropagation(); openPP(e, t.id, 'strategy'); });
-  tr.querySelector(`#tf_${t.id}`).addEventListener('click', e => { e.stopPropagation(); openPP(e, t.id, 'timeframe'); });
-  tr.querySelector(`#md_${t.id}`).addEventListener('click', e => { e.stopPropagation(); openPP(e, t.id, 'mood'); });
-
   return tr;
 }
 
@@ -780,56 +768,32 @@ function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>
 function hideSugImmediate(id){const box=document.getElementById('sug_'+id);if(box)box.style.display='none';}
 function pickPair(id,p){localUpd(id,'pair',p);const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;document.getElementById('sug_'+id).style.display='none';scheduleSave(id,true);}
 
-// ─── Pill picker — multi-select ───────────────────────────────────────────────
-// The picker element itself stops all clicks from reaching the document handler.
-document.getElementById('pp').addEventListener('click', e => e.stopPropagation());
-
-function openPP(e, id, field) {
-  // Toggle: if same cell clicked again, close
-  if (_ppCurrentId === id && _ppCurrentField === field && document.getElementById('pp').style.display !== 'none') {
-    closePP();
-    return;
-  }
-  _ppCurrentId = id;
-  _ppCurrentField = field;
-  activePill = { id, field };
-  const pop = document.getElementById('pp');
-  const searchEl = document.getElementById('pp-search');
-  document.getElementById('pp-field-label').textContent = field.charAt(0).toUpperCase() + field.slice(1);
-  pop.style.display = 'block';
-
-  // Position the popup near the clicked element
-  const target = e.currentTarget || e.target;
-  const rect = target.getBoundingClientRect();
-  let top = rect.bottom + window.scrollY + 4;
-  let left = rect.left + window.scrollX;
-  pop.style.top = top + 'px';
-  pop.style.left = '-9999px'; // temporarily off-screen to measure
-  // After paint, correct horizontal overflow
-  requestAnimationFrame(() => {
-    const pw = Math.max(pop.offsetWidth, 220);
-    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-    pop.style.left = Math.max(4, left) + 'px';
-  });
-
-  searchEl.value = '';
-  _renderPPPills('');
-  _updatePPSelCount();
-  searchEl.oninput = function () { _renderPPPills(this.value); };
-  searchEl.onkeydown = function (ev) {
-    if (ev.key === 'Enter') {
-      ev.preventDefault();
-      const v = this.value.trim();
-      if (!v) return;
-      const ex = getTags(field).find(t => t.toLowerCase() === v.toLowerCase());
-      if (ex) _ppToggle(id, field, ex);
-      else _ppCreate(id, field, v);
-    }
-    if (ev.key === 'Escape') { ev.stopPropagation(); closePP(); }
+// ─── Pill picker — multi-select ───────────────────────────────────────────
+// FIX 1: openPP uses stopPropagation so the document click handler below
+//         does NOT fire immediately and close the picker on the same event.
+// FIX 2: _ppToggle now calls scheduleSave(id, true) instead of commitSave(id)
+//         directly. commitSave checks _pending first, so calling it without
+//         first adding to _pending caused saves to silently no-op.
+function openPP(e,id,field){
+  e.stopPropagation(); // prevent document click from closing us immediately
+  if(_ppCurrentId===id&&_ppCurrentField===field&&document.getElementById('pp').style.display!=='none'){closePP();return;}
+  _ppCurrentId=id;_ppCurrentField=field;activePill={id,field};
+  const pop=document.getElementById('pp'),searchEl=document.getElementById('pp-search');
+  document.getElementById('pp-field-label').textContent=field.charAt(0).toUpperCase()+field.slice(1);
+  pop.style.display='block';
+  const rect=e.currentTarget.getBoundingClientRect();
+  let top=rect.bottom+window.scrollY+4,left=rect.left+window.scrollX;
+  const pw=Math.max(pop.offsetWidth,220);
+  if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;
+  pop.style.top=top+'px';pop.style.left=Math.max(4,left)+'px';
+  searchEl.value='';_renderPPPills('');_updatePPSelCount();
+  searchEl.oninput=function(){_renderPPPills(this.value);};
+  searchEl.onkeydown=function(ev){
+    if(ev.key==='Enter'){ev.preventDefault();const v=this.value.trim();if(!v)return;const ex=getTags(field).find(t=>t.toLowerCase()===v.toLowerCase());if(ex)_ppToggle(id,field,ex);else _ppCreate(id,field,v);}
+    if(ev.key==='Escape'){ev.stopPropagation();closePP();}
   };
-  setTimeout(() => searchEl.focus(), 10);
+  setTimeout(()=>searchEl.focus(),10);
 }
-
 function _updatePPSelCount(){
   const id=_ppCurrentId,field=_ppCurrentField;if(!id)return;
   const t=trades.find(x=>x.id===id),sel=t?t[field]||[]:[];
@@ -868,12 +832,16 @@ async function _ppToggle(id,field,val){
   if(!t[field])t[field]=[];
   const idx=t[field].indexOf(val);
   if(idx>-1)t[field].splice(idx,1);else t[field].push(val);
+  // Update the cell display
   const pre={strategy:'st_',timeframe:'tf_',mood:'md_'}[field]||'st_';
   const c=document.getElementById(pre+id);
   if(c)c.innerHTML=field==='mood'?buildMoodPills(t[field]):buildPills(t[field]);
   const currentSearch=document.getElementById('pp-search').value||'';
   _renderPPPills(currentSearch);_updatePPSelCount();
-  commitSave(id);
+  // FIX: Use scheduleSave(id, true) so the trade is added to _pending before
+  // commitSave runs — previously calling commitSave(id) directly would return
+  // early because _pending didn't include the id yet, silently skipping the save.
+  scheduleSave(id,true);
 }
 async function _ppCreate(id,field,val){
   const v=val.trim();if(!v||!settings)return;
@@ -883,6 +851,12 @@ async function _ppCreate(id,field,val){
   const searchEl=document.getElementById('pp-search');searchEl.value='';_renderPPPills('');searchEl.focus();
 }
 function closePP(){document.getElementById('pp').style.display='none';activePill=null;_ppCurrentId=null;_ppCurrentField=null;}
+// FIX: Close pill picker only when clicking outside — the .pp popup itself
+// has onclick="event.stopPropagation()" so clicks inside won't reach here.
+document.addEventListener('click',e=>{
+  const pop=document.getElementById('pp');
+  if(pop.style.display!=='none'&&!pop.contains(e.target))closePP();
+});
 
 const ALLOWED_IMG=['image/png','image/jpeg','image/jpg','image/gif','image/webp'];
 const MAX_IMG_MB=5;
