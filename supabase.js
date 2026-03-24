@@ -18,7 +18,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
 });
 
 // ── Auth state watcher ────────────────────────────────────
-db.auth.onAuthStateChange((event) => {
+db.auth.onAuthStateChange(async (event, session) => {
   const publicPaths = ["/", "/auth", "/confirm", "/reset-password"];
   const path =
     window.location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
@@ -33,6 +33,37 @@ db.auth.onAuthStateChange((event) => {
   if (event === "PASSWORD_RECOVERY") {
     if (!path.includes("reset-password")) {
       window.location.href = "/reset-password";
+    }
+  }
+
+  // 🧠 REFERRAL LOGIC (NEW)
+  if (event === "SIGNED_IN" && session?.user) {
+    try {
+      const refCode = localStorage.getItem("ref_code");
+
+      if (refCode) {
+        console.log("Applying referral:", refCode);
+
+        const res = await fetch(
+          `${SUPABASE_URL}/functions/v1/apply-referral`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ referral_code: refCode }),
+          },
+        );
+
+        const data = await res.json();
+        console.log("Referral response:", data);
+
+        // ✅ Prevent reuse
+        localStorage.removeItem("ref_code");
+      }
+    } catch (err) {
+      console.error("Referral error:", err);
     }
   }
 });

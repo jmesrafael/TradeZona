@@ -177,8 +177,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 })();
 
 const _p = new URLSearchParams(window.location.search);
-if (_p.get('signup') === '1') switchTab('signup');
 
+// 🧠 REFERRAL CAPTURE (ADD HERE)
+const refCode = _p.get("ref");
+
+if (refCode) {
+  console.log("Referral detected:", refCode);
+  localStorage.setItem("ref_code", refCode);
+
+  // Optional UX improvement
+  switchTab("signup");
+}
+
+if (_p.get('signup') === '1') switchTab('signup');
 function switchTab(tab) {
   const isLogin = tab === 'login';
   document.getElementById('loginPanel').style.display  = isLogin ? 'block' : 'none';
