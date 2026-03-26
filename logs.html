@@ -10,7 +10,7 @@
 <script src="theme.js"></script>
 <script src="supabase.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
@@ -386,117 +386,13 @@ td:nth-child(9){width:64px}
   .share-toggles{grid-template-columns:1fr 1fr}
 }
 
-/* ─── Share card render container ────────────────────────────── */
-/* Must be in normal flow with real dimensions for html2canvas.   */
-/* Hidden via visibility:hidden so layout is computed but invisible */
-#shareCardRoot{
-  position:fixed;left:0;top:0;
-  width:600px;
-  visibility:hidden;
-  pointer-events:none;
-  z-index:-999;
-  /* DO NOT use display:none — that gives 0 dimensions */
+/* preview canvas */
+#sharePreviewCanvas{
+  display:block;
+  max-width:100%;
+  border-radius:10px;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
 }
-#shareCardRoot.capturing{
-  visibility:visible;
-  z-index:9999;
-}
-.sc-card{
-  width:600px;
-  padding:36px 40px 32px;
-  background:#0d1411;
-  font-family:'Space Grotesk','Inter',sans-serif;
-  position:relative;
-  overflow:hidden;
-  box-sizing:border-box;
-  border-radius:0;
-}
-/* Ambient glow — drawn with inline bg on the element, no ::before/::after
-   because pseudo-elements can confuse html2canvas on some browsers */
-.sc-card-inner{position:relative;z-index:1}
-.sc-glow{
-  position:absolute;top:-80px;left:50%;
-  transform:translateX(-50%);
-  width:500px;height:300px;
-  background:radial-gradient(ellipse at center,rgba(25,195,125,.18) 0%,transparent 70%);
-  pointer-events:none;
-}
-.sc-glow2{
-  position:absolute;bottom:-60px;right:-60px;
-  width:260px;height:260px;
-  background:radial-gradient(circle,rgba(25,195,125,.06) 0%,transparent 70%);
-  pointer-events:none;
-}
-.sc-brand-row{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:28px;
-}
-.sc-brand{display:flex;align-items:center;gap:10px}
-.sc-brand-logo{
-  width:30px;height:30px;border-radius:8px;
-  background:linear-gradient(135deg,#19c37d,#0e8a57);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.sc-brand-name{
-  font-size:17px;font-weight:700;color:#e8f5f0;letter-spacing:-.3px;
-  line-height:1;
-}
-.sc-brand-name span{color:#19c37d}
-.sc-timestamp{
-  font-size:10px;color:rgba(255,255,255,.32);
-  letter-spacing:.6px;text-transform:uppercase;
-  text-align:right;
-}
-.sc-divider{
-  height:1px;
-  background:linear-gradient(90deg,rgba(25,195,125,.3),rgba(25,195,125,.06) 70%,transparent);
-  margin-bottom:24px;
-}
-/* Metrics grid — inline style sets columns based on count */
-.sc-metrics-grid{
-  display:grid;gap:12px;margin-bottom:24px;
-}
-.sc-metric{
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  padding:16px 18px;
-  position:relative;
-  overflow:hidden;
-  box-sizing:border-box;
-}
-.sc-metric-hl-bar{
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent 0%,#19c37d 50%,transparent 100%);
-}
-.sc-metric.highlighted{
-  background:rgba(25,195,125,.08);
-  border-color:rgba(25,195,125,.28);
-  box-shadow:0 0 20px rgba(25,195,125,.1);
-}
-.sc-metric-lbl{
-  font-size:10px;color:rgba(255,255,255,.38);
-  text-transform:uppercase;letter-spacing:.9px;
-  font-weight:500;margin-bottom:7px;
-  white-space:nowrap;
-}
-.sc-metric-val{
-  font-size:26px;font-weight:700;color:#e8f5f0;
-  letter-spacing:-.5px;line-height:1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.sc-metric.highlighted .sc-metric-val{
-  color:#19c37d;
-}
-.sc-metric-val.positive{color:#19c37d}
-.sc-metric-val.negative{color:#ff5f6d}
-.sc-metric-val.neutral{color:#e8f5f0}
-.sc-footer-row{
-  display:flex;align-items:center;justify-content:space-between;
-}
-.sc-footer-text{font-size:10px;color:rgba(255,255,255,.2);letter-spacing:.4px}
-.sc-footer-badge{font-size:10px;color:rgba(25,195,125,.5);letter-spacing:.5px;font-weight:500}
 
 @media(max-width:768px){
   body{padding:10px}
@@ -684,7 +580,7 @@ td:nth-child(9){width:64px}
         <div>
           <div class="share-section-lbl"><i class="fa-solid fa-eye"></i> Live Preview</div>
           <div class="share-preview-wrap" id="sharePreviewWrap">
-            <div id="sharePreviewInner" class="share-preview-inner"></div>
+            <canvas id="sharePreviewCanvas"></canvas>
           </div>
         </div>
 
@@ -769,14 +665,7 @@ td:nth-child(9){width:64px}
   </div>
 </div>
 
-<!-- Hidden share card root (rendered briefly for html2canvas) -->
-<div id="shareCardRoot">
-  <div class="sc-card" id="shareCard">
-    <div class="sc-glow"></div>
-    <div class="sc-glow2"></div>
-    <div class="sc-card-inner" id="shareCardInner"></div>
-  </div>
-</div>
+<!-- Hidden share card root (unused - canvas drawn directly in JS) -->
 
 <!-- Notes Modal -->
 <div class="overlay" id="nOverlay">
@@ -1367,32 +1256,247 @@ function updateAnalytics(){
   else{pe.textContent='—';pe.style.color='';}
 }
 
-// ─── SHARE ANALYTICS ─────────────────────────────────────────────────────
+// ─── SHARE ANALYTICS — pure Canvas 2D, no html2canvas ───────────────────
 let _shareVisibility={totalPnl:true,winRate:true,totalTrades:true,wins:true,losses:true,avgR:true,winStreak:true,lossStreak:true};
 let _shareHighlighted=new Set();
 
 const METRIC_DEFS={
-  totalPnl:{label:'Total PNL',format:(d)=>{const n=d.totalPnl;return{val:(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2),cls:n>0?'positive':n<0?'negative':'neutral'};}},
-  winRate:{label:'Win Rate',format:(d)=>{return{val:d.vldCount?d.wr.toFixed(1)+'%':'—',cls:d.vldCount?(d.wr>=50?'positive':'negative'):'neutral'};}},
-  totalTrades:{label:'Total Trades',format:(d)=>{return{val:String(d.count),cls:'neutral'};}},
-  wins:{label:'Wins',format:(d)=>{return{val:String(d.winCount),cls:'positive'};}},
-  losses:{label:'Losses',format:(d)=>{return{val:String(d.lossCount),cls:'negative'};}},
-  avgR:{label:'Avg R',format:(d)=>{return{val:(d.rv&&d.rv.length)?(d.avgR>=0?'+':'')+d.avgR.toFixed(2)+'R':'—',cls:d.avgR>0?'positive':d.avgR<0?'negative':'neutral'};}},
-  winStreak:{label:'Win Streak',format:(d)=>{return{val:String(d.mxW),cls:'positive'};}},
-  lossStreak:{label:'Loss Streak',format:(d)=>{return{val:String(d.mxL),cls:'negative'};}},
+  totalPnl:{label:'Total PNL',format:(d)=>{const n=d.totalPnl;return{val:(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2),pos:n>0,neg:n<0};}},
+  winRate:{label:'Win Rate',format:(d)=>{return{val:d.vldCount?d.wr.toFixed(1)+'%':'—',pos:d.vldCount&&d.wr>=50,neg:d.vldCount&&d.wr<50};}},
+  totalTrades:{label:'Total Trades',format:(d)=>{return{val:String(d.count),pos:false,neg:false};}},
+  wins:{label:'Wins',format:(d)=>{return{val:String(d.winCount),pos:true,neg:false};}},
+  losses:{label:'Losses',format:(d)=>{return{val:String(d.lossCount),pos:false,neg:true};}},
+  avgR:{label:'Avg R',format:(d)=>{return{val:(d.rv&&d.rv.length)?(d.avgR>=0?'+':'')+d.avgR.toFixed(2)+'R':'—',pos:d.avgR>0,neg:d.avgR<0};}},
+  winStreak:{label:'Win Streak',format:(d)=>{return{val:String(d.mxW),pos:true,neg:false};}},
+  lossStreak:{label:'Loss Streak',format:(d)=>{return{val:String(d.mxL),pos:false,neg:true};}},
 };
 
+// ── Canvas drawing ────────────────────────────────────────────────────────
+// All measurements in logical pixels at scale=1; we multiply by DPR for export.
+
+const CARD_W = 600;
+const PAD    = 40;
+const GREEN  = '#19c37d';
+const RED    = '#ff5f6d';
+const BG     = '#0d1411';
+
+function _drawCard(ctx, scale, data, visKeys, highlighted){
+  // Guard: scale must be positive and finite
+  if(!scale||scale<=0||!isFinite(scale)) scale=1;
+  const W = Math.ceil(CARD_W * scale);
+
+  // --- measure rows first so we know total height ---
+  const LABEL_SZ  = 10 * scale;
+  const VALUE_SZ  = 26 * scale;
+  const METRIC_PAD= 16 * scale;
+  const METRIC_GAP= 10 * scale;
+  const COLS      = visKeys.length===0?1:visKeys.length<=2?visKeys.length:visKeys.length<=4?2:visKeys.length<=6?3:4;
+  const ROWS      = Math.ceil(Math.max(1,visKeys.length)/COLS);
+  const CELL_W    = (W - PAD*scale*2 - METRIC_GAP*(COLS-1)) / COLS;
+  const CELL_H    = Math.ceil(LABEL_SZ + 8*scale + VALUE_SZ + METRIC_PAD*2);
+  const GRID_H    = ROWS*CELL_H + (ROWS-1)*METRIC_GAP;
+
+  const HEADER_H  = 52*scale;
+  const DIV_Y     = HEADER_H + 20*scale;
+  const GRID_Y    = DIV_Y + 14*scale;
+  const FOOTER_Y  = GRID_Y + (visKeys.length>0 ? GRID_H+20*scale : 50*scale);
+  const TOTAL_H   = Math.ceil(FOOTER_Y + 28*scale);
+
+  // CRITICAL: set dimensions BEFORE any drawing or gradient creation
+  // Setting width/height resets the context state, so do it first.
+  ctx.canvas.width  = Math.max(1, W);
+  ctx.canvas.height = Math.max(1, TOTAL_H);
+
+  // ── Background ──────────────────────────────────────────────
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, TOTAL_H);
+
+  // Top ambient glow
+  const glow = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, W*0.65);
+  glow.addColorStop(0,  'rgba(25,195,125,0.18)');
+  glow.addColorStop(1,  'rgba(25,195,125,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, TOTAL_H);
+
+  // Corner accent glow
+  const g2 = ctx.createRadialGradient(W, TOTAL_H, 0, W, TOTAL_H, W*0.4);
+  g2.addColorStop(0,  'rgba(25,195,125,0.07)');
+  g2.addColorStop(1,  'rgba(25,195,125,0)');
+  ctx.fillStyle = g2;
+  ctx.fillRect(0, 0, W, TOTAL_H);
+
+  // ── Header ──────────────────────────────────────────────────
+  const x0 = PAD * scale;
+
+  // Logo box
+  const LOGO_SZ = 30*scale;
+  _roundRect(ctx, x0, 10*scale, LOGO_SZ, LOGO_SZ, 7*scale);
+  const logoGrad = ctx.createLinearGradient(x0, 10*scale, x0+LOGO_SZ, 10*scale+LOGO_SZ);
+  logoGrad.addColorStop(0, '#19c37d');
+  logoGrad.addColorStop(1, '#0e8a57');
+  ctx.fillStyle = logoGrad;
+  ctx.fill();
+
+  // Logo chart line
+  ctx.save();
+  ctx.strokeStyle = '#0b0f0c';
+  ctx.lineWidth   = 1.8*scale;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  ctx.beginPath();
+  const lx=x0+5*scale, ly=10*scale;
+  ctx.moveTo(lx, ly+20*scale);
+  ctx.lineTo(lx+8*scale, ly+12*scale);
+  ctx.lineTo(lx+13*scale, ly+17*scale);
+  ctx.lineTo(lx+20*scale, ly+8*scale);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(lx+20*scale, ly+8*scale, 1.8*scale, 0, Math.PI*2);
+  ctx.fillStyle='#0b0f0c'; ctx.fill();
+  ctx.restore();
+
+  // Brand name
+  ctx.font = `700 ${17*scale}px 'Space Grotesk','Inter',sans-serif`;
+  ctx.fillStyle = '#e8f5f0';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Trade', x0+LOGO_SZ+9*scale, 25*scale);
+  const tw = ctx.measureText('Trade').width;
+  ctx.fillStyle = GREEN;
+  ctx.fillText('Zona', x0+LOGO_SZ+9*scale+tw, 25*scale);
+
+  // Timestamp right side
+  const d=new Date();
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const tsLabel = months[d.getMonth()]+' '+d.getFullYear();
+  ctx.font = `500 ${9*scale}px 'Space Grotesk','Inter',sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'right';
+  ctx.fillText('PERFORMANCE SUMMARY', W-x0, 17*scale);
+  ctx.font = `600 ${11*scale}px 'Space Grotesk','Inter',sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillText(tsLabel, W-x0, 31*scale);
+  ctx.textAlign = 'left';
+
+  // ── Divider ─────────────────────────────────────────────────
+  const divGrad = ctx.createLinearGradient(x0, DIV_Y, W-x0, DIV_Y);
+  divGrad.addColorStop(0,   'rgba(25,195,125,0.35)');
+  divGrad.addColorStop(0.6, 'rgba(25,195,125,0.08)');
+  divGrad.addColorStop(1,   'rgba(25,195,125,0)');
+  ctx.strokeStyle = divGrad;
+  ctx.lineWidth = 1*scale;
+  ctx.beginPath();
+  ctx.moveTo(x0, DIV_Y);
+  ctx.lineTo(W-x0, DIV_Y);
+  ctx.stroke();
+
+  // ── Metrics grid ────────────────────────────────────────────
+  if(visKeys.length===0){
+    ctx.font = `400 ${13*scale}px 'Space Grotesk','Inter',sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Select metrics to display', W/2, GRID_Y+25*scale);
+    ctx.textAlign = 'left';
+  } else {
+    visKeys.forEach((k,i)=>{
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      const cx  = x0 + col*(CELL_W+METRIC_GAP);
+      const cy  = GRID_Y + row*(CELL_H+METRIC_GAP);
+      const hl  = highlighted.has(k);
+      const def = METRIC_DEFS[k];
+      const {val,pos,neg} = def.format(data);
+
+      // Card background
+      _roundRect(ctx, cx, cy, CELL_W, CELL_H, 10*scale);
+      ctx.fillStyle = hl ? 'rgba(25,195,125,0.1)' : 'rgba(255,255,255,0.04)';
+      ctx.fill();
+
+      // Card border
+      _roundRect(ctx, cx+0.5, cy+0.5, CELL_W-1, CELL_H-1, 10*scale);
+      ctx.strokeStyle = hl ? 'rgba(25,195,125,0.3)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1*scale;
+      ctx.stroke();
+
+      // Highlight top bar
+      if(hl){
+        const barGrad = ctx.createLinearGradient(cx, cy, cx+CELL_W, cy);
+        barGrad.addColorStop(0,   'rgba(25,195,125,0)');
+        barGrad.addColorStop(0.5, 'rgba(25,195,125,0.9)');
+        barGrad.addColorStop(1,   'rgba(25,195,125,0)');
+        ctx.save();
+        ctx.beginPath();
+        // Top-rounded clip for the bar
+        _roundRect(ctx, cx, cy, CELL_W, 2.5*scale, 10*scale);
+        ctx.clip();
+        ctx.fillStyle = barGrad;
+        ctx.fillRect(cx, cy, CELL_W, 2.5*scale);
+        ctx.restore();
+      }
+
+      // Label
+      ctx.font = `500 ${LABEL_SZ}px 'Space Grotesk','Inter',sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.38)';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
+      ctx.fillText(def.label.toUpperCase(), cx+METRIC_PAD, cy+METRIC_PAD);
+
+      // Value
+      ctx.font = `700 ${VALUE_SZ}px 'Space Grotesk','Inter',sans-serif`;
+      ctx.textBaseline = 'top';
+      if(hl){
+        ctx.fillStyle = GREEN;
+      } else if(pos){
+        ctx.fillStyle = GREEN;
+      } else if(neg){
+        ctx.fillStyle = RED;
+      } else {
+        ctx.fillStyle = '#e8f5f0';
+      }
+      ctx.fillText(val, cx+METRIC_PAD, cy+METRIC_PAD+LABEL_SZ+7*scale);
+    });
+  }
+
+  // ── Footer ──────────────────────────────────────────────────
+  ctx.font = `400 ${9*scale}px 'Space Grotesk','Inter',sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillText('tradezone.app', x0, FOOTER_Y+10*scale);
+
+  ctx.font = `600 ${9*scale}px 'Space Grotesk','Inter',sans-serif`;
+  ctx.fillStyle = 'rgba(25,195,125,0.45)';
+  ctx.textAlign = 'right';
+  ctx.fillText('⬡ TradeZona', W-x0, FOOTER_Y+10*scale);
+  ctx.textAlign = 'left';
+}
+
+function _roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// ── Modal open / close ───────────────────────────────────────────────────
 function openShareModal(){
   document.getElementById('btnShareNative').style.display=navigator.share?'flex':'none';
   _shareHighlighted=new Set();
-  // Reset toggles to all-on
   Object.keys(_shareVisibility).forEach(k=>_shareVisibility[k]=true);
   document.querySelectorAll('.share-tog').forEach(el=>{el.classList.add('on');el.querySelector('.share-tog-chk').textContent='✓';});
   document.querySelectorAll('.share-hl').forEach(el=>el.classList.remove('on'));
   document.getElementById('shareGenerating').classList.remove('show');
-  buildShareCard();
-  updateSharePreview();
   document.getElementById('shareOverlay').classList.add('open');
+  // Use setTimeout so browser has painted the modal and clientWidth is available
+  setTimeout(()=>_refreshPreview(), 60);
 }
 function closeShareModal(){
   document.getElementById('shareOverlay').classList.remove('open');
@@ -1401,194 +1505,116 @@ function closeShareModal(){
 function toggleShareMetric(el){
   const m=el.dataset.metric;
   _shareVisibility[m]=!_shareVisibility[m];
-  const chk=el.querySelector('.share-tog-chk');
   el.classList.toggle('on',_shareVisibility[m]);
-  chk.textContent=_shareVisibility[m]?'✓':'';
+  el.querySelector('.share-tog-chk').textContent=_shareVisibility[m]?'✓':'';
   if(!_shareVisibility[m]){
     _shareHighlighted.delete(m);
-    const hlEl=document.querySelector(`.share-hl[data-metric="${m}"]`);
-    if(hlEl)hlEl.classList.remove('on');
+    const hl=document.querySelector(`.share-hl[data-metric="${m}"]`);
+    if(hl)hl.classList.remove('on');
   }
-  buildShareCard();
-  updateSharePreview();
+  _refreshPreview();
 }
-
 function toggleShareHighlight(el){
   const m=el.dataset.metric;
   if(!_shareVisibility[m])return;
   if(_shareHighlighted.has(m)){_shareHighlighted.delete(m);el.classList.remove('on');}
   else{_shareHighlighted.add(m);el.classList.add('on');}
-  buildShareCard();
-  updateSharePreview();
+  _refreshPreview();
 }
 
-function _getTimestampLabel(){
-  const d=new Date();
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return`${months[d.getMonth()]} ${d.getFullYear()}`;
+function _getVisibleKeys(){
+  return Object.keys(METRIC_DEFS).filter(k=>_shareVisibility[k]);
 }
 
-function buildShareCard(){
-  const src=getFilteredTrades();
-  const data=computeAnalytics(src);
-  const inner=document.getElementById('shareCardInner');
-  if(!inner)return;
-
-  const visibleKeys=Object.keys(METRIC_DEFS).filter(k=>_shareVisibility[k]);
-
-  // Choose column count based on number of metrics
-  const n=visibleKeys.length;
-  const cols=n===0?1:n<=2?n:n<=4?2:n<=6?3:4;
-  const gridStyle=`grid-template-columns:repeat(${cols},1fr)`;
-
-  const metricsHTML=visibleKeys.map(k=>{
-    const def=METRIC_DEFS[k];
-    const {val,cls}=def.format(data);
-    const hl=_shareHighlighted.has(k);
-    const hlBar=hl?`<div class="sc-metric-hl-bar"></div>`:'';
-    return`<div class="sc-metric${hl?' highlighted':''}">
-      ${hlBar}
-      <div class="sc-metric-lbl">${def.label}</div>
-      <div class="sc-metric-val ${hl?'':cls}">${val}</div>
-    </div>`;
-  }).join('');
-
-  inner.innerHTML=`
-    <div class="sc-brand-row">
-      <div class="sc-brand">
-        <div class="sc-brand-logo">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 13L6.5 7.5L9.5 10.5L13.5 5" stroke="#0b0f0c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="13.5" cy="5" r="1.5" fill="#0b0f0c"/>
-          </svg>
-        </div>
-        <span class="sc-brand-name">Trade<span>Zona</span></span>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;color:rgba(255,255,255,.28);letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px">Performance Summary</div>
-        <div class="sc-timestamp">${_getTimestampLabel()}</div>
-      </div>
-    </div>
-    <div class="sc-divider"></div>
-    ${n>0
-      ? `<div class="sc-metrics-grid" style="${gridStyle}">${metricsHTML}</div>`
-      : `<div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:28px 0;font-family:'Space Grotesk',sans-serif">Select metrics to display</div>`}
-    <div class="sc-footer-row">
-      <span class="sc-footer-text">tradezone.app</span>
-      <span class="sc-footer-badge">⬡ TradeZona</span>
-    </div>`;
+function _refreshPreview(){
+  const wrap=document.getElementById('sharePreviewWrap');
+  const cv=document.getElementById('sharePreviewCanvas');
+  if(!wrap||!cv)return;
+  const maxW=Math.max(wrap.clientWidth-32, 200); // never 0
+  const scale=Math.max(0.3,Math.min(1,maxW/CARD_W));
+  const ctx=cv.getContext('2d');
+  const data=computeAnalytics(getFilteredTrades());
+  const visKeys=_getVisibleKeys();
+  _drawCard(ctx,scale,data,visKeys,_shareHighlighted);
+  cv.style.width  = cv.width+'px';
+  cv.style.height = cv.height+'px';
 }
 
-function updateSharePreview(){
-  const card=document.getElementById('shareCard');
-  const previewWrap=document.getElementById('sharePreviewWrap');
-  const previewInner=document.getElementById('sharePreviewInner');
-  if(!card||!previewWrap||!previewInner)return;
-
-  // Clone the card so preview exactly matches what will be exported
-  const clone=card.cloneNode(true);
-  // Fix clone inner to show same content
-  previewInner.innerHTML='';
-  previewInner.appendChild(clone);
-
-  requestAnimationFrame(()=>{
-    const wrapW=previewWrap.clientWidth-32;
-    const cardW=600;
-    const scale=Math.max(0.2,Math.min(1,wrapW/cardW));
-    previewInner.style.width=cardW+'px';
-    previewInner.style.transform=`scale(${scale})`;
-    previewInner.style.transformOrigin='top left';
-    const cardH=clone.offsetHeight||280;
-    previewWrap.style.minHeight=Math.round(cardH*scale+32)+'px';
-  });
+// ── Export ────────────────────────────────────────────────────────────────
+function _buildExportCanvas(){
+  const offscreen=document.createElement('canvas');
+  const ctx=offscreen.getContext('2d');
+  const data=computeAnalytics(getFilteredTrades());
+  const visKeys=_getVisibleKeys();
+  // Always use scale=2 for export — gives 1200px wide, crisp on retina
+  _drawCard(ctx,2,data,visKeys,_shareHighlighted);
+  return offscreen;
 }
 
-async function _generateCanvas(){
-  const card=document.getElementById('shareCard');
-  const genEl=document.getElementById('shareGenerating');
-  const actEl=document.getElementById('shareActionsStack');
-  genEl.classList.add('show');
-  if(actEl)actEl.style.opacity='.4';
-
-  // Wait for fonts
-  await document.fonts.ready;
-  // Small frame to ensure layout is painted
-  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  // Make card temporarily visible for html2canvas (must have real dimensions)
-  const root=document.getElementById('shareCardRoot');
-  root.classList.add('capturing');
-  await new Promise(r=>setTimeout(r,80));
-
-  try{
-    const canvas=await html2canvas(card,{
-      scale:3,
-      useCORS:true,
-      allowTaint:true,
-      backgroundColor:'#0d1411',
-      logging:false,
-      width:card.offsetWidth,
-      height:card.offsetHeight,
-      windowWidth:card.offsetWidth,
-      windowHeight:card.offsetHeight,
-    });
-    return canvas;
-  }finally{
-    root.classList.remove('capturing');
-    genEl.classList.remove('show');
-    if(actEl)actEl.style.opacity='';
-  }
+function _setExporting(on){
+  document.getElementById('shareGenerating').classList.toggle('show',on);
+  const stack=document.getElementById('shareActionsStack');
+  if(stack)stack.style.opacity=on?'0.4':'';
 }
 
 async function doShareDownload(){
+  _setExporting(true);
+  await document.fonts.ready;
   try{
-    const canvas=await _generateCanvas();
+    const cv=_buildExportCanvas();
     const a=document.createElement('a');
-    a.href=canvas.toDataURL('image/png');
+    a.href=cv.toDataURL('image/png');
     a.download=`tradezone-${todayLocal()}.png`;
     document.body.appendChild(a);a.click();document.body.removeChild(a);
     showToast('Downloaded!','fa-solid fa-circle-check','green');
   }catch(e){
     console.error(e);
     showToast('Export failed: '+e.message,'fa-solid fa-circle-exclamation','red');
-  }
+  }finally{_setExporting(false);}
 }
 
 async function doShareCopy(){
+  _setExporting(true);
+  await document.fonts.ready;
   try{
-    const canvas=await _generateCanvas();
-    canvas.toBlob(async blob=>{
+    const cv=_buildExportCanvas();
+    cv.toBlob(async blob=>{
       try{
         await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
         showToast('Copied to clipboard!','fa-solid fa-circle-check','green');
       }catch(clipErr){
-        // Fallback download
         const url=URL.createObjectURL(blob);
         const a=document.createElement('a');
         a.href=url;a.download=`tradezone-${todayLocal()}.png`;
         document.body.appendChild(a);a.click();document.body.removeChild(a);
         URL.revokeObjectURL(url);
         showToast('Clipboard unavailable — downloaded instead.','fa-solid fa-triangle-exclamation','');
-      }
+      }finally{_setExporting(false);}
     },'image/png');
   }catch(e){
     console.error(e);
     showToast('Export failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+    _setExporting(false);
   }
 }
 
 async function doShareNative(){
   if(!navigator.share)return;
+  _setExporting(true);
+  await document.fonts.ready;
   try{
-    const canvas=await _generateCanvas();
-    canvas.toBlob(async blob=>{
+    const cv=_buildExportCanvas();
+    cv.toBlob(async blob=>{
       const file=new File([blob],`tradezone-${todayLocal()}.png`,{type:'image/png'});
       try{
         await navigator.share({files:[file],title:'My TradeZona Performance',text:'Check out my trading performance!'});
       }catch(e){if(e.name!=='AbortError')showToast('Share failed.','fa-solid fa-circle-exclamation','red');}
+      finally{_setExporting(false);}
     },'image/png');
   }catch(e){
     console.error(e);
     showToast('Export failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+    _setExporting(false);
   }
 }
 
@@ -1601,6 +1627,7 @@ function showToast(msg,icon='fa-solid fa-circle-check',type=''){
 }
 document.getElementById('nOverlay').addEventListener('click',function(e){if(e.target===this)closeNotes();});
 document.getElementById('cOverlay').addEventListener('click',function(e){if(e.target===this)closeCon();});
+window.addEventListener('resize',()=>{if(document.getElementById('shareOverlay').classList.contains('open'))_refreshPreview();});
 </script>
 </body>
 </html>
