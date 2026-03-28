@@ -1383,42 +1383,117 @@ document.addEventListener('click',e=>{
 });
 
 // ── Image upload ──────────────────────────────────────────────────────────
-const ALLOWED_IMG=['image/png','image/jpeg','image/jpg','image/gif','image/webp'];
-const MAX_IMG_MB=5;
-function validateImg(file){if(!ALLOWED_IMG.includes(file.type)){showToast('Only PNG, JPG, GIF, WebP allowed.','fa-solid fa-triangle-exclamation','red');return false;}if(file.size>MAX_IMG_MB*1024*1024){showToast(`Max ${MAX_IMG_MB}MB per image.`,'fa-solid fa-triangle-exclamation','red');return false;}return true;}
+const ALLOWED_IMG = ['image/png','image/jpeg','image/jpg','image/gif','image/webp'];
+const MAX_IMG_MB = 5;
 
-async function openNotes(id){
-  const t=trades.find(x=>x.id===id);if(!t)return;
-  activeNotesId=id;
-  imgBuffer=await Promise.all((t.images||[]).map(async img=>{const url=img._previewUrl||img.data||await getImageUrl(img);return{...img,_previewUrl:url};}));
-  document.getElementById('nmTitle').textContent=`${t.pair||'Trade'} — ${t.date||'—'}`;
-  document.getElementById('nmText').value=t.notes||'';
-  const atLimit=!userIsPro&&imgBuffer.length>=1;
-  document.getElementById('uploadRow').style.display=atLimit?'none':'flex';
-  document.getElementById('imgProLock').style.display=atLimit?'flex':'none';
+function validateImg(file) {
+  if(!ALLOWED_IMG.includes(file.type)){
+    showToast('Only PNG, JPG, GIF, WebP allowed.', 'fa-solid fa-triangle-exclamation', 'red');
+    return false;
+  }
+  if(file.size > MAX_IMG_MB * 1024 * 1024){
+    showToast(`Max ${MAX_IMG_MB}MB per image.`, 'fa-solid fa-triangle-exclamation', 'red');
+    return false;
+  }
+  return true;
+}
+async function openNotes(id) {
+  const t = trades.find(x => x.id === id);
+  if (!t) return;
+
+  activeNotesId = id;
+
+  // Fetch proper URLs from Supabase storage
+  imgBuffer = await Promise.all((t.images || []).map(async img => {
+    let url = img._previewUrl || img.data || img.storage_url || await getImageUrl(img);
+    return { ...img, _previewUrl: url };
+  }));
+
+  document.getElementById('nmTitle').textContent = `${t.pair || 'Trade'} — ${t.date || '—'}`;
+  document.getElementById('nmText').value = t.notes || '';
+
+  const atLimit = !userIsPro && imgBuffer.length >= 1;
+  document.getElementById('uploadRow').style.display = atLimit ? 'none' : 'flex';
+  document.getElementById('imgProLock').style.display = atLimit ? 'flex' : 'none';
+
   renderImgs();
   document.getElementById('nOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('nmText').focus(),100);
+  setTimeout(() => document.getElementById('nmText').focus(), 100);
 }
 function closeNotes(){document.getElementById('nOverlay').classList.remove('open');activeNotesId=null;imgBuffer=[];}
-async function saveNotes(){
-  if(!activeNotesId)return;const t=trades.find(x=>x.id===activeNotesId);if(!t)return;
-  const newNotes=document.getElementById('nmText').value;
-  try{
-    t.notes=newNotes;
-    const keepIds=new Set(imgBuffer.filter(i=>i.id).map(i=>i.id));
-    for(const img of(t.images||[])){if(img.id&&!keepIds.has(img.id))await deleteTradeImage(img.id);}
-    const final=[];
-    for(const img of imgBuffer){
-      if(img.id){final.push(img);}
-      else{const saved=await addTradeImage(currentUser.id,activeNotesId,img._previewUrl||img.data);final.push({id:saved.id,data:saved.data||img._previewUrl||img.data,_previewUrl:img._previewUrl||img.data});}
+// ── Helper: Convert base64 string to File object ───────────────────────────
+function base64ToFile(base64, filename) {
+  const arr = base64.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
+// ── Save Notes Function ────────────────────────────────────────────────────
+async function saveNotes() {
+  if (!activeNotesId) return;
+  const t = trades.find(x => x.id === activeNotesId);
+  if (!t) return;
+
+  const newNotes = document.getElementById('nmText').value;
+
+  try {
+    t.notes = newNotes;
+
+    // Delete removed images from Supabase
+    const keepIds = new Set(imgBuffer.filter(i => i.id).map(i => i.id));
+    for (const img of (t.images || [])) {
+      if (img.id && !keepIds.has(img.id)) {
+        await deleteTradeImage(img.id);
+      }
     }
-    t.images=final;
-    await updateTrade(activeNotesId,t);
-    const tr=document.querySelector(`tr[data-id="${activeNotesId}"]`);
-    if(tr){const btn=tr.querySelector('.notes-btn');if(btn){const nb=buildNotesBtnHTML(t);btn.className=nb.cls;btn.innerHTML=nb.html;}}
+
+    const final = [];
+    for (const img of imgBuffer) {
+      if (img.id) {
+        final.push(img);
+      } else {
+        // Handle base64 images or File objects
+        let fileToUpload;
+        if (img._previewUrl.startsWith('data:')) {
+          fileToUpload = base64ToFile(img._previewUrl, `img-${Date.now()}.png`);
+        } else {
+          fileToUpload = img._previewUrl; // assume File object
+        }
+
+        const saved = await uploadImage(fileToUpload, activeNotesId);
+        final.push({
+          id: saved.id,
+          data: saved.data || saved._previewUrl,
+          _previewUrl: saved._previewUrl || saved.data
+        });
+      }
+    }
+
+    t.images = final;
+
+    await updateTrade(activeNotesId, t);
+
+    // Update notes button in table row
+    const tr = document.querySelector(`tr[data-id="${activeNotesId}"]`);
+    if (tr) {
+      const btn = tr.querySelector('.notes-btn');
+      if (btn) {
+        const nb = buildNotesBtnHTML(t);
+        btn.className = nb.cls;
+        btn.innerHTML = nb.html;
+      }
+    }
+
     closeNotes();
-  }catch(e){showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');}
+  } catch (e) {
+    showToast('Save error: ' + e.message, 'fa-solid fa-circle-exclamation', 'red');
+  }
 }
 function renderImgs(){
   const box=document.getElementById('nmImgs'),cnt=document.getElementById('imgCntLbl');
@@ -1429,26 +1504,99 @@ function renderImgs(){
     return`<div class="img-thumb"><img src="${src}" alt="" onclick="openLb(${i})" loading="lazy"><div class="img-actions"><button class="img-act-btn img-act-del" onclick="event.stopPropagation();rmImg(${i})" title="Delete"><i class="fa-solid fa-trash" style="font-size:8px"></i></button></div></div>`;
   }).join('');
 }
-function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
-function handleUpload(e){
-  [...e.target.files].forEach(f=>{
-    if(!validateImg(f))return;
-    if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}
-    const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(f);
-  });
-  e.target.value='';
+// ── Remove image from buffer ───────────────────────────────────────────────
+function rmImg(i) {
+  imgBuffer.splice(i, 1);
+  renderImgs();
 }
-document.addEventListener('paste',e=>{
-  if(!document.getElementById('nOverlay').classList.contains('open'))return;
-  [...e.clipboardData.items].forEach(item=>{
-    if(item.type.startsWith('image/')){
-      const file=item.getAsFile();if(!file)return;if(!validateImg(file))return;
-      if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}
-      const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(file);
-    }
-  });
-});
 
+// ── Unified image upload handler ──────────────────────────────────────────
+async function uploadAndBuffer(file) {
+  if (!validateImg(file)) return;
+  if (!userIsPro && imgBuffer.length >= 1) {
+    showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'red');
+    return;
+  }
+
+  // Convert base64 string to File if needed
+  let fileToUpload = file;
+  if (typeof file === 'string' && file.startsWith('data:')) {
+    fileToUpload = base64ToFile(file, `img-${Date.now()}.png`);
+  }
+
+  const uploaded = await uploadImage(fileToUpload, activeNotesId);
+  imgBuffer.push({
+    _previewUrl: uploaded.publicUrl || uploaded._previewUrl,
+    data: uploaded.data,
+    id: uploaded.id
+  });
+
+  renderImgs();
+}
+
+// ── Handle file input uploads ─────────────────────────────────────────────
+async function handleUpload(e) {
+  for (const f of e.target.files) {
+    await uploadAndBuffer(f);
+  }
+  e.target.value = '';
+}
+
+// ── Handle pasted images (updated, sequential upload) ──────────────────────
+document.addEventListener('paste', async e => {
+  const overlay = document.getElementById('nOverlay');
+  if (!overlay.classList.contains('open')) return;
+
+  const items = [...e.clipboardData.items].filter(item => item.type.startsWith('image/'));
+  for (const item of items) {
+    const file = item.getAsFile();
+    if (!file) continue;
+    if (!validateImg(file)) continue;
+    if (!userIsPro && imgBuffer.length >= 1) {
+      showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'red');
+      continue;
+    }
+
+    // Convert File to base64 if needed, then upload sequentially
+    const reader = new FileReader();
+    await new Promise(resolve => {
+      reader.onload = async ev => {
+        // Convert pasted image to File object
+        const fileToUpload = base64ToFile(ev.target.result, `pasted-${Date.now()}.png`);
+        const uploaded = await uploadImage(fileToUpload, activeNotesId);
+
+        imgBuffer.push({
+          _previewUrl: uploaded.publicUrl || uploaded._previewUrl,
+          data: uploaded.data,
+          id: uploaded.id
+        });
+
+        renderImgs();
+        resolve(); // proceed to next item
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+});
+async function uploadImage(file, tradeId) {
+  const fileName = `${tradeId}/${Date.now()}-${file.name}`;
+  const { data, error } = await supabase
+    .storage
+    .from('trade-images')
+    .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+  if (error) throw error;
+
+  const { publicURL, error: urlError } = supabase
+    .storage
+    .from('trade-images')
+    .getPublicUrl(fileName);
+
+  if (urlError) throw urlError;
+
+  // Optionally, save reference in your database if needed
+  return { id: Date.now(), data, _previewUrl: publicURL, publicUrl };
+}
 // ── Lightbox ──────────────────────────────────────────────────────────────
 let lbImages=[],lbIndex=0,lbScale=1,lbPanX=0,lbPanY=0,lbDragging=false,lbLastX=0,lbLastY=0;
 function openLb(i){lbImages=[...imgBuffer];lbIndex=i;lbScale=1;lbPanX=0;lbPanY=0;_lbRender();document.getElementById('lb').classList.add('open');}
