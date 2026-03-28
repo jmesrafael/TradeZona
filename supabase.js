@@ -6,9 +6,9 @@
 const SUPABASE_URL = "https://oixrpuqylidbunbttftg.supabase.co";
 const SUPABASE_ANON = "sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho";
 
-import { createClient } from "@supabase/supabase-js"; // ✅ Proper import
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-export const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
+const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     storage: window.localStorage,
     autoRefreshToken: true,
