@@ -676,7 +676,7 @@ function renderJournals(){
 function goJournal(id){
   sessionStorage.setItem('tz_current_journal',id);
   if(window.posthog)posthog.capture('journal_opened');
-  location.href='/journal';
+  location.href='/pages/journal.html';
 }
 
 // ── Create Journal ────────────────────────────────────────
