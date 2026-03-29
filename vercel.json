@@ -5,7 +5,7 @@
     { "source": "/",               "destination": "/index.html" },
     { "source": "/auth",           "destination": "/auth.html" },
     { "source": "/dashboard",      "destination": "/dashboard.html" },
-    { "source": "/pages/journal",        "destination": "/pages/journal.html" },
+    { "source": "/journal",        "destination": "/journal.html" },
     { "source": "/logs",           "destination": "/logs.html" },
     { "source": "/analytics",      "destination": "/analytics.html" },
     { "source": "/calendar",       "destination": "/calendar.html" },
