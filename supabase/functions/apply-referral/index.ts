@@ -1,19 +1,33 @@
 // supabase/functions/apply-referral/index.ts
 // Deploy: supabase functions deploy apply-referral
 //
-// Required secrets:
+// Required secrets (already set via Supabase):
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
 
-import { serve } from "https://deno.land/std/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
-    const { refCode } = await req.json();
+    const body = await req.json();
+    // Accept both referral_code (from supabase.js) and refCode (legacy)
+    const refCode = body.referral_code || body.refCode;
 
     if (!refCode) {
-      return new Response("Missing refCode", { status: 400 });
+      return new Response(JSON.stringify({ error: "Missing referral_code" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const supabase = createClient(
@@ -24,29 +38,37 @@ serve(async (req) => {
     // 🔐 Get user from token
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "");
-
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !userData?.user) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const user = userData.user;
 
-    // 🔎 Find referrer
+    // 🔎 Find referrer by referral_code
     const { data: referrer, error: refError } = await supabase
       .from("profiles")
       .select("id")
-      .eq("referral_code", refCode)
+      .eq("referral_code", refCode.toUpperCase())
       .single();
 
     if (refError || !referrer) {
-      return new Response("Invalid referral", { status: 400 });
+      return new Response(JSON.stringify({ error: "Invalid referral code" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // 🚫 Prevent self-referral
     if (referrer.id === user.id) {
-      return new Response("Cannot refer yourself", { status: 400 });
+      return new Response(JSON.stringify({ error: "Cannot refer yourself" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // 🚫 Prevent duplicate referral
@@ -57,35 +79,52 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
-      return new Response("Already referred", { status: 400 });
+      return new Response(JSON.stringify({ error: "Already referred" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // ✅ Apply referral
+    // ✅ Update new user's profile with referred_by
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ referred_by: referrer.id })
       .eq("id", user.id);
 
     if (updateError) {
-      return new Response("Failed to update profile", { status: 500 });
+      console.error("Failed to update profile:", updateError);
+      return new Response(JSON.stringify({ error: "Failed to update profile" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
+    // ✅ Insert referral row
     const { error: insertError } = await supabase
       .from("referrals")
       .insert({
         referrer_id: referrer.id,
-        referred_user_id: user.id
+        referred_user_id: user.id,
+        status: "pending",
       });
 
     if (insertError) {
-      return new Response("Failed to insert referral", { status: 500 });
+      console.error("Failed to insert referral:", insertError);
+      return new Response(JSON.stringify({ error: "Failed to record referral" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err) {
-    return new Response("Server error", { status: 500 });
+    console.error("apply-referral error:", err);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

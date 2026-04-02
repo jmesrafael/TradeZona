@@ -77,14 +77,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .field input.plain:focus{border-color:var(--accent2)}
 .btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);padding:10px 18px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all var(--transition-base)}
 .btn-cancel:hover{border-color:var(--muted)}
-.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color var(--transition-fast);line-height:1}
-.eye-btn:hover{color:var(--text)}
-.acct-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-family:var(--font-body,'Inter',sans-serif);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition-base);display:flex;align-items:center;flex-shrink:0}
-.acct-edit-btn:hover{border-color:var(--accent2);color:var(--accent2)}
-.acct-save-btn{flex:1;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:9px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--transition-base);display:flex;align-items:center;justify-content:center}
-.acct-save-btn:hover{opacity:.85}
-.acct-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all var(--transition-fast)}
-.acct-cancel-btn:hover{border-color:var(--muted);color:var(--text)}
 
 /* ── Settings modal ── */
 .settings-modal{max-width:520px}
@@ -92,36 +84,24 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .set-sec:last-child{margin-bottom:0}
 .set-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .set-title i{color:var(--accent2)}
-
-/* Appearance sub-labels */
 .appear-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:6px}
 .appear-label i{color:var(--muted);font-size:9px}
 .appear-group{margin-bottom:16px}
 .appear-group:last-child{margin-bottom:0}
-
-/* Shared trigger/dropdown */
 .tz-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:border-color var(--transition-base);font-family:var(--font-body,'Inter',sans-serif);font-size:13px;color:var(--text)}
 .tz-trigger:hover{border-color:var(--accent2)}
 .tz-trigger-left{display:flex;align-items:center;gap:10px}
 .tz-trigger-right{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
 .tz-trigger-right i.chev{font-size:10px;transition:transform var(--transition-base)}
 .tz-trigger.open .tz-trigger-right i.chev{transform:rotate(180deg)}
-
-/* Theme trigger swatches */
 .theme-trigger-swatches{display:flex;gap:3px}
 .theme-trigger-swatch{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,.08)}
 .theme-trigger-name{font-weight:500}
-
-/* Font trigger preview */
 .font-trigger-preview{display:flex;flex-direction:column;gap:1px}
 .ftp-heading{font-size:13px;font-weight:600;line-height:1.2;color:var(--text)}
 .ftp-body{font-size:10px;color:var(--muted);line-height:1.2}
-
-/* Dropdown */
 .tz-dropdown{display:none;margin-top:4px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:dropIn .18s ease}
 .tz-dropdown.open{display:block}
-
-/* Theme rows */
 .theme-row{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid var(--border)}
 .theme-row:last-child{border-bottom:none}
 .theme-row:hover{background:rgba(255,255,255,.04)}
@@ -136,14 +116,11 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .tr-desc{font-size:11px;color:var(--muted);margin-top:1px}
 .tr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .tr-check{color:var(--accent2);font-size:13px}
-/* Pro badge: only shown to free users */
 .tr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
 .tr-pro.electric{background:rgba(0,229,255,.12);color:#00e5ff;border:1px solid rgba(0,229,255,.3)}
 .tr-pro.golden{background:rgba(245,200,66,.12);color:#d4a017;border:1px solid rgba(245,200,66,.3)}
 .tr-pro.void{background:rgba(200,200,200,.1);color:#aaaaaa;border:1px solid rgba(200,200,200,.25)}
 .tr-pro.generic{background:rgba(var(--accent-rgb,0,255,136),.1);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.25)}
-
-/* Font rows */
 .font-row{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background var(--transition-fast);border-bottom:1px solid var(--border)}
 .font-row:last-child{border-bottom:none}
 .font-row:hover{background:rgba(255,255,255,.04)}
@@ -157,8 +134,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .fr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .fr-check{color:var(--accent2);font-size:13px}
 .fr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:rgba(var(--accent-rgb,0,255,136),.1);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.25)}
-
-/* Pro upsell hints */
 .tz-pro-hint{display:none;margin-top:8px;padding:9px 12px;background:rgba(var(--accent-rgb,0,255,136),.04);border:1px solid rgba(var(--accent-rgb,0,255,136),.15);border-radius:var(--radius-md);font-size:12px;color:var(--muted);line-height:1.6}
 .tz-pro-hint.show{display:block}
 .tz-pro-hint a{color:var(--accent2);font-weight:600;text-decoration:none}
@@ -168,6 +143,8 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .plan-row:last-child{border-bottom:none}
 .pr-lbl{font-size:13px;font-weight:500}
 .pr-val{font-size:12px;color:var(--muted)}
+.pr-val.pro-green{color:var(--accent2);font-weight:600}
+.pr-val.expiring{color:#fbbf24;font-weight:600}
 .upgrade-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;transition:opacity var(--transition-base)}
 .upgrade-btn:hover{opacity:.85}
 .links-row{display:flex;flex-direction:column;gap:4px}
@@ -201,6 +178,16 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity var(--transition-base);flex-shrink:0}
 .nudge-btn:hover{opacity:.85}
 
+/* Eye */
+.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color var(--transition-fast);line-height:1}
+.eye-btn:hover{color:var(--text)}
+.acct-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-family:var(--font-body,'Inter',sans-serif);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition-base);display:flex;align-items:center;flex-shrink:0}
+.acct-edit-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+.acct-save-btn{flex:1;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:9px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--transition-base);display:flex;align-items:center;justify-content:center}
+.acct-save-btn:hover{opacity:.85}
+.acct-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all var(--transition-fast)}
+.acct-cancel-btn:hover{border-color:var(--muted);color:var(--text)}
+
 /* Toast */
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0);animation:slideDown .25s ease}
@@ -219,6 +206,10 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <span class="uname" id="uName">—</span>
       <span class="plan-badge badge-free" id="planBadge" onclick="location.href='/subscription'">Free</span>
     </div>
+    <!-- Profile link -->
+    <button class="btn-ghost" onclick="location.href='/profile'" title="My Profile">
+      <i class="fa-solid fa-user"></i>
+    </button>
     <button class="btn-ghost" onclick="openSettings()"><i class="fa-solid fa-gear"></i> Settings</button>
     <button class="btn-ghost" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
   </div>
@@ -285,8 +276,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <!-- Appearance -->
       <div class="set-sec">
         <div class="set-title"><i class="fa-solid fa-palette"></i>Appearance</div>
-
-        <!-- Color Theme -->
         <div class="appear-group">
           <div class="appear-label"><i class="fa-solid fa-droplet"></i>Color Theme</div>
           <button class="tz-trigger" id="themeTrigger" onclick="toggleThemeDropdown()">
@@ -302,18 +291,14 @@ main{padding:32px;max-width:1100px;margin:0 auto}
           <div class="tz-dropdown" id="themeDropdown"></div>
           <div class="tz-pro-hint" id="themeProHint">
             <i class="fa-solid fa-lock" style="margin-right:6px;opacity:.6"></i>
-            Pro themes unlock with a <a href="/subscription">Pro plan</a>. Golden Hour, Void, and Electric included.
+            Pro themes unlock with a <a href="/subscription">Pro plan</a>.
           </div>
         </div>
-
-        <!-- Font -->
         <div class="appear-group">
           <div class="appear-label"><i class="fa-solid fa-font"></i>Font</div>
           <button class="tz-trigger" id="fontTrigger" onclick="toggleFontDropdown()">
             <div class="tz-trigger-left" id="fontTriggerLeft"></div>
-            <div class="tz-trigger-right">
-              <i class="fa-solid fa-chevron-down chev"></i>
-            </div>
+            <div class="tz-trigger-right"><i class="fa-solid fa-chevron-down chev"></i></div>
           </button>
           <div class="tz-dropdown" id="fontDropdown"></div>
           <div class="tz-pro-hint" id="fontProHint">
@@ -323,63 +308,27 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         </div>
       </div>
 
-      <!-- Account -->
-      <div class="set-sec">
-        <div class="set-title"><i class="fa-solid fa-user-circle"></i>Account</div>
-        <div style="margin-bottom:12px">
-          <div id="emailBtnRow" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md)">
-            <div>
-              <div style="font-size:13px;font-weight:500">Email Address</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px" id="emailCurrentDisplay">—</div>
-            </div>
-            <button class="acct-edit-btn" onclick="toggleAcctSection('email')"><i class="fa-solid fa-pen" style="margin-right:5px"></i>Change</button>
-          </div>
-          <div id="emailSection" style="display:none;margin-top:8px">
-            <input type="email" id="setEmail" placeholder="New email address" autocomplete="email"
-              style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:11px 13px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;transition:border-color var(--transition-base)">
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="acct-cancel-btn" onclick="toggleAcctSection('email')">Cancel</button>
-              <button class="acct-save-btn" onclick="saveEmail()"><i class="fa-solid fa-save" style="margin-right:5px"></i>Save Email</button>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div id="passBtnRow" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md)">
-            <div>
-              <div style="font-size:13px;font-weight:500">Password</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">••••••••••</div>
-            </div>
-            <button class="acct-edit-btn" onclick="toggleAcctSection('pass')"><i class="fa-solid fa-pen" style="margin-right:5px"></i>Change</button>
-          </div>
-          <div id="passSection" style="display:none;flex-direction:column;gap:8px">
-            <div style="position:relative;margin-top:8px">
-              <input type="password" id="setPassword" placeholder="New password (min 8 chars)" autocomplete="new-password"
-                style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:11px 40px 11px 13px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;transition:border-color var(--transition-base)">
-              <button class="eye-btn" type="button" onclick="toggleEye('setPassword',this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-            <div style="position:relative">
-              <input type="password" id="setPasswordConfirm" placeholder="Confirm new password" autocomplete="new-password"
-                style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:11px 40px 11px 13px;color:var(--text);font-family:var(--font-body,'Inter',sans-serif);font-size:14px;outline:none;transition:border-color var(--transition-base)">
-              <button class="eye-btn" type="button" onclick="toggleEye('setPasswordConfirm',this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="acct-cancel-btn" onclick="toggleAcctSection('pass')">Cancel</button>
-              <button class="acct-save-btn" onclick="savePassword()"><i class="fa-solid fa-save" style="margin-right:5px"></i>Save Password</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Subscription -->
+      <!-- Subscription (now with expiry) -->
       <div class="set-sec">
         <div class="set-title"><i class="fa-solid fa-star"></i>Subscription</div>
         <div class="plan-row">
           <div><div class="pr-lbl">Current Plan</div><div class="pr-val" id="settingsPlanLabel">Free</div></div>
           <button class="upgrade-btn" id="settingsUpgradeBtn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
         </div>
+        <!-- Subscription expiry row — only visible for Pro -->
+        <div class="plan-row" id="settingsExpiryRow" style="display:none">
+          <div><div class="pr-lbl">Subscription Period</div><div class="pr-val pro-green" id="settingsExpiryLabel">—</div></div>
+        </div>
         <div class="plan-row">
-          <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals, calculator, full analytics, all themes &amp; fonts</div></div>
+          <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals · Calculator · Full analytics · All themes &amp; fonts</div></div>
           <i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i>
+        </div>
+        <!-- Profile link inside settings -->
+        <div class="plan-row" style="border-top:1px solid var(--border);margin-top:4px">
+          <div><div class="pr-lbl">Account &amp; Referrals</div><div class="pr-val">Manage profile, password, referral link</div></div>
+          <button class="upgrade-btn" style="background:var(--panel);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)" onclick="location.href='/profile'">
+            <i class="fa-solid fa-user"></i> Profile
+          </button>
         </div>
       </div>
 
@@ -443,7 +392,6 @@ let _themeDropOpen=false, _fontDropOpen=false;
 // ═══════════════════════════════════════════════════════════
 //  THEME PICKER
 // ═══════════════════════════════════════════════════════════
-
 function _buildThemeDropdown(){
   const dd=document.getElementById('themeDropdown');
   if(!dd||!window.TZ)return;
@@ -455,32 +403,14 @@ function _buildThemeDropdown(){
     const row=document.createElement('div');
     row.className='theme-row'+(active?' active':'')+(locked?' locked':'');
     const swatchHtml=th.swatches.map(c=>`<span class="tr-swatch" style="background:${c}"></span>`).join('');
-    // Pro badge mapping
     const proBadgeClass={'blue-electric':'electric','golden':'golden','void':'void'}[th.id]||'generic';
-    // Only show PRO badge to free users
     const proHtml=(th.pro&&!isPro)?`<span class="tr-pro ${proBadgeClass}">PRO</span>`:'';
-    row.innerHTML=`
-      <div class="tr-swatches">${swatchHtml}</div>
-      <div class="tr-info">
-        <div class="tr-name">${th.label}</div>
-        <div class="tr-desc">${th.desc}</div>
-      </div>
-      <div class="tr-right">
-        ${active?'<i class="fa-solid fa-check tr-check"></i>':''}
-        ${proHtml}
-      </div>`;
-    if(!locked){
-      row.addEventListener('click',()=>{ _applyThemeSelection(th.id); closeThemeDropdown(); });
-    } else {
-      row.addEventListener('click',()=>{
-        document.getElementById('themeProHint').classList.add('show');
-        showToast(`${th.label} is a Pro theme. Upgrade to unlock it.`,'fa-solid fa-crown','red');
-      });
-    }
+    row.innerHTML=`<div class="tr-swatches">${swatchHtml}</div><div class="tr-info"><div class="tr-name">${th.label}</div><div class="tr-desc">${th.desc}</div></div><div class="tr-right">${active?'<i class="fa-solid fa-check tr-check"></i>':''}${proHtml}</div>`;
+    if(!locked){row.addEventListener('click',()=>{_applyThemeSelection(th.id);closeThemeDropdown();});}
+    else{row.addEventListener('click',()=>{document.getElementById('themeProHint').classList.add('show');showToast(`${th.label} is a Pro theme.`,'fa-solid fa-crown','red');});}
     dd.appendChild(row);
   });
 }
-
 function _updateThemeTrigger(themeId){
   const cur=themeId||localStorage.getItem('tl_theme')||'dark';
   const meta=TZ.themeList?.find(t=>t.id===cur)||TZ.themeList?.[1]||{label:'Dark',desc:'',swatches:['#111','#1a1a1a','#aaa']};
@@ -491,123 +421,58 @@ function _updateThemeTrigger(themeId){
   if(nameEl)nameEl.textContent=meta.label;
   if(descEl)descEl.textContent=meta.desc;
 }
-
-function _applyThemeSelection(id){
-  if(window.TZ)TZ.setTheme(id);
-  else localStorage.setItem('tl_theme',id);
-  _updateThemeTrigger(id);
-  _buildThemeDropdown();
-}
-
+function _applyThemeSelection(id){if(window.TZ)TZ.setTheme(id);else localStorage.setItem('tl_theme',id);_updateThemeTrigger(id);_buildThemeDropdown();}
 function toggleThemeDropdown(){
   if(_fontDropOpen)closeFontDropdown();
-  const dd=document.getElementById('themeDropdown');
-  const btn=document.getElementById('themeTrigger');
+  const dd=document.getElementById('themeDropdown'),btn=document.getElementById('themeTrigger');
   _themeDropOpen=!_themeDropOpen;
-  dd.classList.toggle('open',_themeDropOpen);
-  btn.classList.toggle('open',_themeDropOpen);
+  dd.classList.toggle('open',_themeDropOpen);btn.classList.toggle('open',_themeDropOpen);
   if(_themeDropOpen){_buildThemeDropdown();document.getElementById('themeProHint').classList.remove('show');}
 }
-
-function closeThemeDropdown(){
-  _themeDropOpen=false;
-  document.getElementById('themeDropdown')?.classList.remove('open');
-  document.getElementById('themeTrigger')?.classList.remove('open');
-}
+function closeThemeDropdown(){_themeDropOpen=false;document.getElementById('themeDropdown')?.classList.remove('open');document.getElementById('themeTrigger')?.classList.remove('open');}
 
 // ═══════════════════════════════════════════════════════════
 //  FONT PICKER
 // ═══════════════════════════════════════════════════════════
-
 function _buildFontDropdown(){
   const dd=document.getElementById('fontDropdown');
   if(!dd||!window.TZ)return;
   const cur=localStorage.getItem('tl_font')||'default';
   dd.innerHTML='';
-  // Inject all font stylesheets so previews render correctly
   TZ.fontList.forEach(f=>{if(f.url)TZ._injectFont(f.url);});
   TZ.fontList.forEach(f=>{
-    const locked=f.pro&&!isPro;
-    const active=f.id===cur;
+    const locked=f.pro&&!isPro,active=f.id===cur;
     const row=document.createElement('div');
     row.className='font-row'+(active?' active':'')+(locked?' locked':'');
-    // Pro badge only shown to free users
     const proHtml=(f.pro&&!isPro)?'<span class="fr-pro">PRO</span>':'';
-    row.innerHTML=`
-      <div class="fr-preview">
-        <div class="fr-heading-preview" style="font-family:${f.heading}">${f.preview.heading}</div>
-        <div class="fr-body-preview" style="font-family:${f.body}">${f.preview.body}</div>
-        <div class="fr-meta">${f.desc}</div>
-      </div>
-      <div class="fr-right">
-        ${active?'<i class="fa-solid fa-check fr-check"></i>':''}
-        ${proHtml}
-      </div>`;
-    if(!locked){
-      row.addEventListener('click',()=>{ _applyFontSelection(f.id); closeFontDropdown(); });
-    } else {
-      row.addEventListener('click',()=>{
-        document.getElementById('fontProHint').classList.add('show');
-        showToast(`${f.label} is a Pro font. Upgrade to unlock it.`,'fa-solid fa-crown','red');
-      });
-    }
+    row.innerHTML=`<div class="fr-preview"><div class="fr-heading-preview" style="font-family:${f.heading}">${f.preview.heading}</div><div class="fr-body-preview" style="font-family:${f.body}">${f.preview.body}</div><div class="fr-meta">${f.desc}</div></div><div class="fr-right">${active?'<i class="fa-solid fa-check fr-check"></i>':''}${proHtml}</div>`;
+    if(!locked){row.addEventListener('click',()=>{_applyFontSelection(f.id);closeFontDropdown();});}
+    else{row.addEventListener('click',()=>{document.getElementById('fontProHint').classList.add('show');showToast(`${f.label} is a Pro font.`,'fa-solid fa-crown','red');});}
     dd.appendChild(row);
   });
 }
-
 function _updateFontTrigger(fontId){
   const cur=fontId||localStorage.getItem('tl_font')||'default';
   const meta=TZ.fontList?.find(f=>f.id===cur)||TZ.fontList?.[0];
   if(!meta)return;
   const el=document.getElementById('fontTriggerLeft');
   if(!el)return;
-  el.innerHTML=`
-    <div class="font-trigger-preview">
-      <span class="ftp-heading" style="font-family:${meta.heading}">${meta.preview.heading}</span>
-      <span class="ftp-body" style="font-family:${meta.body}">${meta.preview.body} · ${meta.desc}</span>
-    </div>`;
+  el.innerHTML=`<div class="font-trigger-preview"><span class="ftp-heading" style="font-family:${meta.heading}">${meta.preview.heading}</span><span class="ftp-body" style="font-family:${meta.body}">${meta.preview.body} · ${meta.desc}</span></div>`;
 }
-
-function _applyFontSelection(id){
-  if(window.TZ)TZ.setFont(id);
-  else localStorage.setItem('tl_font',id);
-  _updateFontTrigger(id);
-  _buildFontDropdown();
-}
-
+function _applyFontSelection(id){if(window.TZ)TZ.setFont(id);else localStorage.setItem('tl_font',id);_updateFontTrigger(id);_buildFontDropdown();}
 function toggleFontDropdown(){
   if(_themeDropOpen)closeThemeDropdown();
-  const dd=document.getElementById('fontDropdown');
-  const btn=document.getElementById('fontTrigger');
+  const dd=document.getElementById('fontDropdown'),btn=document.getElementById('fontTrigger');
   _fontDropOpen=!_fontDropOpen;
-  dd.classList.toggle('open',_fontDropOpen);
-  btn.classList.toggle('open',_fontDropOpen);
+  dd.classList.toggle('open',_fontDropOpen);btn.classList.toggle('open',_fontDropOpen);
   if(_fontDropOpen){_buildFontDropdown();document.getElementById('fontProHint').classList.remove('show');}
 }
+function closeFontDropdown(){_fontDropOpen=false;document.getElementById('fontDropdown')?.classList.remove('open');document.getElementById('fontTrigger')?.classList.remove('open');}
 
-function closeFontDropdown(){
-  _fontDropOpen=false;
-  document.getElementById('fontDropdown')?.classList.remove('open');
-  document.getElementById('fontTrigger')?.classList.remove('open');
-}
-
-// Close on outside click
 document.addEventListener('click',e=>{
-  if(_themeDropOpen){
-    const dd=document.getElementById('themeDropdown'),btn=document.getElementById('themeTrigger');
-    if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target))closeThemeDropdown();
-  }
-  if(_fontDropOpen){
-    const dd=document.getElementById('fontDropdown'),btn=document.getElementById('fontTrigger');
-    if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target))closeFontDropdown();
-  }
+  if(_themeDropOpen){const dd=document.getElementById('themeDropdown'),btn=document.getElementById('themeTrigger');if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target))closeThemeDropdown();}
+  if(_fontDropOpen){const dd=document.getElementById('fontDropdown'),btn=document.getElementById('fontTrigger');if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target))closeFontDropdown();}
 });
-
-function toggleEye(id,btn){
-  const inp=document.getElementById(id),show=inp.type==='password';
-  inp.type=show?'text':'password';
-  btn.querySelector('i').className=show?'fa-solid fa-eye-slash':'fa-solid fa-eye';
-}
 
 // ── Boot ──────────────────────────────────────────────────
 (async()=>{
@@ -622,6 +487,21 @@ function toggleEye(id,btn){
     document.getElementById('settingsPlanLabel').textContent='Pro — Active';
     document.getElementById('settingsUpgradeBtn').style.display='none';
     document.getElementById('proLockIcon').style.display='none';
+
+    // ── Show subscription expiry in settings
+    if(profile?.subscription_expires_at){
+      const expiry=formatSubscriptionExpiry(profile.subscription_expires_at);
+      const d=new Date(profile.subscription_expires_at),now=new Date();
+      const daysLeft=Math.ceil((d-now)/(1000*60*60*24));
+      const expiryEl=document.getElementById('settingsExpiryLabel');
+      expiryEl.textContent=expiry;
+      expiryEl.className='pr-val '+(daysLeft<=7?'expiring':'pro-green');
+      document.getElementById('settingsExpiryRow').style.display='flex';
+    } else {
+      // Ongoing paid subscription — no expiry date stored
+      document.getElementById('settingsExpiryLabel').textContent='Active subscription';
+      document.getElementById('settingsExpiryRow').style.display='flex';
+    }
   } else {
     document.getElementById('adSlot').classList.add('visible');
     document.getElementById('upgradeNudge').classList.add('visible');
@@ -646,7 +526,6 @@ async function loadJournals(){
   document.getElementById('loadingState').style.display='none';
   renderJournals();
 }
-
 function renderJournals(){
   const grid=document.getElementById('grid');grid.style.display='';
   if(!journals.length){
@@ -663,16 +542,9 @@ function renderJournals(){
       const fmt=(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toFixed(2);
       pnlHtml=`<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
     }
-    return`<div class="jcard">
-      <div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>
-      ${capHtml}${pnlHtml}
-      <button class="open-btn" onclick="goJournal('${j.id}')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
-      </button>
-    </div>`;
+    return`<div class="jcard"><div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>${capHtml}${pnlHtml}<button class="open-btn" onclick="goJournal('${j.id}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal</button></div>`;
   }).join('');
 }
-
 function goJournal(id){
   sessionStorage.setItem('tz_current_journal',id);
   if(window.posthog)posthog.capture('journal_opened');
@@ -681,10 +553,7 @@ function goJournal(id){
 
 // ── Create Journal ────────────────────────────────────────
 function openCreate(){
-  if(!isPro&&journals.length>=1){
-    showToast('Free plan: 1 journal only. Upgrade for unlimited.','fa-solid fa-lock','red');
-    setTimeout(()=>location.href='/subscription',2100);return;
-  }
+  if(!isPro&&journals.length>=1){showToast('Free plan: 1 journal only. Upgrade for unlimited.','fa-solid fa-lock','red');setTimeout(()=>location.href='/subscription',2100);return;}
   document.getElementById('createModal').classList.add('open');
   setTimeout(()=>document.getElementById('jName').focus(),100);
 }
@@ -707,57 +576,12 @@ document.getElementById('createModal').addEventListener('click',function(e){if(e
 // ── Settings ──────────────────────────────────────────────
 function openSettings(){
   closeThemeDropdown();closeFontDropdown();
-  collapseAcctSection('email');collapseAcctSection('pass');
-  const emailDisplay=document.getElementById('emailCurrentDisplay');
-  if(emailDisplay&&currentUser?.email)emailDisplay.textContent=currentUser.email;
   _updateThemeTrigger(localStorage.getItem('tl_theme')||'dark');
   _updateFontTrigger(localStorage.getItem('tl_font')||'default');
   document.getElementById('settingsModal').classList.add('open');
 }
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');closeThemeDropdown();closeFontDropdown();}
 document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)closeSettings();});
-
-function toggleAcctSection(section){
-  const eS=document.getElementById('emailSection'),pS=document.getElementById('passSection');
-  if(section==='email'){
-    const open=eS.style.display!=='none'&&eS.style.display!=='';
-    if(open)collapseAcctSection('email');
-    else{collapseAcctSection('pass');eS.style.display='block';setTimeout(()=>document.getElementById('setEmail')?.focus(),80);}
-  } else {
-    const open=pS.style.display==='flex';
-    if(open)collapseAcctSection('pass');
-    else{collapseAcctSection('email');pS.style.display='flex';setTimeout(()=>document.getElementById('setPassword')?.focus(),80);}
-  }
-}
-function collapseAcctSection(section){
-  if(section==='email'){const el=document.getElementById('emailSection');if(el){el.style.display='none';const inp=document.getElementById('setEmail');if(inp)inp.value='';}}
-  else{const el=document.getElementById('passSection');if(el){el.style.display='none';['setPassword','setPasswordConfirm'].forEach(id=>{const inp=document.getElementById(id);if(inp)inp.value='';});}}
-}
-
-async function saveEmail(){
-  const email=document.getElementById('setEmail').value.trim();
-  if(!email){showToast('Enter a new email address.','fa-solid fa-circle-exclamation','red');return;}
-  try{
-    const{error}=await db.auth.updateUser({email});
-    if(error)throw error;
-    document.getElementById('emailCurrentDisplay').textContent=email;
-    collapseAcctSection('email');
-    showToast('Email updated! Check your inbox to confirm.','fa-solid fa-circle-check','green');
-  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
-}
-
-async function savePassword(){
-  const pass=document.getElementById('setPassword').value,passC=document.getElementById('setPasswordConfirm').value;
-  if(!pass){showToast('Enter a new password.','fa-solid fa-circle-exclamation','red');return;}
-  if(pass.length<8){showToast('Password must be at least 8 characters.','fa-solid fa-circle-exclamation','red');return;}
-  if(pass!==passC){showToast('Passwords do not match.','fa-solid fa-circle-exclamation','red');return;}
-  try{
-    const{error}=await db.auth.updateUser({password:pass});
-    if(error)throw error;
-    collapseAcctSection('pass');
-    showToast('Password updated successfully!','fa-solid fa-circle-check','green');
-  }catch(e){showToast('Error: '+e.message,'fa-solid fa-circle-exclamation','red');}
-}
 
 // ── Delete Account ────────────────────────────────────────
 function openDelAccount(){
@@ -786,8 +610,7 @@ async function executeDeleteAccount(){
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||'Deletion failed');
     document.getElementById('delAccMsg').textContent='Account deleted. Redirecting…';
-    await db.auth.signOut();
-    sessionStorage.clear();localStorage.clear();
+    await db.auth.signOut();sessionStorage.clear();localStorage.clear();
     setTimeout(()=>location.href='/',1500);
   }catch(e){
     showToast('Failed: '+e.message,'fa-solid fa-circle-exclamation','red');
@@ -806,8 +629,7 @@ function showToast(msg,icon='fa-solid fa-circle-check',type=''){
   document.getElementById('toastIcon').className=icon;
   document.getElementById('toastMsg').textContent=msg;
   t.className='show'+(type==='green'?' toast-green':type==='red'?' toast-red':'');
-  clearTimeout(_tt);
-  _tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3400);
+  clearTimeout(_tt);_tt=setTimeout(()=>{t.classList.remove('show','toast-green','toast-red');},3400);
 }
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 </script>

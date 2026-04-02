@@ -29,14 +29,13 @@ db.auth.onAuthStateChange(async (event, session) => {
     }
   }
 
-  // Redirect to reset-password page when magic link is clicked
   if (event === "PASSWORD_RECOVERY") {
     if (!path.includes("reset-password")) {
       window.location.href = "/reset-password";
     }
   }
 
-  // 🧠 REFERRAL LOGIC (NEW)
+  // 🧠 REFERRAL LOGIC — apply stored referral code on sign-in
   if (event === "SIGNED_IN" && session?.user) {
     try {
       const refCode = localStorage.getItem("ref_code");
@@ -59,7 +58,7 @@ db.auth.onAuthStateChange(async (event, session) => {
         const data = await res.json();
         console.log("Referral response:", data);
 
-        // ✅ Prevent reuse
+        // ✅ Prevent reuse regardless of outcome
         localStorage.removeItem("ref_code");
       }
     } catch (err) {
@@ -69,7 +68,6 @@ db.auth.onAuthStateChange(async (event, session) => {
 });
 
 // ── requireAuth ───────────────────────────────────────────
-// Server-validates the JWT. Call at the top of every protected page.
 async function requireAuth() {
   const {
     data: { user },
@@ -98,6 +96,63 @@ async function getProfile(userId) {
     .eq("id", userId)
     .single();
   return data;
+}
+
+/**
+ * Update safe profile fields (name only from client).
+ * Email/password are updated via db.auth.updateUser().
+ */
+async function updateProfile(userId, updates) {
+  // Only allow safe fields from client
+  const safe = {};
+  if ("name" in updates) safe.name = updates.name;
+  if (!Object.keys(safe).length) return;
+  const { error } = await db.from("profiles").update(safe).eq("id", userId);
+  if (error) throw error;
+}
+
+// ── Referrals ─────────────────────────────────────────────
+/**
+ * Get all referrals made by this user.
+ * Joins referred user's email/name from profiles.
+ */
+async function getReferrals(userId) {
+  const { data, error } = await db
+    .from("referrals")
+    .select("id, status, reward_granted, created_at, referred_user_id")
+    .eq("referrer_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("getReferrals:", error);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Build the shareable referral URL for this user's code.
+ */
+function buildReferralUrl(referralCode) {
+  return `${window.location.origin}/auth?ref=${referralCode}`;
+}
+
+/**
+ * Compute a human-readable subscription expiry label.
+ * Returns e.g. "Expires Jan 15, 2026" or "Expired" or null.
+ */
+function formatSubscriptionExpiry(isoString) {
+  if (!isoString) return null;
+  const d = new Date(isoString);
+  const now = new Date();
+  if (d < now) return "Expired";
+  const diff = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
+  const formatted = d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  if (diff <= 7) return `Expires soon — ${formatted} (${diff}d left)`;
+  return `Renews / expires ${formatted}`;
 }
 
 // ── Journals ──────────────────────────────────────────────
@@ -157,7 +212,6 @@ async function updateJournal(journalId, updates) {
 }
 
 async function deleteJournal(journalId) {
-  // trades and trade_images are deleted automatically via ON DELETE CASCADE
   const { error } = await db.from("journals").delete().eq("id", journalId);
   if (error) throw error;
 }
@@ -194,7 +248,6 @@ async function updateTrade(tradeId, updates) {
 }
 
 async function deleteTrade(tradeId) {
-  // trade_images rows are deleted automatically via ON DELETE CASCADE
   const { error } = await db.from("trades").delete().eq("id", tradeId);
   if (error) throw error;
 }
@@ -243,11 +296,7 @@ function dbToTrade(row) {
   };
 }
 
-// ── Trade Images — Supabase Storage ──────────────────────
-/**
- * Save a base64 image to the trade_images table (data column).
- * Works with the current schema — no Storage bucket or migration required.
- */
+// ── Trade Images ──────────────────────────────────────────
 async function addTradeImage(userId, tradeId, base64DataUrl) {
   const { data, error } = await db
     .from("trade_images")
@@ -258,19 +307,12 @@ async function addTradeImage(userId, tradeId, base64DataUrl) {
   return { ...data, _previewUrl: base64DataUrl };
 }
 
-/**
- * Get the display URL for an image.
- * Images are stored as base64 in the data column — return directly.
- */
 async function getImageUrl(img) {
   if (!img) return "";
   if (img._previewUrl) return img._previewUrl;
   return img.data || "";
 }
 
-/**
- * Delete an image row from trade_images.
- */
 async function deleteTradeImage(imageId) {
   const { error } = await db.from("trade_images").delete().eq("id", imageId);
   if (error) throw error;

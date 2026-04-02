@@ -1,21 +1,10 @@
 // supabase/functions/stripe-webhook/index.ts
 //
 // SETUP STEPS:
-// 1. Run: supabase functions new stripe-webhook
-// 2. Replace file content with this code
-// 3. Set secrets:
-//    supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_XXXX
-//    supabase secrets set STRIPE_SECRET_KEY=sk_live_XXXX
-// 4. Deploy: supabase functions deploy stripe-webhook
-// 5. In Stripe Dashboard → Webhooks → Add endpoint:
-//    URL: https://oixrpuqylidbunbttftg.supabase.co/functions/v1/stripe-webhook
-//    Events to listen for:
-//      - checkout.session.completed
-//      - customer.subscription.deleted
-//      - customer.subscription.updated
-//    Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET
-//
-// DB requirement: Run migration_stripe.sql in Supabase SQL Editor first
+// 1. supabase functions deploy stripe-webhook
+// 2. Secrets required:
+//    STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY
+//    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (auto-injected)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.18.0?target=deno&no-check";
@@ -26,7 +15,6 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-// Service role client — bypasses RLS to update profiles
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -36,7 +24,6 @@ serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
 
-  // 1. Verify webhook came from Stripe
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(
@@ -51,7 +38,6 @@ serve(async (req) => {
 
   console.log(`Received Stripe event: ${event.type}`);
 
-  // 2. Handle each event type
   try {
     switch (event.type) {
 
@@ -61,13 +47,47 @@ serve(async (req) => {
         const userId = session.metadata?.supabase_user_id;
         if (!userId) { console.error("No supabase_user_id in session metadata"); break; }
 
+        // Calculate subscription end date from Stripe subscription
+        let expiresAt: string | null = null;
+        if (session.subscription) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+            if (sub.current_period_end) {
+              expiresAt = new Date(sub.current_period_end * 1000).toISOString();
+            }
+          } catch (e) {
+            console.error("Could not fetch subscription details:", e);
+          }
+        }
+
         await supabase.from("profiles").update({
           plan: "pro",
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: session.subscription as string,
+          subscription_expires_at: expiresAt,
         }).eq("id", userId);
 
-        console.log(`Upgraded user ${userId} to Pro`);
+        console.log(`Upgraded user ${userId} to Pro (expires: ${expiresAt})`);
+
+        // 🎁 Grant referral reward if this user was referred
+        try {
+          const rewardRes = await fetch(
+            `${Deno.env.get("SUPABASE_URL")}/functions/v1/grant-referral-reward`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              },
+              body: JSON.stringify({ referred_user_id: userId }),
+            }
+          );
+          const rewardData = await rewardRes.json();
+          console.log("Referral reward result:", rewardData);
+        } catch (e) {
+          console.error("Failed to call grant-referral-reward:", e);
+        }
+
         break;
       }
 
@@ -79,23 +99,28 @@ serve(async (req) => {
         await supabase.from("profiles").update({
           plan: "free",
           stripe_subscription_id: null,
+          subscription_expires_at: null,
         }).eq("stripe_customer_id", customerId);
 
         console.log(`Downgraded customer ${customerId} to Free (subscription deleted)`);
         break;
       }
 
-      // ── Subscription updated (e.g. payment failed → past_due) ──
+      // ── Subscription updated ──────────────────────────────────
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
         const isActive = sub.status === "active" || sub.status === "trialing";
+        const expiresAt = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
 
         await supabase.from("profiles").update({
           plan: isActive ? "pro" : "free",
+          subscription_expires_at: isActive ? expiresAt : null,
         }).eq("stripe_customer_id", customerId);
 
-        console.log(`Updated customer ${customerId} plan → ${isActive ? "pro" : "free"} (status: ${sub.status})`);
+        console.log(`Updated customer ${customerId} → ${isActive ? "pro" : "free"} (expires: ${expiresAt})`);
         break;
       }
 
