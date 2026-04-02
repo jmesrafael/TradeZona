@@ -1,9 +1,9 @@
 // ============================================================
-//  supabase.js — Shared Supabase client for TradeZona
+//  supabase.js — Shared Supabase client for TradeZona v2
 //  Load this script BEFORE any other scripts on every page.
 // ============================================================
 
-const SUPABASE_URL = "https://oixrpuqylidbunbttftg.supabase.co";
+const SUPABASE_URL  = "https://oixrpuqylidbunbttftg.supabase.co";
 const SUPABASE_ANON = "sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho";
 
 const { createClient } = supabase;
@@ -17,7 +17,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
   },
 });
 
-// ── Auth state watcher ────────────────────────────────────
+// ── Auth state watcher ────────────────────────────────────────
 db.auth.onAuthStateChange(async (event, session) => {
   const publicPaths = ["/", "/auth", "/confirm", "/reset-password"];
   const path =
@@ -39,40 +39,29 @@ db.auth.onAuthStateChange(async (event, session) => {
   if (event === "SIGNED_IN" && session?.user) {
     try {
       const refCode = localStorage.getItem("ref_code");
-
       if (refCode) {
-        console.log("Applying referral:", refCode);
-
-        const res = await fetch(
-          `${SUPABASE_URL}/functions/v1/apply-referral`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ referral_code: refCode }),
+        console.log("[referral] Applying referral code:", refCode);
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/apply-referral`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
           },
-        );
-
+          body: JSON.stringify({ referral_code: refCode }),
+        });
         const data = await res.json();
-        console.log("Referral response:", data);
-
-        // ✅ Prevent reuse regardless of outcome
-        localStorage.removeItem("ref_code");
+        console.log("[referral] Response:", data);
+        localStorage.removeItem("ref_code"); // Always clear, success or not
       }
     } catch (err) {
-      console.error("Referral error:", err);
+      console.error("[referral] Error:", err);
     }
   }
 });
 
-// ── requireAuth ───────────────────────────────────────────
+// ── requireAuth ───────────────────────────────────────────────
 async function requireAuth() {
-  const {
-    data: { user },
-    error,
-  } = await db.auth.getUser();
+  const { data: { user }, error } = await db.auth.getUser();
   if (error || !user) {
     await db.auth.signOut();
     window.location.href = "/auth";
@@ -82,13 +71,11 @@ async function requireAuth() {
 }
 
 async function getUser() {
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   return user;
 }
 
-// ── Profile ───────────────────────────────────────────────
+// ── Profile ───────────────────────────────────────────────────
 async function getProfile(userId) {
   const { data } = await db
     .from("profiles")
@@ -99,11 +86,10 @@ async function getProfile(userId) {
 }
 
 /**
- * Update safe profile fields (name only from client).
- * Email/password are updated via db.auth.updateUser().
+ * Update safe profile fields from client (name only).
+ * Plan/Stripe/theme fields are updated via dedicated functions.
  */
 async function updateProfile(userId, updates) {
-  // Only allow safe fields from client
   const safe = {};
   if ("name" in updates) safe.name = updates.name;
   if (!Object.keys(safe).length) return;
@@ -111,103 +97,142 @@ async function updateProfile(userId, updates) {
   if (error) throw error;
 }
 
-// ── Referrals ─────────────────────────────────────────────
+// ── Theme Persistence ─────────────────────────────────────────
 /**
- * Get all referrals made by this user.
- * Joins referred user's email/name from profiles.
+ * Persist theme/font to Supabase via secure RPC.
+ * localStorage is updated instantly; DB is synced in background.
  */
+async function saveThemeToProfile(colorTheme, fontTheme) {
+  try {
+    const { error } = await db.rpc("update_user_theme", {
+      p_color_theme: colorTheme || null,
+      p_font_theme:  fontTheme  || null,
+    });
+    if (error) console.warn("[theme] DB sync failed:", error.message);
+    else console.log("[theme] Synced to DB:", { colorTheme, fontTheme });
+  } catch (err) {
+    console.warn("[theme] DB sync error:", err);
+  }
+}
+
+/**
+ * Apply theme + font from a profile object (on login).
+ * Falls back to localStorage → defaults.
+ */
+function applyProfileTheme(profile) {
+  if (!window.TZ) return;
+  const colorTheme = profile?.color_theme || localStorage.getItem("tl_theme") || "dark";
+  const fontTheme  = profile?.font_theme  || localStorage.getItem("tl_font")  || "default";
+
+  // Sync localStorage so theme.js picks it up on next load
+  localStorage.setItem("tl_theme", colorTheme);
+  localStorage.setItem("tl_font",  fontTheme);
+
+  TZ.applyTheme(colorTheme);
+  TZ.applyFont(fontTheme);
+}
+
+// ── Subscription Helpers ──────────────────────────────────────
+/**
+ * Returns a rich subscription status object.
+ */
+function getSubscriptionStatus(profile) {
+  const isPro = profile?.plan === "pro";
+  const expiresAt = profile?.subscription_expires_at;
+  const planType  = profile?.plan_type || "none";
+
+  if (!isPro) {
+    return { isPro: false, planType: "none", label: "Free", daysLeft: null, expiring: false, expired: false };
+  }
+
+  if (!expiresAt) {
+    return { isPro: true, planType, label: "Active subscription", daysLeft: null, expiring: false, expired: false };
+  }
+
+  const d       = new Date(expiresAt);
+  const now     = new Date();
+  const daysLeft = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
+  const expired  = daysLeft <= 0;
+  const expiring = !expired && daysLeft <= 7;
+
+  const formatted = d.toLocaleDateString("en-US", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+
+  let label;
+  if (expired) {
+    label = "Expired";
+  } else if (daysLeft === 1) {
+    label = `Subscription ends on ${formatted} (1 day left)`;
+  } else {
+    label = `Subscription ends on ${formatted} (${daysLeft} days left)`;
+  }
+
+  return { isPro, planType, label, daysLeft, expiring, expired };
+}
+
+/**
+ * Legacy helper kept for backwards compatibility.
+ */
+function formatSubscriptionExpiry(isoString) {
+  if (!isoString) return null;
+  const d   = new Date(isoString);
+  const now = new Date();
+  if (d < now) return "Expired";
+  const diff      = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
+  const formatted = d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  if (diff <= 7) return `Expires soon — ${formatted} (${diff}d left)`;
+  return `Renews / expires ${formatted}`;
+}
+
+// ── Referrals ─────────────────────────────────────────────────
 async function getReferrals(userId) {
   const { data, error } = await db
     .from("referrals")
     .select("id, status, reward_granted, created_at, referred_user_id")
     .eq("referrer_id", userId)
     .order("created_at", { ascending: false });
-  if (error) {
-    console.error("getReferrals:", error);
-    return [];
-  }
+  if (error) { console.error("getReferrals:", error); return []; }
   return data || [];
 }
 
-/**
- * Build the shareable referral URL for this user's code.
- */
 function buildReferralUrl(referralCode) {
   return `${window.location.origin}/auth?ref=${referralCode}`;
 }
 
-/**
- * Compute a human-readable subscription expiry label.
- * Returns e.g. "Expires Jan 15, 2026" or "Expired" or null.
- */
-function formatSubscriptionExpiry(isoString) {
-  if (!isoString) return null;
-  const d = new Date(isoString);
-  const now = new Date();
-  if (d < now) return "Expired";
-  const diff = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
-  const formatted = d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  if (diff <= 7) return `Expires soon — ${formatted} (${diff}d left)`;
-  return `Renews / expires ${formatted}`;
-}
-
-// ── Journals ──────────────────────────────────────────────
+// ── Journals ──────────────────────────────────────────────────
 async function getJournals(userId) {
   const { data, error } = await db
     .from("journals")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
-  if (error) {
-    console.error("getJournals:", error);
-    return [];
-  }
+  if (error) { console.error("getJournals:", error); return []; }
   return data || [];
 }
 
-async function createJournal(
-  userId,
-  { name, capital, pin_hash, show_pnl = true, show_capital = true },
-) {
+async function createJournal(userId, { name, capital, pin_hash, show_pnl = true, show_capital = true }) {
   const { data, error } = await db
     .from("journals")
-    .insert({
-      user_id: userId,
-      name,
-      capital: capital || null,
-      pin_hash: pin_hash || null,
-      show_pnl,
-      show_capital,
-    })
+    .insert({ user_id: userId, name, capital: capital || null, pin_hash: pin_hash || null, show_pnl, show_capital })
     .select()
     .single();
   if (error) throw error;
 
   await db.from("journal_settings").insert({
     journal_id: data.id,
-    user_id: userId,
+    user_id:    userId,
     strategies: ["Breakout", "Reversal", "Trend"],
     timeframes: ["M15", "H1", "H4"],
-    pairs: ["EURUSD", "XAUUSD", "BTCUSDT"],
-    moods: ["Confident", "Neutral", "Anxious"],
-    mood_colors: {
-      Confident: "#19c37d",
-      Neutral: "#8fa39a",
-      Anxious: "#f59e0b",
-    },
+    pairs:      ["EURUSD", "XAUUSD", "BTCUSDT"],
+    moods:      ["Confident", "Neutral", "Anxious"],
+    mood_colors: { Confident: "#19c37d", Neutral: "#8fa39a", Anxious: "#f59e0b" },
   });
   return data;
 }
 
 async function updateJournal(journalId, updates) {
-  const { error } = await db
-    .from("journals")
-    .update(updates)
-    .eq("id", journalId);
+  const { error } = await db.from("journals").update(updates).eq("id", journalId);
   if (error) throw error;
 }
 
@@ -216,17 +241,14 @@ async function deleteJournal(journalId) {
   if (error) throw error;
 }
 
-// ── Trades ────────────────────────────────────────────────
+// ── Trades ────────────────────────────────────────────────────
 async function getTrades(journalId) {
   const { data, error } = await db
     .from("trades")
     .select("*, trade_images(id, data)")
     .eq("journal_id", journalId)
     .order("created_at", { ascending: false });
-  if (error) {
-    console.error("getTrades:", error);
-    return [];
-  }
+  if (error) { console.error("getTrades:", error); return []; }
   return data || [];
 }
 
@@ -252,15 +274,15 @@ async function deleteTrade(tradeId) {
   if (error) throw error;
 }
 
-// ── DB ↔ UI mapping ───────────────────────────────────────
+// ── DB ↔ UI mapping ───────────────────────────────────────────
 function tradeToDb(t) {
   const o = {};
-  if ("date" in t) o.trade_date = t.date || null;
-  if ("time" in t) o.trade_time = t.time || null;
-  if ("pair" in t) o.pair = t.pair || null;
-  if ("position" in t) o.position = t.position || null;
-  if ("strategy" in t) o.strategy = t.strategy || [];
-  if ("timeframe" in t) o.timeframe = t.timeframe || [];
+  if ("date"       in t) o.trade_date = t.date || null;
+  if ("time"       in t) o.trade_time = t.time || null;
+  if ("pair"       in t) o.pair       = t.pair || null;
+  if ("position"   in t) o.position   = t.position || null;
+  if ("strategy"   in t) o.strategy   = t.strategy || [];
+  if ("timeframe"  in t) o.timeframe  = t.timeframe || [];
   if ("pnl" in t) {
     const n = parseFloat(t.pnl);
     o.pnl = !isNaN(n) && t.pnl != null && t.pnl !== "" ? n : null;
@@ -270,33 +292,30 @@ function tradeToDb(t) {
     o.r_factor = !isNaN(n) && t.r != null && t.r !== "" ? n : null;
   }
   if ("confidence" in t) o.confidence = t.confidence || null;
-  if ("mood" in t) o.mood = t.mood || [];
-  if ("notes" in t) o.notes = t.notes || null;
+  if ("mood"       in t) o.mood       = t.mood || [];
+  if ("notes"      in t) o.notes      = t.notes || null;
   return o;
 }
 
 function dbToTrade(row) {
   return {
-    id: row.id,
-    date: row.trade_date || "",
-    time: row.trade_time ? String(row.trade_time).slice(0, 5) : "",
-    pair: row.pair || "",
-    position: row.position || "Long",
-    strategy: row.strategy || [],
-    timeframe: row.timeframe || [],
-    pnl: row.pnl != null ? String(row.pnl) : "",
-    r: row.r_factor != null ? String(row.r_factor) : "",
+    id:         row.id,
+    date:       row.trade_date || "",
+    time:       row.trade_time ? String(row.trade_time).slice(0, 5) : "",
+    pair:       row.pair || "",
+    position:   row.position || "Long",
+    strategy:   row.strategy || [],
+    timeframe:  row.timeframe || [],
+    pnl:        row.pnl != null ? String(row.pnl) : "",
+    r:          row.r_factor != null ? String(row.r_factor) : "",
     confidence: row.confidence || 0,
-    mood: row.mood || [],
-    notes: row.notes || "",
-    images: (row.trade_images || []).map((img) => ({
-      id: img.id,
-      data: img.data || "",
-    })),
+    mood:       row.mood || [],
+    notes:      row.notes || "",
+    images:     (row.trade_images || []).map(img => ({ id: img.id, data: img.data || "" })),
   };
 }
 
-// ── Trade Images ──────────────────────────────────────────
+// ── Trade Images ──────────────────────────────────────────────
 async function addTradeImage(userId, tradeId, base64DataUrl) {
   const { data, error } = await db
     .from("trade_images")
@@ -318,7 +337,7 @@ async function deleteTradeImage(imageId) {
   if (error) throw error;
 }
 
-// ── Journal Settings ──────────────────────────────────────
+// ── Journal Settings ──────────────────────────────────────────
 async function getJournalSettings(journalId) {
   const { data } = await db
     .from("journal_settings")
@@ -336,32 +355,18 @@ async function updateJournalSettings(journalId, updates) {
   if (error) throw error;
 }
 
-// ── Realtime ──────────────────────────────────────────────
+// ── Realtime ──────────────────────────────────────────────────
 function subscribeTrades(journalId, callback) {
   return db
     .channel("trades:" + journalId)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "trades",
-        filter: `journal_id=eq.${journalId}`,
-      },
-      callback,
-    )
+    .on("postgres_changes", { event: "*", schema: "public", table: "trades", filter: `journal_id=eq.${journalId}` }, callback)
     .subscribe();
 }
 
-// ── PIN security (SHA-256 via Web Crypto) ─────────────────
+// ── PIN security (SHA-256 via Web Crypto) ─────────────────────
 async function hashPin(pin) {
-  const buf = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(pin),
-  );
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function verifyPin(pin, hash) {

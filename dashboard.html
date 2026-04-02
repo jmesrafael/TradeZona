@@ -29,6 +29,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .badge-pro{background:rgba(var(--accent-rgb,0,255,136),.15);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)}
 .badge-free{background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border)}
 .badge-free:hover{border-color:var(--accent2);color:var(--accent2)}
+.badge-expiring{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.35);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
 .btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);padding:8px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all var(--transition-base);display:flex;align-items:center;gap:6px}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--text)}
 
@@ -39,6 +41,14 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .sec-hdr h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:16px;font-weight:600}
 .btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:10px 18px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--transition-base);display:flex;align-items:center;gap:7px}
 .btn-primary:hover{opacity:.85}
+
+/* ── Subscription banner (expiry warning) ── */
+.sub-banner{display:none;margin-bottom:20px;padding:12px 18px;border-radius:var(--radius-lg);align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px}
+.sub-banner.show{display:flex}
+.sub-banner.expiring{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);color:#fbbf24}
+.sub-banner.expired{background:rgba(255,95,109,.08);border:1px solid rgba(255,95,109,.3);color:var(--red)}
+.sub-banner-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:6px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity var(--transition-base)}
+.sub-banner-btn:hover{opacity:.85}
 
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skel{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-md)}
@@ -145,6 +155,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .pr-val{font-size:12px;color:var(--muted)}
 .pr-val.pro-green{color:var(--accent2);font-weight:600}
 .pr-val.expiring{color:#fbbf24;font-weight:600}
+.pr-val.expired{color:var(--red);font-weight:600}
 .upgrade-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;transition:opacity var(--transition-base)}
 .upgrade-btn:hover{opacity:.85}
 .links-row{display:flex;flex-direction:column;gap:4px}
@@ -178,16 +189,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity var(--transition-base);flex-shrink:0}
 .nudge-btn:hover{opacity:.85}
 
-/* Eye */
-.eye-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px;transition:color var(--transition-fast);line-height:1}
-.eye-btn:hover{color:var(--text)}
-.acct-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-family:var(--font-body,'Inter',sans-serif);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition-base);display:flex;align-items:center;flex-shrink:0}
-.acct-edit-btn:hover{border-color:var(--accent2);color:var(--accent2)}
-.acct-save-btn{flex:1;background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:9px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--transition-base);display:flex;align-items:center;justify-content:center}
-.acct-save-btn:hover{opacity:.85}
-.acct-cancel-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all var(--transition-fast)}
-.acct-cancel-btn:hover{border-color:var(--muted);color:var(--text)}
-
 /* Toast */
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0);animation:slideDown .25s ease}
@@ -206,7 +207,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
       <span class="uname" id="uName">—</span>
       <span class="plan-badge badge-free" id="planBadge" onclick="location.href='/subscription'">Free</span>
     </div>
-    <!-- Profile link -->
     <button class="btn-ghost" onclick="location.href='/profile'" title="My Profile">
       <i class="fa-solid fa-user"></i>
     </button>
@@ -216,6 +216,14 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 </header>
 
 <main>
+  <!-- Subscription expiry banner -->
+  <div class="sub-banner" id="subBanner">
+    <span id="subBannerText"></span>
+    <button class="sub-banner-btn" onclick="location.href='/subscription'">
+      <i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Renew Pro
+    </button>
+  </div>
+
   <div class="sec-hdr">
     <h2><i class="fa-solid fa-book-open" style="color:var(--accent2);margin-right:8px"></i>My Journals</h2>
     <button class="btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> New Journal</button>
@@ -308,22 +316,26 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         </div>
       </div>
 
-      <!-- Subscription (now with expiry) -->
+      <!-- Subscription -->
       <div class="set-sec">
         <div class="set-title"><i class="fa-solid fa-star"></i>Subscription</div>
         <div class="plan-row">
-          <div><div class="pr-lbl">Current Plan</div><div class="pr-val" id="settingsPlanLabel">Free</div></div>
+          <div>
+            <div class="pr-lbl">Current Plan</div>
+            <div class="pr-val" id="settingsPlanLabel">Free</div>
+          </div>
           <button class="upgrade-btn" id="settingsUpgradeBtn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up"></i> Upgrade to Pro</button>
         </div>
-        <!-- Subscription expiry row — only visible for Pro -->
         <div class="plan-row" id="settingsExpiryRow" style="display:none">
-          <div><div class="pr-lbl">Subscription Period</div><div class="pr-val pro-green" id="settingsExpiryLabel">—</div></div>
+          <div>
+            <div class="pr-lbl">Subscription Period</div>
+            <div class="pr-val" id="settingsExpiryLabel">—</div>
+          </div>
         </div>
         <div class="plan-row">
           <div><div class="pr-lbl">Includes</div><div class="pr-val">Unlimited journals · Calculator · Full analytics · All themes &amp; fonts</div></div>
           <i class="fa-solid fa-lock" style="color:var(--muted);font-size:13px" id="proLockIcon"></i>
         </div>
-        <!-- Profile link inside settings -->
         <div class="plan-row" style="border-top:1px solid var(--border);margin-top:4px">
           <div><div class="pr-lbl">Account &amp; Referrals</div><div class="pr-val">Manage profile, password, referral link</div></div>
           <button class="upgrade-btn" style="background:var(--panel);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)" onclick="location.href='/profile'">
@@ -346,7 +358,6 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         <div class="set-title danger-title"><i class="fa-solid fa-triangle-exclamation"></i>Danger Zone</div>
         <button class="btn-danger-full" onclick="openDelAccount()"><i class="fa-solid fa-user-xmark"></i>Delete My Account Permanently</button>
       </div>
-
     </div>
   </div>
 </div>
@@ -474,39 +485,70 @@ document.addEventListener('click',e=>{
   if(_fontDropOpen){const dd=document.getElementById('fontDropdown'),btn=document.getElementById('fontTrigger');if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target))closeFontDropdown();}
 });
 
+// ═══════════════════════════════════════════════════════════
+//  SUBSCRIPTION BANNER
+// ═══════════════════════════════════════════════════════════
+function renderSubBanner(subStatus){
+  const banner=document.getElementById('subBanner');
+  const text=document.getElementById('subBannerText');
+  if(!banner||!text)return;
+  if(!subStatus.isPro)return;
+  if(subStatus.expired){
+    text.innerHTML=`<i class="fa-solid fa-circle-xmark" style="margin-right:8px"></i><strong>Your Pro subscription has expired.</strong> Renew to keep access to all features.`;
+    banner.className='sub-banner show expired';
+  } else if(subStatus.expiring){
+    text.innerHTML=`<i class="fa-solid fa-clock" style="margin-right:8px"></i><strong>${subStatus.label}</strong> — Renew now to avoid losing Pro features.`;
+    banner.className='sub-banner show expiring';
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────
 (async()=>{
   currentUser=await requireAuth();if(!currentUser)return;
   const profile=await getProfile(currentUser.id);
+
+  // ── Apply user's saved theme/font (persisted across devices)
+  applyProfileTheme(profile);
+
   isPro=profile?.plan==='pro';
   window._userIsPro=isPro;
   document.getElementById('uName').textContent=profile?.name||currentUser.email;
+
+  // ── Plan badge
   const badge=document.getElementById('planBadge');
+  const subStatus=getSubscriptionStatus(profile);
+
   if(isPro){
-    badge.textContent='Pro';badge.className='plan-badge badge-pro';
-    document.getElementById('settingsPlanLabel').textContent='Pro — Active';
+    if(subStatus.expiring){
+      badge.textContent=`Pro · ${subStatus.daysLeft}d left`;
+      badge.className='plan-badge badge-expiring';
+    } else if(subStatus.expired){
+      badge.textContent='Pro Expired';
+      badge.className='plan-badge badge-free';
+    } else {
+      badge.textContent='Pro';
+      badge.className='plan-badge badge-pro';
+    }
+
+    // Settings modal subscription info
+    document.getElementById('settingsPlanLabel').textContent=
+      'Pro — ' + (profile?.plan_type === 'yearly' ? 'Yearly' : 'Monthly');
     document.getElementById('settingsUpgradeBtn').style.display='none';
     document.getElementById('proLockIcon').style.display='none';
 
-    // ── Show subscription expiry in settings
-    if(profile?.subscription_expires_at){
-      const expiry=formatSubscriptionExpiry(profile.subscription_expires_at);
-      const d=new Date(profile.subscription_expires_at),now=new Date();
-      const daysLeft=Math.ceil((d-now)/(1000*60*60*24));
-      const expiryEl=document.getElementById('settingsExpiryLabel');
-      expiryEl.textContent=expiry;
-      expiryEl.className='pr-val '+(daysLeft<=7?'expiring':'pro-green');
-      document.getElementById('settingsExpiryRow').style.display='flex';
-    } else {
-      // Ongoing paid subscription — no expiry date stored
-      document.getElementById('settingsExpiryLabel').textContent='Active subscription';
-      document.getElementById('settingsExpiryRow').style.display='flex';
-    }
+    const expiryEl=document.getElementById('settingsExpiryLabel');
+    expiryEl.textContent=subStatus.label;
+    expiryEl.className='pr-val ' + (subStatus.expired ? 'expired' : subStatus.expiring ? 'expiring' : 'pro-green');
+    document.getElementById('settingsExpiryRow').style.display='flex';
+
+    // Show banner if expiring/expired
+    renderSubBanner(subStatus);
   } else {
     document.getElementById('adSlot').classList.add('visible');
     document.getElementById('upgradeNudge').classList.add('visible');
     try{(adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
   }
+
   if(window.posthog)posthog.identify(currentUser.id,{email:currentUser.email,plan:isPro?'pro':'free',name:profile?.name});
   _updateThemeTrigger(localStorage.getItem('tl_theme')||'dark');
   _updateFontTrigger(localStorage.getItem('tl_font')||'default');
