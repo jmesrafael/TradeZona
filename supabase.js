@@ -3,8 +3,8 @@
 // Include this on every page that needs auth.
 
 // ── Config ────────────────────────────────────────────────
-const SUPABASE_URL  = 'https://YOUR_PROJECT_REF.supabase.co';  // ← replace
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';                 // ← replace
+const SUPABASE_URL = "https://oixrpuqylidbunbttftg.supabase.co";
+const SUPABASE_ANON = "sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
