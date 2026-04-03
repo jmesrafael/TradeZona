@@ -567,17 +567,21 @@ let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
 (async()=>{
   currentUser=await requireAuth();if(!currentUser)return;
   if(!journalId){location.href='/dashboard';return;}
-  const profile=await getProfile(currentUser.id);
-  userIsPro=profile?.plan==='pro';
-  window._userIsPro=userIsPro;
-  document.getElementById('hUserName').textContent=profile?.name||currentUser.email;
-  if(userIsPro){document.getElementById('hPlanBadge').textContent='Pro';document.getElementById('hPlanBadge').className='plan-badge badge-pro';}
-  const journals=await getJournals(currentUser.id);
-  journalObj=journals.find(j=>j.id===journalId);
-  if(!journalObj){location.href='/dashboard';return;}
-  document.getElementById('jnameHdr').textContent=journalObj.name;
-  document.title='TradeZona | '+journalObj.name;
-  settings=await getJournalSettings(journalId);
+// Fire all three at once instead of one-by-one
+const [profile, journals, settingsData] = await Promise.all([
+  getProfile(currentUser.id),
+  getJournals(currentUser.id),
+  getJournalSettings(journalId)
+]);
+
+userIsPro = profile?.plan === 'pro';
+window._userIsPro = userIsPro;
+document.getElementById('hUserName').textContent = profile?.name || currentUser.email;
+
+journalObj = journals.find(j => j.id === journalId);
+if (!journalObj) { location.href = '/dashboard'; return; }
+
+settings = settingsData;
   bcast({type:'tz_plan',isPro:userIsPro});
   // Show pro duration in settings
   if(userIsPro&&profile?.pro_expires_at){

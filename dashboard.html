@@ -598,18 +598,13 @@ function renderSubBanner(subStatus) {
 async function loadJournals() {
   journals = await getJournals(currentUser.id);
 
-  pnlMap = {};
-  await Promise.all(journals.map(async j => {
-    const trades = await getTrades(j.id);
-    const valid = trades.filter(t => t.pnl != null && t.pnl !== '');
-    if (valid.length) pnlMap[j.id] = valid.reduce((s, t) => s + parseFloat(t.pnl), 0);
-  }));
+  // Single bulk query instead of one getTrades() call per journal
+  pnlMap = await getJournalsPnl(journals.map(j => j.id));
 
   document.getElementById('loadingState').style.display = 'none';
   renderJournals();
   initDrag();
 }
-
 function renderJournals() {
   const grid = document.getElementById('grid');
   grid.style.display = '';

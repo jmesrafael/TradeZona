@@ -1,4 +1,4 @@
-// supabase.js — FIXED & ENHANCED
+// supabase.js — OPTIMIZED
 // Handles auth state changes, referral application, helper functions.
 // Include this on every page that needs auth.
 
@@ -7,6 +7,30 @@ const SUPABASE_URL  = "https://oixrpuqylidbunbttftg.supabase.co";
 const SUPABASE_ANON = "sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+
+// ══════════════════════════════════════════════════════════
+//  IN-MEMORY CACHE
+//  Eliminates redundant DB round-trips for stable data
+//  (profile, journal settings) across page lifetime.
+// ══════════════════════════════════════════════════════════
+const _cache = {};
+
+function _cacheSet(key, val, ttlMs = 30000) {
+  _cache[key] = { val, exp: Date.now() + ttlMs };
+}
+
+function _cacheGet(key) {
+  const c = _cache[key];
+  if (!c || Date.now() > c.exp) return null;
+  return c.val;
+}
+
+function _cacheInvalidate(prefix) {
+  Object.keys(_cache).forEach(k => {
+    if (k.startsWith(prefix)) delete _cache[k];
+  });
+}
 
 
 // ── Auth helpers ──────────────────────────────────────────
@@ -29,11 +53,15 @@ async function requireAuth() {
 // ── Profile helpers ───────────────────────────────────────
 
 async function getProfile(userId) {
+  const cacheKey = 'profile:' + userId;
+  const cached = _cacheGet(cacheKey);
+  if (cached) return cached;
+
   const { data, error } = await db
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .maybeSingle();         // use maybeSingle so it returns null instead of error when no row
+    .maybeSingle();
   if (error) console.error('[supabase] getProfile error:', error);
 
   // Auto-create profile if missing (edge case: email confirmation race)
@@ -44,9 +72,11 @@ async function getProfile(userId) {
       .upsert({ id: userId, plan: 'free' }, { onConflict: 'id' })
       .select('*')
       .maybeSingle();
+    _cacheSet(cacheKey, newProfile, 60000);
     return newProfile;
   }
 
+  _cacheSet(cacheKey, data, 60000);
   return data;
 }
 
@@ -58,6 +88,7 @@ async function updateProfile(userId, updates) {
     .select('*')
     .maybeSingle();
   if (error) throw error;
+  _cacheInvalidate('profile:' + userId); // bust cache so next read is fresh
   return data;
 }
 
@@ -106,11 +137,12 @@ async function getJournal(journalId) {
 }
 
 async function updateJournalPositions(orderedIds) {
-  // Update position column for each journal in the new order
-  const updates = orderedIds.map((id, index) =>
-    db.from('journals').update({ position: index }).eq('id', id)
+  // Fire all position updates in parallel instead of sequentially
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      db.from('journals').update({ position: index }).eq('id', id)
+    )
   );
-  await Promise.all(updates);
 }
 
 
@@ -130,7 +162,6 @@ async function getReferrals(userId) {
   if (error) console.error('[supabase] getReferrals error:', error);
   return data || [];
 }
- 
 
 function buildReferralUrl(code) {
   if (!code || code === '—') return window.location.origin + '/auth?ref=???';
@@ -142,28 +173,28 @@ function buildReferralUrl(code) {
 
 function getSubscriptionStatus(profile) {
   const isPro = profile?.plan === 'pro';
- 
+
   if (!isPro) return {
     isPro: false, expired: false, expiring: false,
     daysLeft: null, label: 'Free', planType: 'none'
   };
- 
+
   const planType = profile?.plan_type || 'none';
- 
+
   if (planType === 'lifetime' || !profile?.subscription_expires_at) {
     return {
       isPro: true, expired: false, expiring: false,
       daysLeft: null, label: 'Lifetime', planType: 'lifetime'
     };
   }
- 
+
   const now      = new Date();
   const expires  = new Date(profile.subscription_expires_at);
   const msLeft   = expires - now;
   const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
   const expired  = daysLeft <= 0;
   const expiring = !expired && daysLeft <= 7;
- 
+
   let label;
   if (expired) {
     label = `Expired ${expires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
@@ -172,10 +203,9 @@ function getSubscriptionStatus(profile) {
   } else {
     label = `Renews ${expires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   }
- 
+
   return { isPro: true, expired, expiring, daysLeft, label, planType };
 }
- 
 
 
 // ── Theme / font helpers ──────────────────────────────────
@@ -198,9 +228,9 @@ function hidePageLoader() {
 }
 
 
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 //  AUTH STATE CHANGE LISTENER
-// ═══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 
 db.auth.onAuthStateChange(async (event, session) => {
   if (event !== 'SIGNED_IN' || !session?.user) return;
@@ -244,9 +274,15 @@ if (!window.TZ) {
     fontList:   [],
   };
 }
+
+
 // ── Journal settings helpers ──────────────────────────────
 
 async function getJournalSettings(journalId) {
+  const cacheKey = 'jsettings:' + journalId;
+  const cached = _cacheGet(cacheKey);
+  if (cached) return cached;
+
   const { data, error } = await db
     .from('journal_settings')
     .select('*')
@@ -265,8 +301,12 @@ async function getJournalSettings(journalId) {
       }, { onConflict: 'journal_id' })
       .select('*')
       .maybeSingle();
-    return newRow || { strategies: [], timeframes: [], pairs: [], moods: [], mood_colors: {} };
+    const result = newRow || { strategies: [], timeframes: [], pairs: [], moods: [], mood_colors: {} };
+    _cacheSet(cacheKey, result, 120000);
+    return result;
   }
+
+  _cacheSet(cacheKey, data, 120000);
   return data;
 }
 
@@ -276,6 +316,7 @@ async function updateJournalSettings(journalId, updates) {
     .update(updates)
     .eq('journal_id', journalId);
   if (error) throw error;
+  _cacheInvalidate('jsettings:' + journalId); // bust cache so panel reflects new tags
 }
 
 async function updateJournal(journalId, updates) {
@@ -356,7 +397,7 @@ async function updateTrade(tradeId, fields) {
 }
 
 async function deleteTrade(tradeId) {
-  // Delete associated images first
+  // Fetch image metadata and delete storage + DB rows in parallel where possible
   const { data: imgs } = await db
     .from('trade_images')
     .select('id, storage_url')
@@ -364,10 +405,11 @@ async function deleteTrade(tradeId) {
 
   if (imgs?.length) {
     const paths = imgs.map(i => i.storage_url).filter(Boolean);
-    if (paths.length) {
-      await db.storage.from('trade-images').remove(paths);
-    }
-    await db.from('trade_images').delete().eq('trade_id', tradeId);
+    // Run storage removal and DB row deletion in parallel
+    await Promise.all([
+      paths.length ? db.storage.from('trade-images').remove(paths) : Promise.resolve(),
+      db.from('trade_images').delete().eq('trade_id', tradeId),
+    ]);
   }
 
   const { error } = await db.from('trades').delete().eq('id', tradeId);
@@ -380,21 +422,18 @@ async function deleteTrade(tradeId) {
 async function addTradeImage(userId, tradeId, dataUrl) {
   // 1. Compress image before uploading
   const compressed = await compressImage(dataUrl);
-  const res      = await fetch(compressed);
-  const blob     = await res.blob();
-  const ext      = blob.type.includes('png') ? 'png' : 'jpg';
-  const fileName = `${userId}/${tradeId}/${Date.now()}.${ext}`;
- 
+  const res        = await fetch(compressed);
+  const blob       = await res.blob();
+  const ext        = blob.type.includes('png') ? 'png' : 'jpg';
+  const fileName   = `${userId}/${tradeId}/${Date.now()}.${ext}`;
+
   // 2. Upload to Supabase Storage bucket "trade-images"
   const { data: uploadData, error: uploadError } = await db.storage
     .from('trade-images')
-    .upload(fileName, blob, {
-      contentType: blob.type,
-      upsert: false,
-    });
- 
+    .upload(fileName, blob, { contentType: blob.type, upsert: false });
+
   if (uploadError) throw uploadError;
- 
+
   // 3. Save only the short path string in the DB — no more base64
   const { data, error } = await db
     .from('trade_images')
@@ -402,82 +441,111 @@ async function addTradeImage(userId, tradeId, dataUrl) {
       user_id:     userId,
       trade_id:    tradeId,
       storage_url: uploadData.path,
-      data:        null,   // explicitly null — we no longer store base64
+      data:        null,
     })
     .select('*')
     .single();
- 
+
   if (error) throw error;
   return data;
 }
 
 async function deleteTradeImage(imageId) {
-  // Get the row first so we know what to delete from Storage
   const { data: img } = await db
     .from('trade_images')
     .select('storage_url, data')
     .eq('id', imageId)
     .maybeSingle();
- 
-  // Delete from Storage if it's the new format (has storage_url, no base64)
-  if (img?.storage_url && !img?.data) {
-    await db.storage
-      .from('trade-images')
-      .remove([img.storage_url]);
-  }
- 
-  // Delete the DB row
-  const { error } = await db.from('trade_images').delete().eq('id', imageId);
-  if (error) throw error;
+
+  // Run storage removal and DB deletion in parallel
+  await Promise.all([
+    (img?.storage_url && !img?.data)
+      ? db.storage.from('trade-images').remove([img.storage_url])
+      : Promise.resolve(),
+    db.from('trade_images').delete().eq('id', imageId),
+  ]);
 }
- 
+
+
 // ── Signed URL cache (55 min lifetime) ───────────────────
 const _urlCache = {};
 
 async function getImageUrl(img) {
   if (!img) return '';
 
-  // NEW: Storage URL — fetch a signed URL with caching
   if (img.storage_url && !img.data) {
     const cacheKey = img.storage_url;
-    const cached = _urlCache[cacheKey];
+    const cached   = _urlCache[cacheKey];
     if (cached && cached.expires > Date.now()) return cached.url;
     const { data, error } = await db.storage
       .from('trade-images')
       .createSignedUrl(img.storage_url, 60 * 60);
     if (!error && data.signedUrl) {
-      _urlCache[cacheKey] = {
-        url: data.signedUrl,
-        expires: Date.now() + 55 * 60 * 1000
-      };
+      _urlCache[cacheKey] = { url: data.signedUrl, expires: Date.now() + 55 * 60 * 1000 };
       return data.signedUrl;
     }
     return '';
   }
 
-  // LEGACY: old base64 images still load fine
   if (img.data) return img.data;
   if (img.url)  return img.url;
-
   return '';
 }
 
+// ── Batch signed URL fetch ────────────────────────────────
+// Fetches signed URLs for multiple images in parallel with cache awareness.
+// Use this instead of calling getImageUrl() in a loop.
+async function getImageUrls(imgs) {
+  if (!imgs || !imgs.length) return [];
+  const now     = Date.now();
+  const results = new Array(imgs.length).fill('');
+  const toFetch = []; // only images that need a fresh signed URL
+
+  imgs.forEach((img, i) => {
+    if (!img)           return;
+    if (img.data)       { results[i] = img.data; return; }
+    if (img.url)        { results[i] = img.url;  return; }
+    if (img.storage_url && !img.data) {
+      const cached = _urlCache[img.storage_url];
+      if (cached && cached.expires > now) { results[i] = cached.url; return; }
+      toFetch.push({ idx: i, path: img.storage_url });
+    }
+  });
+
+  // All cache misses fetched in parallel — single round-trip per image
+  if (toFetch.length) {
+    await Promise.all(toFetch.map(async ({ idx, path }) => {
+      const { data, error } = await db.storage
+        .from('trade-images')
+        .createSignedUrl(path, 60 * 60);
+      if (!error && data?.signedUrl) {
+        _urlCache[path] = { url: data.signedUrl, expires: now + 55 * 60 * 1000 };
+        results[idx] = data.signedUrl;
+      }
+    }));
+  }
+
+  return results;
+}
+
+
 // ── Image compression before upload ──────────────────────
-async function compressImage(dataUrl, maxWidth=1200, quality=0.82) {
+async function compressImage(dataUrl, maxWidth = 1200, quality = 0.82) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const scale = Math.min(1, maxWidth / img.width);
+      const scale  = Math.min(1, maxWidth / img.width);
       const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
+      canvas.width  = Math.round(img.width  * scale);
       canvas.height = Math.round(img.height * scale);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
-    img.onerror = () => resolve(dataUrl); // fallback to original if fails
+    img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
 }
+
 
 // ── Bulk image count (1 query instead of N) ───────────────
 async function getImageCountsForJournal(userId) {
@@ -492,7 +560,7 @@ async function getImageCountsForJournal(userId) {
   return counts;
 }
 
-// Attach images to trade objects after loading
+// Fetch all images for a single trade
 async function getTradeImages(tradeId) {
   const { data, error } = await db
     .from('trade_images')
@@ -501,6 +569,27 @@ async function getTradeImages(tradeId) {
     .order('created_at', { ascending: true });
   if (error) console.error('[supabase] getTradeImages error:', error);
   return data || [];
+}
+
+
+// ── Dashboard PNL helper ──────────────────────────────────
+// Fetches PNL for multiple journals in ONE query instead of
+// calling getTrades() per journal (N+1 problem on dashboard).
+async function getJournalsPnl(journalIds) {
+  if (!journalIds.length) return {};
+  const { data } = await db
+    .from('trades')
+    .select('journal_id, pnl')
+    .in('journal_id', journalIds)
+    .not('pnl', 'is', null);
+
+  const map = {};
+  (data || []).forEach(row => {
+    if (row.pnl != null) {
+      map[row.journal_id] = (map[row.journal_id] || 0) + parseFloat(row.pnl);
+    }
+  });
+  return map;
 }
 
 
