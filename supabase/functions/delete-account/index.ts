@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
-    // ── 1. Authenticate ──────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "No auth header" }), { status: 401, headers: CORS });
@@ -20,13 +19,12 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "").trim();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey     = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify JWT — /auth/v1/user requires the anon key as apikey
+    // Use service role key as apikey — works for JWT verification
     const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: {
         "Authorization": `Bearer ${token}`,
-        "apikey": anonKey,
+        "apikey": serviceKey,
       },
     });
     const userData = await userRes.json();
@@ -41,11 +39,11 @@ Deno.serve(async (req) => {
     const userId = userData.id;
     console.log("Deleting account for user:", userId);
 
-    // ── 2. Delete all user data via REST API (service role) ──
-    // Explicit delete in order — CASCADE handles it but this is safer
-    const tables = ["trade_images", "trades", "journal_settings", "journals", "profiles"];
-    for (const table of tables) {
-      const res = await fetch(`${supabaseUrl}/rest/v1/${table}?user_id=eq.${userId}`, {
+    // Delete child tables first (user_id column), then profiles (id column)
+    const userIdTables = ["trade_images", "trades", "journal_settings", "journals", "referrals"];
+    for (const table of userIdTables) {
+      const col = table === "referrals" ? "referrer_id" : "user_id";
+      const res = await fetch(`${supabaseUrl}/rest/v1/${table}?${col}=eq.${userId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${serviceKey}`,
@@ -56,13 +54,23 @@ Deno.serve(async (req) => {
       if (!res.ok) {
         const err = await res.text();
         console.error(`Failed to delete from ${table}:`, err);
-        // Continue — partial cleanup is better than stopping
       } else {
         console.log(`Deleted from ${table}`);
       }
     }
 
-    // ── 3. Delete the auth user (must be last) ───────────────
+    // Delete profile row (keyed on id, not user_id)
+    await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${serviceKey}`,
+        "apikey": serviceKey,
+        "Prefer": "return=minimal",
+      },
+    });
+    console.log("Deleted profile");
+
+    // Delete the auth user last
     const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
       method: "DELETE",
       headers: {

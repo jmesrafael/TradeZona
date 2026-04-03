@@ -3,7 +3,7 @@
 // Include this on every page that needs auth.
 
 // ── Config ────────────────────────────────────────────────
-const SUPABASE_URL = "https://oixrpuqylidbunbttftg.supabase.co";
+const SUPABASE_URL  = "https://oixrpuqylidbunbttftg.supabase.co";
 const SUPABASE_ANON = "sb_publishable_0JIYopUpUp6DonOkOzWcJQ_KL0OyIho";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -33,8 +33,20 @@ async function getProfile(userId) {
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();         // use maybeSingle so it returns null instead of error when no row
   if (error) console.error('[supabase] getProfile error:', error);
+
+  // Auto-create profile if missing (edge case: email confirmation race)
+  if (!data && !error) {
+    console.warn('[supabase] Profile missing — creating fallback profile for', userId);
+    const { data: newProfile } = await db
+      .from('profiles')
+      .upsert({ id: userId, plan: 'free' }, { onConflict: 'id' })
+      .select('*')
+      .maybeSingle();
+    return newProfile;
+  }
+
   return data;
 }
 
@@ -43,7 +55,8 @@ async function updateProfile(userId, updates) {
     .from('profiles')
     .update(updates)
     .eq('id', userId)
-    .single();
+    .select('*')
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -56,6 +69,7 @@ async function getJournals(userId) {
     .from('journals')
     .select('*')
     .eq('user_id', userId)
+    .order('position', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false });
   if (error) console.error('[supabase] getJournals error:', error);
   return data || [];
@@ -65,7 +79,7 @@ async function createJournal(userId, { name, capital, pin_hash }) {
   const { data, error } = await db
     .from('journals')
     .insert({ user_id: userId, name, capital, pin_hash })
-    .select()
+    .select('*')
     .single();
   if (error) throw error;
   return data;
@@ -79,6 +93,24 @@ async function getTrades(journalId) {
     .order('created_at', { ascending: false });
   if (error) console.error('[supabase] getTrades error:', error);
   return data || [];
+}
+
+async function getJournal(journalId) {
+  const { data, error } = await db
+    .from('journals')
+    .select('*')
+    .eq('id', journalId)
+    .maybeSingle();
+  if (error) console.error('[supabase] getJournal error:', error);
+  return data;
+}
+
+async function updateJournalPositions(orderedIds) {
+  // Update position column for each journal in the new order
+  const updates = orderedIds.map((id, index) =>
+    db.from('journals').update({ position: index }).eq('id', id)
+  );
+  await Promise.all(updates);
 }
 
 
@@ -102,23 +134,18 @@ function buildReferralUrl(code) {
 
 // ── Subscription helpers ──────────────────────────────────
 
-/**
- * Returns an object describing the user's subscription status.
- * { isPro, expired, expiring, daysLeft, label }
- */
 function getSubscriptionStatus(profile) {
   const isPro = profile?.plan === 'pro';
 
   if (!isPro) return { isPro: false, expired: false, expiring: false, daysLeft: null, label: 'Free' };
 
-  // Lifetime — no expiry
   if (profile?.plan_type === 'lifetime' || !profile?.subscription_expires_at) {
     return { isPro: true, expired: false, expiring: false, daysLeft: null, label: 'Lifetime' };
   }
 
-  const now     = new Date();
-  const expires = new Date(profile.subscription_expires_at);
-  const msLeft  = expires - now;
+  const now      = new Date();
+  const expires  = new Date(profile.subscription_expires_at);
+  const msLeft   = expires - now;
   const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
   const expired  = daysLeft <= 0;
   const expiring = !expired && daysLeft <= 7;
@@ -139,9 +166,8 @@ function getSubscriptionStatus(profile) {
 // ── Theme / font helpers ──────────────────────────────────
 
 function applyProfileTheme(profile) {
-  // Priority: profile DB value > localStorage
-  const theme = profile?.settings?.theme || localStorage.getItem('tl_theme') || 'dark';
-  const font  = profile?.settings?.font  || localStorage.getItem('tl_font')  || 'default';
+  const theme = profile?.color_theme || localStorage.getItem('tl_theme') || 'dark';
+  const font  = profile?.font_theme  || localStorage.getItem('tl_font')  || 'default';
   if (window.TZ) {
     TZ.setTheme(theme);
     TZ.setFont(font);
@@ -159,14 +185,10 @@ function hidePageLoader() {
 
 // ═══════════════════════════════════════════════════════════
 //  AUTH STATE CHANGE LISTENER
-//  Fires on SIGNED_IN (new login, signup, token refresh, etc.)
-//  Handles referral code application automatically.
 // ═══════════════════════════════════════════════════════════
 
 db.auth.onAuthStateChange(async (event, session) => {
   if (event !== 'SIGNED_IN' || !session?.user) return;
-
-  const userId = session.user.id;
 
   // ── Apply referral code if one is stored ─────────────────
   const refCode = (localStorage.getItem('ref_code') || '').trim().toUpperCase();
@@ -186,7 +208,6 @@ db.auth.onAuthStateChange(async (event, session) => {
       console.log('[supabase] apply-referral result:', result);
 
       if (result.success || result.skipped) {
-        // Clear stored code — processed successfully (or already used)
         localStorage.removeItem('ref_code');
         sessionStorage.removeItem('ref_code');
       } else {
@@ -194,12 +215,11 @@ db.auth.onAuthStateChange(async (event, session) => {
       }
     } catch (e) {
       console.error('[supabase] Referral application failed:', e);
-      // Don't remove ref_code — will retry next sign-in
     }
   }
 });
 
-// ── TZ namespace (if theme.js not loaded) ─────────────────
+// ── TZ namespace fallback (if theme.js not loaded) ────────
 if (!window.TZ) {
   window.TZ = {
     hideLoader: hidePageLoader,
