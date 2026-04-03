@@ -760,7 +760,7 @@ function fmt12(timeStr){if(!timeStr)return'';const[h,m]=timeStr.split(':').map(N
   if(!userIsPro){const p=await getProfile(currentUser.id);userIsPro=p?.plan==='pro';}
   settings=await getJournalSettings(jid);
   const raw=await getTrades(jid);
-  trades=raw.map(dbToTrade);
+  trades=await Promise.all(raw.map(async t=>{const dt=dbToTrade(t);const imgs=await getTradeImages(dt.id);return{...dt,images:imgs};}));
   document.getElementById('skelTable').style.display='none';
   document.getElementById('tableWrap').style.display='block';
   applyAnalyticsState();
@@ -773,7 +773,8 @@ function fmt12(timeStr){if(!timeStr)return'';const[h,m]=timeStr.split(':').map(N
 })();
 
 async function reloadSettings(){settings=await getJournalSettings(jid);render();}
-async function refreshTrades(){const r=await getTrades(jid);trades=r.map(dbToTrade);updateAnalytics();render();}
+async function refreshTrades(){const r=await getTrades(jid);trades=await Promise.all(r.map(async t=>{const dt=dbToTrade(t);const imgs=await getTradeImages(dt.id);return{...dt,images:imgs};
+}));updateAnalytics();render();}
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function moodStyle(m){const c=(settings?.mood_colors||{})[m];if(!c)return'';const[r,g,b]=[c.slice(1,3),c.slice(3,5),c.slice(5,7)].map(x=>parseInt(x,16));return`background:rgba(${r},${g},${b},.15);color:${c};border-color:rgba(${r},${g},${b},.35)`;}
