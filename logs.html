@@ -1402,8 +1402,44 @@ function renderImgs(){
   box.innerHTML=imgBuffer.map((img,i)=>{const src=img._previewUrl||img.data||'';return`<div class="img-thumb"><img src="${src}" alt="" onclick="openLb(${i})" loading="lazy"><div class="img-actions"><button class="img-act-btn img-act-del" onclick="event.stopPropagation();rmImg(${i})" title="Delete"><i class="fa-solid fa-trash" style="font-size:8px"></i></button></div></div>`;}).join('');
 }
 function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
-function handleUpload(e){[...e.target.files].forEach(f=>{if(!validateImg(f))return;if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(f);});e.target.value='';}
-document.addEventListener('paste',e=>{if(!document.getElementById('nOverlay').classList.contains('open'))return;[...e.clipboardData.items].forEach(item=>{if(item.type.startsWith('image/')){const file=item.getAsFile();if(!file)return;if(!validateImg(file))return;if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(file);}});});
+function handleUpload(e) {
+  [...e.target.files].forEach(f => {
+    if (!validateImg(f)) return;
+    if (!userIsPro && imgBuffer.length >= 1) {
+      showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'red');
+      return;
+    }
+    const r = new FileReader();
+    r.onload = ev => {
+      // Store as _previewUrl for display — actual upload to Storage
+      // happens in saveNotes() via addTradeImage() which now uses Storage
+      imgBuffer.push({ _previewUrl: ev.target.result });
+      renderImgs();
+    };
+    r.readAsDataURL(f);
+  });
+  e.target.value = '';
+}
+document.addEventListener('paste', e => {
+  if (!document.getElementById('nOverlay').classList.contains('open')) return;
+  [...e.clipboardData.items].forEach(item => {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (!file) return;
+      if (!validateImg(file)) return;
+      if (!userIsPro && imgBuffer.length >= 1) {
+        showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'red');
+        return;
+      }
+      const r = new FileReader();
+      r.onload = ev => {
+        imgBuffer.push({ _previewUrl: ev.target.result });
+        renderImgs();
+      };
+      r.readAsDataURL(file);
+    }
+  });
+});
 
 // ── Lightbox ───────────────────────────────────────────────────────────────
 let lbImages=[],lbIndex=0,lbScale=1,lbPanX=0,lbPanY=0,lbDragging=false,lbLastX=0,lbLastY=0;

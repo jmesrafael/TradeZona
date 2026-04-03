@@ -558,22 +558,42 @@ function setSaveStatus(cls,msg){
 }
 function showSaveIndicator(){const el=document.getElementById('saveIndicator');el.classList.add('show');clearTimeout(_saveIndicatorTimer);_saveIndicatorTimer=setTimeout(()=>el.classList.remove('show'),2000);}
 function triggerImgUpload(){document.getElementById('modalFileInp').click();}
-function handleModalUpload(e){
-  [...e.target.files].forEach(f=>{
-    if(!validateImg(f))return;
-    if(!userIsPro&&modalImgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','r');return;}
-    const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderImgGallery();triggerAutoSave();};r.readAsDataURL(f);
+function handleModalUpload(e) {
+  [...e.target.files].forEach(f => {
+    if (!validateImg(f)) return;
+    if (!userIsPro && modalImgBuffer.length >= 1) {
+      showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'r');
+      return;
+    }
+    const r = new FileReader();
+    r.onload = ev => {
+      // _previewUrl used for display; actual Storage upload happens in _doSave()
+      modalImgBuffer.push({ _previewUrl: ev.target.result });
+      renderImgGallery();
+      triggerAutoSave();
+    };
+    r.readAsDataURL(f);
   });
-  e.target.value='';
+  e.target.value = '';
 }
-document.addEventListener('paste',e=>{
-  if(!document.getElementById('overlay').classList.contains('open'))return;
-  if(document.activeElement===document.getElementById('modalNote'))return;
-  [...e.clipboardData.items].forEach(item=>{
-    if(item.type.startsWith('image/')){
-      const file=item.getAsFile();if(!file||!validateImg(file))return;
-      if(!userIsPro&&modalImgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','r');return;}
-      const r=new FileReader();r.onload=ev=>{modalImgBuffer.push({_previewUrl:ev.target.result});renderImgGallery();triggerAutoSave();};r.readAsDataURL(file);
+document.addEventListener('paste', e => {
+  if (!document.getElementById('overlay').classList.contains('open')) return;
+  if (document.activeElement === document.getElementById('modalNote')) return;
+  [...e.clipboardData.items].forEach(item => {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (!file || !validateImg(file)) return;
+      if (!userIsPro && modalImgBuffer.length >= 1) {
+        showToast('Free plan: 1 image per trade.', 'fa-solid fa-lock', 'r');
+        return;
+      }
+      const r = new FileReader();
+      r.onload = ev => {
+        modalImgBuffer.push({ _previewUrl: ev.target.result });
+        renderImgGallery();
+        triggerAutoSave();
+      };
+      r.readAsDataURL(file);
     }
   });
 });

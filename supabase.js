@@ -378,43 +378,73 @@ async function deleteTrade(tradeId) {
 // ── Trade image helpers ───────────────────────────────────
 
 async function addTradeImage(userId, tradeId, dataUrl) {
-  // Store as base64 in the data column (no external storage needed)
+  // 1. Convert base64 dataUrl → Blob
+  const res      = await fetch(dataUrl);
+  const blob     = await res.blob();
+  const ext      = blob.type.includes('png') ? 'png' : 'jpg';
+  const fileName = `${userId}/${tradeId}/${Date.now()}.${ext}`;
+ 
+  // 2. Upload to Supabase Storage bucket "trade-images"
+  const { data: uploadData, error: uploadError } = await db.storage
+    .from('trade-images')
+    .upload(fileName, blob, {
+      contentType: blob.type,
+      upsert: false,
+    });
+ 
+  if (uploadError) throw uploadError;
+ 
+  // 3. Save only the short path string in the DB — no more base64
   const { data, error } = await db
     .from('trade_images')
     .insert({
-      user_id:  userId,
-      trade_id: tradeId,
-      data:     dataUrl,
+      user_id:     userId,
+      trade_id:    tradeId,
+      storage_url: uploadData.path,
+      data:        null,   // explicitly null — we no longer store base64
     })
     .select('*')
     .single();
+ 
   if (error) throw error;
   return data;
 }
 
 async function deleteTradeImage(imageId) {
+  // Get the row first so we know what to delete from Storage
   const { data: img } = await db
     .from('trade_images')
-    .select('storage_url')
+    .select('storage_url, data')
     .eq('id', imageId)
     .maybeSingle();
-
-  if (img?.storage_url) {
-    await db.storage.from('trade-images').remove([img.storage_url]);
+ 
+  // Delete from Storage if it's the new format (has storage_url, no base64)
+  if (img?.storage_url && !img?.data) {
+    await db.storage
+      .from('trade-images')
+      .remove([img.storage_url]);
   }
-
+ 
+  // Delete the DB row
   const { error } = await db.from('trade_images').delete().eq('id', imageId);
   if (error) throw error;
 }
-
+ 
 async function getImageUrl(img) {
   if (!img) return '';
+ 
+  // NEW: Storage URL — fetch a signed URL (valid 1 hour)
+  if (img.storage_url && !img.data) {
+    const { data, error } = await db.storage
+      .from('trade-images')
+      .createSignedUrl(img.storage_url, 60 * 60);
+    return error ? '' : data.signedUrl;
+  }
+ 
+  // LEGACY: old base64 images still load fine
   if (img.data) return img.data;
   if (img.url)  return img.url;
-  if (img.storage_url) {
-    const { data } = db.storage.from('trade-images').getPublicUrl(img.storage_url);
-    return data?.publicUrl || '';
-  }
+ 
   return '';
 }
 
