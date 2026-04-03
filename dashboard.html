@@ -77,8 +77,8 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .pnl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .pnl-val{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:18px;font-weight:700}
 .pnl-pos{color:var(--accent)}.pnl-neg{color:var(--red,#ff5f6d)}
-.open-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);border:1px solid rgba(0,255,136,.4);border-radius:var(--radius-md,8px);padding:7px 14px;background:none;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);transition:all .2s}
-.open-btn:hover{background:var(--accent);color:#0b0f0c}
+.open-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);...}
+.open-btn:hover{background:rgba(255,255,255,.06);color:var(--text);border-color:var(--muted)}
 .empty-state{color:var(--muted);font-size:14px;padding:56px 0;text-align:center;grid-column:1/-1;line-height:1.9}
 .empty-state i{display:block;font-size:36px;margin-bottom:12px;opacity:.3}
 
@@ -471,7 +471,11 @@ function _updateThemeTrigger(themeId) {
   if (nameEl) nameEl.textContent = meta.label;
   if (descEl) descEl.textContent = meta.desc;
 }
-function _applyThemeSelection(id) { if (window.TZ) TZ.setTheme(id); else localStorage.setItem('tl_theme', id); _updateThemeTrigger(id); _buildThemeDropdown(); }
+async function _applyThemeSelection(id) {
+  if (window.TZ) TZ.setTheme(id); else localStorage.setItem('tl_theme', id);
+  _updateThemeTrigger(id); _buildThemeDropdown();
+  try { await updateProfile(currentUser.id, { color_theme: id }); } catch(e) { console.error('Theme save failed', e); }
+}
 function toggleThemeDropdown() {
   if (_fontDropOpen) closeFontDropdown();
   const dd = document.getElementById('themeDropdown'), btn = document.getElementById('themeTrigger');
@@ -508,7 +512,11 @@ function _updateFontTrigger(fontId) {
   const el = document.getElementById('fontTriggerLeft');
   if (el) el.innerHTML = `<div class="font-trigger-preview"><span class="ftp-heading" style="font-family:${meta.heading}">${meta.preview.heading}</span><span class="ftp-body" style="font-family:${meta.body}">${meta.preview.body} · ${meta.desc}</span></div>`;
 }
-function _applyFontSelection(id) { if (window.TZ) TZ.setFont(id); else localStorage.setItem('tl_font', id); _updateFontTrigger(id); _buildFontDropdown(); }
+async function _applyFontSelection(id) {
+  if (window.TZ) TZ.setFont(id); else localStorage.setItem('tl_font', id);
+  _updateFontTrigger(id); _buildFontDropdown();
+  try { await updateProfile(currentUser.id, { font_theme: id }); } catch(e) { console.error('Font save failed', e); }
+}
 function toggleFontDropdown() {
   if (_themeDropOpen) closeThemeDropdown();
   const dd = document.getElementById('fontDropdown'), btn = document.getElementById('fontTrigger');

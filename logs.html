@@ -88,9 +88,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .fp-section.full{grid-column:1/-1}
 .fp-section-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:5px}
 .fp-section-title i{color:var(--accent2)}
-.fp-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--panel);z-index:1}
-.fp-apply-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:8px 20px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:600;cursor:pointer;transition:opacity var(--transition-fast)}
-.fp-apply-btn:hover{opacity:.85}
+.fp-footer{display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:10px 18px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--panel);z-index:1}
 .fp-reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);padding:7px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:12px;cursor:pointer;transition:all var(--transition-fast)}
 .fp-reset-btn:hover{border-color:var(--muted);color:var(--text)}
 
@@ -442,7 +440,7 @@ td:nth-child(9){width:64px}
 <!-- ══════════════════════════════════════════
      UNIFIED FILTER PANEL
 ══════════════════════════════════════════ -->
-<div class="filter-panel" id="filterPanel" onclick="event.stopPropagation()">
+<div class="filter-panel" id="filterPanel">
   <div class="fp-header">
     <div class="fp-header-title"><i class="fa-solid fa-sliders"></i> Filters</div>
     <button class="fp-close" onclick="closeFilterPanel()"><i class="fa-solid fa-xmark"></i></button>
@@ -527,9 +525,8 @@ td:nth-child(9){width:64px}
     </div>
 
   </div>
-  <div class="fp-footer">
+<div class="fp-footer">
     <button class="fp-reset-btn" onclick="resetFiltersInPanel()"><i class="fa-solid fa-rotate-left" style="margin-right:5px"></i>Reset All</button>
-    <button class="fp-apply-btn" onclick="applyFilterPanel()"><i class="fa-solid fa-check" style="margin-right:6px"></i>Apply Filters</button>
   </div>
 </div>
 
@@ -828,6 +825,7 @@ function fdCalDayClick(ds){
     else if(ds<fdRangeStart){fdRangeEnd=fdRangeStart;fdRangeStart=ds;}
     else{fdRangeEnd=ds;}
     fdPickingEnd=false;
+    applyFilterPanel();
   }
   renderFdCal();
 }
@@ -879,9 +877,12 @@ function _fpPopulateAll(){
   document.getElementById('fp-sort-desc').classList.toggle('sel',sortDir==='desc');
   document.getElementById('fp-sort-asc').classList.toggle('sel',sortDir==='asc');
   _fpUpdateSortIcons();
-  // Restore position
+// Restore position
   document.getElementById('fp-pos-long').checked=fState.position.includes('Long');
   document.getElementById('fp-pos-short').checked=fState.position.includes('Short');
+  document.getElementById('fp-pos-long').onchange=applyFilterPanel;
+  document.getElementById('fp-pos-short').onchange=applyFilterPanel;
+
   // Restore confidence stars
   _fpConfSel=fState.confidence;
   document.querySelectorAll('.fp-star-opt').forEach(s=>s.classList.toggle('sel',parseInt(s.dataset.v)===_fpConfSel));
@@ -891,12 +892,18 @@ function _fpPopulateList(key,items){
   const sel=fState[key]||[];
   if(!items.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0">No tags yet</div>';return;}
   el.innerHTML=items.map(item=>`<label class="fp-item"><input type="checkbox" value="${esc(item)}" ${sel.includes(item)?'checked':''}><span class="fp-radio"></span><span>${esc(item)}</span></label>`).join('');
+  el.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', applyFilterPanel);
+  });
 }
 function _fpPopulateMood(){
   const el=document.getElementById('fp-mood-list');if(!el)return;
   const moods=settings?.moods||[],colors=settings?.mood_colors||{},sel=fState.mood||[];
   if(!moods.length){el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0">No moods yet</div>';return;}
   el.innerHTML=moods.map(m=>`<label class="fp-item"><input type="checkbox" value="${esc(m)}" ${sel.includes(m)?'checked':''}><span class="fp-radio"></span><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${colors[m]||'#8fa39a'};flex-shrink:0"></span>${esc(m)}</span></label>`).join('');
+  el.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', applyFilterPanel);
+  });
 }
 function _fpUpdateSortIcons(){
   const descEl=document.getElementById('fp-sort-desc');const ascEl=document.getElementById('fp-sort-asc');
@@ -908,13 +915,15 @@ function fpSetSort(dir){
   document.getElementById('fp-sort-desc').classList.toggle('sel',dir==='desc');
   document.getElementById('fp-sort-asc').classList.toggle('sel',dir==='asc');
   _fpUpdateSortIcons();
+  applyFilterPanel();
 }
 function fpStarClick(v){
   _fpConfSel=_fpConfSel===v?0:v;
   document.querySelectorAll('.fp-star-opt').forEach(s=>s.classList.toggle('sel',parseInt(s.dataset.v)===_fpConfSel));
+  applyFilterPanel();
 }
 
-function applyFilterPanel(){
+function _readPanelIntoState(){
   // Date
   if(fdRangeStart&&fdRangeEnd){
     const lo=fdRangeStart<=fdRangeEnd?fdRangeStart:fdRangeEnd;
@@ -936,15 +945,16 @@ function applyFilterPanel(){
   fState.mood=[...document.querySelectorAll('#fp-mood-list input:checked')].map(c=>c.value);
   // Confidence
   fState.confidence=_fpConfSel;
-  closeFilterPanel();
+}
+
+function applyFilterPanel(){
+  _readPanelIntoState();
   currentPage=1;
   updateFilterCountBadge();
   updateAnalytics();
   render();
 }
-
 function resetFiltersInPanel(){
-  // Reset all panel state without closing
   fState.date={from:'',to:''};fState.pair=[];fState.position=[];fState.strategy=[];fState.timeframe=[];fState.mood=[];fState.confidence=0;
   fdRangeStart='';fdRangeEnd='';fdPickingEnd=false;
   fdCalYear=new Date().getFullYear();fdCalMonth=new Date().getMonth();
@@ -952,8 +962,11 @@ function resetFiltersInPanel(){
   _fpConfSel=0;
   _fpPopulateAll();
   renderFdCal();
+  currentPage=1;
+  updateFilterCountBadge();
+  updateAnalytics();
+  render();
 }
-
 function updateFilterCountBadge(){
   const checks=[
     !!(fState.date.from||fState.date.to),
