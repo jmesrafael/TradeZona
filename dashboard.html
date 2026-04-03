@@ -1,4 +1,4 @@
-<!-- dashboard.html — FIXED: drag-to-reorder journals, journal open fix, profile race fix -->
+<!-- dashboard.html — Enhanced: themed open-btn, fixed card size, theme-adaptive badges, new-user tutorial, bg orb, Trading Journals label -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,38 +12,165 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);min-height:100vh;overflow-x:hidden}
+
+/* ══════════════════════════════════════
+   ANIMATED BACKGROUND ORB
+   ══════════════════════════════════════ */
+.bg-orb-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(120px);
+  opacity:0.045;
+  animation:orbDrift 18s ease-in-out infinite alternate;
+}
+.bg-orb.orb1{
+  width:600px;height:600px;
+  top:-100px;left:-100px;
+  background:radial-gradient(circle,var(--accent2,#00ff88),transparent 70%);
+  animation-duration:20s;
+}
+.bg-orb.orb2{
+  width:500px;height:500px;
+  bottom:-80px;right:-80px;
+  background:radial-gradient(circle,var(--accent,#00ff88),transparent 70%);
+  animation-duration:25s;
+  animation-delay:-8s;
+}
+.bg-orb.orb3{
+  width:300px;height:300px;
+  top:50%;left:55%;
+  background:radial-gradient(circle,var(--accent2,#00ff88),transparent 70%);
+  opacity:0.025;
+  animation-duration:30s;
+  animation-delay:-13s;
+}
+/* subtle grid overlay */
+.bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,#000 40%,transparent 100%);
+}
+@keyframes orbDrift{
+  0%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(60px,-40px) scale(1.08)}
+  66%{transform:translate(-30px,50px) scale(.95)}
+  100%{transform:translate(40px,20px) scale(1.04)}
+}
+
+/* Everything above z-index:0 sits above orbs */
+header,main,.overlay{position:relative;z-index:1}
+
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes dropIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardReveal{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 
-/* ── Header ── */
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap;gap:10px}
+/* ══════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════ */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;
+  border-bottom:1px solid var(--border);
+  background:rgba(var(--panel-rgb,11,15,12),.85);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  flex-wrap:wrap;gap:10px;
+  position:sticky;top:0;z-index:100;
+}
 .logo{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:18px;font-weight:600;cursor:pointer;user-select:none}
 .logo span{color:var(--accent)}
 .hright{display:flex;align-items:center;gap:8px}
 .huser{display:flex;align-items:center;gap:10px;margin-right:6px}
 .uname{font-size:13px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.plan-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:var(--radius-pill,20px);text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .2s}
-.badge-pro{background:rgba(0,255,136,.15);color:var(--accent2);border:1px solid rgba(0,255,136,.3)}
-.badge-free{background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border)}
+
+/* ── Plan badge — theme-adaptive ── */
+.plan-badge{
+  font-size:10px;font-weight:700;padding:3px 9px;
+  border-radius:var(--radius-pill,20px);
+  text-transform:uppercase;letter-spacing:.5px;
+  cursor:pointer;transition:all .2s;
+}
+/* Free: uses muted/border — always theme-adaptive */
+.badge-free{
+  background:rgba(128,128,128,.12);
+  color:var(--muted);
+  border:1px solid var(--border);
+}
 .badge-free:hover{border-color:var(--accent2);color:var(--accent2)}
-.badge-expiring{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.35);animation:pulse 2s infinite}
+/* Pro: uses accent — always theme-adaptive, NO hardcoded green */
+.badge-pro{
+  background:color-mix(in srgb,var(--accent2) 15%,transparent);
+  color:var(--accent2);
+  border:1px solid color-mix(in srgb,var(--accent2) 35%,transparent);
+}
+.badge-expiring{
+  background:rgba(245,158,11,.12);color:#fbbf24;
+  border:1px solid rgba(245,158,11,.35);
+  animation:pulse 2s infinite;
+}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
-.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md,8px);padding:8px 14px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+
+.btn-ghost{
+  background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:var(--radius-md,8px);padding:8px 14px;
+  font-family:var(--font-body,'Inter',sans-serif);font-size:13px;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
 .btn-ghost:hover{border-color:var(--accent2);color:var(--text)}
 
-/* ── Main ── */
-main{padding:32px;max-width:1100px;margin:0 auto}
-@media(max-width:600px){main{padding:20px 16px}}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:10px}
-.sec-hdr h2{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:16px;font-weight:600}
-.drag-hint{font-size:11px;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:6px;opacity:.7}
-.drag-hint i{font-size:10px}
-.btn-primary{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md,8px);padding:10px 18px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:7px}
-.btn-primary:hover{opacity:.85}
+/* ══════════════════════════════════════
+   MAIN
+   ══════════════════════════════════════ */
+main{padding:36px 32px;max-width:1140px;margin:0 auto}
+@media(max-width:768px){main{padding:24px 16px}}
+@media(max-width:480px){main{padding:20px 12px}}
 
-/* ── Subscription banner ── */
+.sec-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;flex-wrap:wrap;gap:10px;
+  animation:fadeUp .5s ease both;
+}
+.sec-hdr h2{
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:17px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-hdr h2 i{color:var(--accent2)}
+
+.drag-hint{
+  font-size:11px;color:var(--muted);
+  margin-bottom:18px;display:flex;align-items:center;gap:6px;opacity:.6;
+  animation:fadeUp .5s .1s ease both;
+}
+.drag-hint i{font-size:10px}
+
+.btn-primary{
+  background:var(--accent);color:#0b0f0c;
+  border:none;border-radius:var(--radius-md,8px);
+  padding:10px 18px;
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:13px;font-weight:700;
+  cursor:pointer;transition:opacity .2s,transform .15s,box-shadow .2s;
+  display:flex;align-items:center;gap:7px;
+  position:relative;overflow:hidden;
+}
+.btn-primary::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.22) 0%,transparent 60%);
+  pointer-events:none;
+}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 24px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn-primary:active{transform:translateY(0)}
+
+/* ── Sub banner ── */
 .sub-banner{display:none;margin-bottom:20px;padding:12px 18px;border-radius:var(--radius-lg,12px);align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px}
 .sub-banner.show{display:flex}
 .sub-banner.expiring{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);color:#fbbf24}
@@ -51,38 +178,302 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .sub-banner-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:6px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s}
 .sub-banner-btn:hover{opacity:.85}
 
+/* ══════════════════════════════════════
+   SKELETON
+   ══════════════════════════════════════ */
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-.skel{background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-md,8px)}
-.skel-card{height:170px;border-radius:var(--radius-xl,16px);border:1px solid var(--border)}
-.skel-grid,.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:16px}
+.skel{
+  background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);
+  background-size:400px 100%;animation:shimmer 1.4s infinite;
+  border-radius:var(--radius-md,8px);
+}
+.skel-card{
+  height:220px;border-radius:var(--radius-xl,16px);border:1px solid var(--border);
+}
+.skel-grid,.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:18px;
+}
 
-/* ── Journal cards ── */
-.jcard{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl,16px);padding:22px;transition:border-color .2s,transform .15s,box-shadow .2s;position:relative;cursor:default}
-.jcard:hover{border-color:var(--accent2)}
+/* ══════════════════════════════════════
+   JOURNAL CARDS — Fixed size, themed glare
+   ══════════════════════════════════════ */
+.jcard{
+  /* Fixed dimensions that adapt responsively */
+  height:220px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl,16px);
+  padding:22px;
+  transition:border-color .25s,transform .2s,box-shadow .3s;
+  position:relative;
+  cursor:default;
+  overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  animation:cardReveal .45s ease both;
+}
+
+/* Glare sweep on hover */
+.jcard::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    color-mix(in srgb,var(--accent2) 8%,transparent) 0%,
+    transparent 70%
+  );
+  opacity:0;
+  transition:opacity .35s;
+  pointer-events:none;
+  border-radius:inherit;
+}
+/* Sweep shine */
+.jcard::after{
+  content:'';
+  position:absolute;
+  top:-60%;left:-80%;
+  width:60%;height:220%;
+  background:linear-gradient(
+    105deg,
+    transparent 30%,
+    color-mix(in srgb,var(--accent2) 10%,transparent) 50%,
+    transparent 70%
+  );
+  transform:skewX(-15deg);
+  transition:left .5s ease, opacity .3s;
+  opacity:0;
+  pointer-events:none;
+}
+.jcard:hover{
+  border-color:color-mix(in srgb,var(--accent2) 60%,transparent);
+  transform:translateY(-3px);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.25),
+    0 0 0 1px color-mix(in srgb,var(--accent2) 15%,transparent),
+    0 1px 0 color-mix(in srgb,var(--accent2) 30%,transparent) inset;
+}
+.jcard:hover::before{opacity:1}
+.jcard:hover::after{left:110%;opacity:1}
+
+/* Responsive card heights */
+@media(max-width:768px){.jcard{height:200px}}
+@media(max-width:480px){.jcard{height:auto;min-height:190px}}
 
 /* Drag states */
 .jcard.draggable{cursor:grab}
 .jcard.draggable:active{cursor:grabbing}
-.jcard.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,255,136,.2);transform:scale(1.01)}
-.jcard.dragging{opacity:.45;transform:scale(.97)}
-.drag-handle{position:absolute;top:12px;right:12px;color:var(--muted);font-size:13px;cursor:grab;padding:4px;opacity:.45;transition:opacity .15s;z-index:2}
-.drag-handle:hover{opacity:.9}
-.jcard:active .drag-handle{cursor:grabbing}
+.jcard.drag-over{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent);
+  transform:scale(1.015);
+}
+.jcard.dragging{opacity:.4;transform:scale(.97)}
+.drag-handle{
+  position:absolute;top:14px;right:14px;
+  color:var(--muted);font-size:12px;
+  cursor:grab;padding:4px;opacity:.35;
+  transition:opacity .15s;z-index:2;
+}
+.drag-handle:hover{opacity:.8}
 
-.jcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px}
-.jcard h3{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:15px;font-weight:600;word-break:break-word;flex:1;padding-right:18px}
-.pin-lock{width:26px;height:26px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.25);border-radius:var(--radius-md,8px);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:11px;flex-shrink:0}
-.jcard .cap{font-size:12px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
-.pnl-row{display:flex;align-items:baseline;gap:6px;margin-bottom:16px}
+.jcard-top{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:8px;
+  flex-shrink:0;
+}
+.jcard h3{
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:15px;font-weight:600;
+  word-break:break-word;flex:1;
+  padding-right:20px;
+  /* clamp to 2 lines */
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.pin-lock{
+  width:26px;height:26px;
+  background:color-mix(in srgb,var(--accent2) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent2) 25%,transparent);
+  border-radius:var(--radius-md,8px);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--accent2);font-size:11px;flex-shrink:0;
+}
+.jcard .cap{
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+  margin-top:4px;flex-shrink:0;
+}
+.pnl-row{
+  display:flex;align-items:baseline;gap:6px;
+  margin-top:6px;flex-shrink:0;
+}
 .pnl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.pnl-val{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:18px;font-weight:700}
-.pnl-pos{color:var(--accent)}.pnl-neg{color:var(--red,#ff5f6d)}
-.open-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);...}
-.open-btn:hover{background:rgba(255,255,255,.06);color:var(--text);border-color:var(--muted)}
-.empty-state{color:var(--muted);font-size:14px;padding:56px 0;text-align:center;grid-column:1/-1;line-height:1.9}
+.pnl-val{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:20px;font-weight:700}
+.pnl-pos{color:var(--accent)}
+.pnl-neg{color:var(--red,#ff5f6d)}
+
+/* ── Open Journal button — themed, classy ── */
+.open-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:600;
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  letter-spacing:.3px;
+  color:var(--accent2);
+  background:color-mix(in srgb,var(--accent2) 8%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent2) 22%,transparent);
+  border-radius:var(--radius-md,8px);
+  padding:8px 14px;
+  cursor:pointer;
+  transition:background .2s,border-color .2s,color .2s,transform .15s,box-shadow .2s;
+  position:relative;overflow:hidden;
+  flex-shrink:0;
+  width:100%;
+  justify-content:center;
+  margin-top:auto;
+}
+.open-btn::before{
+  content:'';position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent2) 18%,transparent) 0%,transparent 70%);
+  opacity:0;transition:opacity .25s;
+  pointer-events:none;
+}
+.open-btn:hover{
+  background:color-mix(in srgb,var(--accent2) 16%,transparent);
+  border-color:color-mix(in srgb,var(--accent2) 55%,transparent);
+  color:var(--accent2);
+  transform:translateY(-1px);
+  box-shadow:0 4px 16px color-mix(in srgb,var(--accent2) 20%,transparent);
+}
+.open-btn:hover::before{opacity:1}
+.open-btn:active{transform:translateY(0)}
+.open-btn i{font-size:11px;transition:transform .2s}
+.open-btn:hover i{transform:translate(2px,-2px)}
+
+.jcard-body{display:flex;flex-direction:column;flex:1;min-height:0;justify-content:space-between;gap:4px}
+
+.empty-state{
+  color:var(--muted);font-size:14px;padding:56px 0;
+  text-align:center;grid-column:1/-1;line-height:1.9;
+}
 .empty-state i{display:block;font-size:36px;margin-bottom:12px;opacity:.3}
 
-/* ── Overlays ── */
+/* ══════════════════════════════════════
+   NEW USER WELCOME TOOLTIP / SPOTLIGHT
+   ══════════════════════════════════════ */
+.welcome-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(3px);
+  z-index:500;
+  display:flex;align-items:flex-start;justify-content:flex-end;
+  padding:72px 32px 0;
+  pointer-events:none;
+  animation:fadeIn .4s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.welcome-overlay.hidden{display:none}
+.welcome-spotlight{
+  pointer-events:all;
+  position:relative;
+  max-width:320px;
+  width:100%;
+}
+/* Arrow pointing to the button */
+.welcome-arrow{
+  position:absolute;
+  top:-32px;right:30px;
+  font-size:24px;
+  color:var(--accent2);
+  animation:bounce 1.2s ease-in-out infinite;
+}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.welcome-card{
+  background:var(--panel);
+  border:1px solid color-mix(in srgb,var(--accent2) 35%,transparent);
+  border-radius:var(--radius-xl,16px);
+  padding:24px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.5),
+    0 0 0 1px color-mix(in srgb,var(--accent2) 12%,transparent),
+    inset 0 1px 0 color-mix(in srgb,var(--accent2) 20%,transparent);
+  animation:dropIn .35s .1s ease both;
+  position:relative;overflow:hidden;
+}
+.welcome-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent2),transparent);
+  opacity:.6;
+}
+.welcome-emoji{
+  font-size:32px;margin-bottom:12px;display:block;
+  animation:wave 1.8s ease-in-out infinite;
+  transform-origin:70% 80%;
+}
+@keyframes wave{
+  0%,100%{transform:rotate(0deg)}
+  15%{transform:rotate(14deg)}
+  30%{transform:rotate(-10deg)}
+  45%{transform:rotate(12deg)}
+  60%{transform:rotate(-6deg)}
+  75%{transform:rotate(4deg)}
+}
+.welcome-title{
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:16px;font-weight:700;
+  color:var(--text);margin-bottom:8px;
+  line-height:1.3;
+}
+.welcome-title span{color:var(--accent2)}
+.welcome-body{
+  font-size:13px;color:var(--muted);
+  line-height:1.65;margin-bottom:18px;
+}
+.welcome-body strong{color:var(--text)}
+.welcome-cta{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.welcome-dismiss{
+  font-size:12px;color:var(--muted);
+  background:none;border:none;cursor:pointer;
+  padding:4px 0;transition:color .2s;
+  font-family:var(--font-body,'Inter',sans-serif);
+}
+.welcome-dismiss:hover{color:var(--text)}
+.welcome-go-btn{
+  background:var(--accent);color:#0b0f0c;
+  border:none;border-radius:var(--radius-md,8px);
+  padding:9px 16px;
+  font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:13px;font-weight:700;
+  cursor:pointer;transition:opacity .2s,transform .15s;
+  display:flex;align-items:center;gap:6px;
+  position:relative;overflow:hidden;
+}
+.welcome-go-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 60%);
+  pointer-events:none;
+}
+.welcome-go-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+/* Highlight ring around New Journal button */
+.btn-primary.spotlight-ring{
+  box-shadow:
+    0 0 0 3px var(--panel),
+    0 0 0 6px color-mix(in srgb,var(--accent2) 50%,transparent),
+    0 0 30px color-mix(in srgb,var(--accent2) 30%,transparent);
+  animation:ringPulse 1.5s ease-in-out infinite;
+}
+@keyframes ringPulse{
+  0%,100%{box-shadow:0 0 0 3px var(--panel),0 0 0 6px color-mix(in srgb,var(--accent2) 50%,transparent),0 0 30px color-mix(in srgb,var(--accent2) 30%,transparent)}
+  50%{box-shadow:0 0 0 3px var(--panel),0 0 0 9px color-mix(in srgb,var(--accent2) 30%,transparent),0 0 40px color-mix(in srgb,var(--accent2) 20%,transparent)}
+}
+
+/* ══════════════════════════════════════
+   OVERLAYS / MODALS
+   ══════════════════════════════════════ */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-xl,16px);width:100%;max-width:460px;overflow:hidden;max-height:92vh;display:flex;flex-direction:column}
@@ -125,7 +516,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .theme-row{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
 .theme-row:last-child{border-bottom:none}
 .theme-row:hover{background:rgba(255,255,255,.04)}
-.theme-row.active{background:rgba(0,255,136,.05)}
+.theme-row.active{background:color-mix(in srgb,var(--accent2) 5%,transparent)}
 .theme-row.locked{opacity:.55;cursor:not-allowed}
 .theme-row.locked:hover{background:none}
 .tr-swatches{display:flex;gap:3px;flex-shrink:0}
@@ -139,11 +530,11 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .tr-pro.electric{background:rgba(0,229,255,.12);color:#00e5ff;border:1px solid rgba(0,229,255,.3)}
 .tr-pro.golden{background:rgba(245,200,66,.12);color:#d4a017;border:1px solid rgba(245,200,66,.3)}
 .tr-pro.void{background:rgba(200,200,200,.1);color:#aaa;border:1px solid rgba(200,200,200,.25)}
-.tr-pro.generic{background:rgba(0,255,136,.1);color:var(--accent2);border:1px solid rgba(0,255,136,.25)}
+.tr-pro.generic{background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent2) 25%,transparent)}
 .font-row{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
 .font-row:last-child{border-bottom:none}
 .font-row:hover{background:rgba(255,255,255,.04)}
-.font-row.active{background:rgba(0,255,136,.05)}
+.font-row.active{background:color-mix(in srgb,var(--accent2) 5%,transparent)}
 .font-row.locked{opacity:.55;cursor:not-allowed}
 .font-row.locked:hover{background:none}
 .fr-preview{flex:1;min-width:0}
@@ -152,8 +543,8 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .fr-meta{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--font-body,'Inter',sans-serif)!important}
 .fr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .fr-check{color:var(--accent2);font-size:13px}
-.fr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:rgba(0,255,136,.1);color:var(--accent2);border:1px solid rgba(0,255,136,.25)}
-.tz-pro-hint{display:none;margin-top:8px;padding:9px 12px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:var(--radius-md,8px);font-size:12px;color:var(--muted);line-height:1.6}
+.fr-pro{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:color-mix(in srgb,var(--accent2) 10%,transparent);color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent2) 25%,transparent)}
+.tz-pro-hint{display:none;margin-top:8px;padding:9px 12px;background:color-mix(in srgb,var(--accent2) 4%,transparent);border:1px solid color-mix(in srgb,var(--accent2) 15%,transparent);border-radius:var(--radius-md,8px);font-size:12px;color:var(--muted);line-height:1.6}
 .tz-pro-hint.show{display:block}
 .tz-pro-hint a{color:var(--accent2);font-weight:600;text-decoration:none}
 .plan-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
@@ -185,21 +576,48 @@ main{padding:32px;max-width:1100px;margin:0 auto}
 .del-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--red,#ff5f6d);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 
 /* ── Nudge ── */
-.nudge{margin-top:12px;padding:12px 16px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.15);border-radius:var(--radius-lg,12px);display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nudge{
+  margin-top:20px;padding:14px 18px;
+  background:color-mix(in srgb,var(--accent2) 4%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent2) 15%,transparent);
+  border-radius:var(--radius-lg,12px);
+  display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
 .nudge.visible{display:flex}
 .nudge-text{font-size:12px;color:var(--muted);line-height:1.5}
 .nudge-text strong{color:var(--text);display:block;margin-bottom:2px}
-.nudge-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
+.nudge-btn{
+  background:var(--accent);color:#0b0f0c;border:none;border-radius:7px;
+  padding:7px 14px;font-family:var(--font-heading,'Space Grotesk',sans-serif);
+  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0;
+}
 .nudge-btn:hover{opacity:.85}
 
 /* ── Toast ── */
-#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg,12px);padding:11px 18px;font-size:13px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.45);z-index:99999;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw}
+#toast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg,12px);
+  padding:11px 18px;font-size:13px;color:var(--text);
+  box-shadow:0 8px 28px rgba(0,0,0,.45);
+  z-index:99999;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;
+  white-space:nowrap;display:flex;align-items:center;gap:8px;max-width:90vw;
+}
 #toast.show{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0);animation:slideDown .25s ease}
-#toast.toast-green{border-color:rgba(0,255,136,.45);background:rgba(0,255,136,.08)}
+#toast.toast-green{border-color:color-mix(in srgb,var(--accent2) 45%,transparent);background:color-mix(in srgb,var(--accent2) 8%,transparent)}
 #toast.toast-red{border-color:rgba(255,95,109,.45);background:rgba(255,95,109,.08)}
 </style>
 </head>
 <body>
+
+<!-- Ambient background -->
+<div class="bg-orb-wrap" aria-hidden="true">
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+</div>
+<div class="bg-grid" aria-hidden="true"></div>
+
 <div id="pageLoader"></div>
 
 <header>
@@ -223,23 +641,57 @@ main{padding:32px;max-width:1100px;margin:0 auto}
   </div>
 
   <div class="sec-hdr">
-    <h2><i class="fa-solid fa-book-open" style="color:var(--accent2);margin-right:8px"></i>My Journals</h2>
-    <button class="btn-primary" onclick="openCreate()"><i class="fa-solid fa-plus"></i> New Journal</button>
+    <h2><i class="fa-solid fa-chart-candlestick"></i>Trading Journals</h2>
+    <button class="btn-primary" id="newJournalBtn" onclick="openCreate()">
+      <i class="fa-solid fa-plus"></i> New Journal
+    </button>
   </div>
   <div class="drag-hint" id="dragHint" style="display:none">
     <i class="fa-solid fa-grip-dots-vertical"></i> Drag cards to reorder your journals
   </div>
 
   <div id="loadingState" class="skel-grid">
-    <div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
+    <div class="skel skel-card"></div>
   </div>
   <div class="grid" id="grid" style="display:none"></div>
 
   <div class="nudge" id="upgradeNudge">
-    <div class="nudge-text"><strong><i class="fa-solid fa-circle-xmark" style="color:var(--red,#ff5f6d);margin-right:5px"></i>Remove ads &amp; unlock everything</strong>Unlimited journals · Calculator · Full analytics · No ads.</div>
-    <button class="nudge-btn" onclick="location.href='/subscription'"><i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro</button>
+    <div class="nudge-text">
+      <strong><i class="fa-solid fa-circle-xmark" style="color:var(--red,#ff5f6d);margin-right:5px"></i>Remove ads &amp; unlock everything</strong>
+      Unlimited journals · Calculator · Full analytics · No ads.
+    </div>
+    <button class="nudge-btn" onclick="location.href='/subscription'">
+      <i class="fa-solid fa-arrow-up" style="margin-right:5px"></i>Upgrade to Pro
+    </button>
   </div>
 </main>
+
+<!-- ══ NEW USER WELCOME TOOLTIP ══ -->
+<div class="welcome-overlay hidden" id="welcomeOverlay">
+  <div class="welcome-spotlight">
+    <div class="welcome-arrow">
+      <i class="fa-solid fa-arrow-up"></i>
+    </div>
+    <div class="welcome-card">
+      <span class="welcome-emoji">👋</span>
+      <div class="welcome-title">Welcome to <span>TradeZona</span>!</div>
+      <div class="welcome-body">
+        Your trading journey starts here.<br><br>
+        <strong>Create your first journal</strong> to begin tracking trades, analyzing your performance, and building disciplined habits.
+        <br><br>
+        Hit <strong>+ New Journal</strong> above to get started — it only takes 10 seconds. 🚀
+      </div>
+      <div class="welcome-cta">
+        <button class="welcome-dismiss" onclick="dismissWelcome()">I'll explore on my own</button>
+        <button class="welcome-go-btn" onclick="dismissWelcome(); openCreate()">
+          <i class="fa-solid fa-plus"></i> Create Journal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Create Journal -->
 <div class="overlay" id="createModal">
@@ -319,7 +771,7 @@ main{padding:32px;max-width:1100px;margin:0 auto}
         </div>
         <div class="plan-row" style="border-top:1px solid var(--border);margin-top:4px">
           <div><div class="pr-lbl">Account &amp; Referrals</div><div class="pr-val">Manage profile, password, referral link</div></div>
-          <button class="upgrade-btn" style="background:var(--panel);color:var(--accent2);border:1px solid rgba(0,255,136,.3)" onclick="location.href='/profile'"><i class="fa-solid fa-user"></i> Profile</button>
+          <button class="upgrade-btn" style="background:var(--panel);color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent2) 30%,transparent)" onclick="location.href='/profile'"><i class="fa-solid fa-user"></i> Profile</button>
         </div>
       </div>
       <div class="set-sec">
@@ -375,6 +827,33 @@ let currentUser = null, journals = [], pnlMap = {}, isPro = false;
 let _themeDropOpen = false, _fontDropOpen = false;
 
 // ═══════════════════════════════════════════════════════════
+//  WELCOME TOOLTIP — new user detection
+// ═══════════════════════════════════════════════════════════
+const WELCOME_KEY = 'tz_welcome_seen';
+
+function maybeShowWelcome(isNewUser) {
+  if (!isNewUser) return;
+  if (localStorage.getItem(WELCOME_KEY)) return;
+  // Show after brief delay so page has settled
+  setTimeout(() => {
+    document.getElementById('welcomeOverlay').classList.remove('hidden');
+    // Add spotlight ring to the New Journal button
+    document.getElementById('newJournalBtn').classList.add('spotlight-ring');
+  }, 900);
+}
+
+function dismissWelcome() {
+  document.getElementById('welcomeOverlay').classList.add('hidden');
+  document.getElementById('newJournalBtn').classList.remove('spotlight-ring');
+  localStorage.setItem(WELCOME_KEY, '1');
+}
+
+// Close welcome on backdrop click
+document.getElementById('welcomeOverlay').addEventListener('click', function(e) {
+  if (e.target === this) dismissWelcome();
+});
+
+// ═══════════════════════════════════════════════════════════
 //  DRAG-TO-REORDER
 // ═══════════════════════════════════════════════════════════
 let _dragSrcId = null;
@@ -382,7 +861,7 @@ let _dragSrcId = null;
 function initDrag() {
   const grid = document.getElementById('grid');
   const cards = grid.querySelectorAll('.jcard[data-id]');
-  if (cards.length < 2) return; // No point dragging if only 1 journal
+  if (cards.length < 2) return;
 
   document.getElementById('dragHint').style.display = 'flex';
 
@@ -419,7 +898,6 @@ function initDrag() {
       card.classList.remove('drag-over');
       if (!_dragSrcId || _dragSrcId === card.dataset.id) return;
 
-      // Reorder journals array
       const fromIdx = journals.findIndex(j => j.id === _dragSrcId);
       const toIdx   = journals.findIndex(j => j.id === card.dataset.id);
       if (fromIdx === -1 || toIdx === -1) return;
@@ -427,11 +905,9 @@ function initDrag() {
       const [moved] = journals.splice(fromIdx, 1);
       journals.splice(toIdx, 0, moved);
 
-      // Re-render immediately (optimistic)
       renderJournals();
       initDrag();
 
-      // Persist to DB
       try {
         await updateJournalPositions(journals.map(j => j.id));
       } catch (err) {
@@ -597,26 +1073,36 @@ function renderSubBanner(subStatus) {
 // ═══════════════════════════════════════════════════════════
 async function loadJournals() {
   journals = await getJournals(currentUser.id);
-
-  // Single bulk query instead of one getTrades() call per journal
   pnlMap = await getJournalsPnl(journals.map(j => j.id));
 
   document.getElementById('loadingState').style.display = 'none';
   renderJournals();
   initDrag();
+
+  // Show welcome tooltip only if user has 0 journals (brand new)
+  const isNewUser = journals.length === 0;
+  maybeShowWelcome(isNewUser);
 }
+
 function renderJournals() {
   const grid = document.getElementById('grid');
   grid.style.display = '';
   if (!journals.length) {
-    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-book-open"></i>No journals yet.<br>Click <strong>+ New Journal</strong> to get started.</div>';
+    grid.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-chart-candlestick"></i>
+        No journals yet.<br>
+        Click <strong>+ New Journal</strong> to begin your trading journey.
+      </div>`;
     document.getElementById('dragHint').style.display = 'none';
     return;
   }
 
-  grid.innerHTML = journals.map(j => {
-    const pinHtml = j.pin_hash ? `<div class="pin-lock" title="PIN protected"><i class="fa-solid fa-lock"></i></div>` : '';
-    const capHtml = (j.show_capital !== false) && j.capital ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
+  grid.innerHTML = journals.map((j, idx) => {
+    const pinHtml = j.pin_hash
+      ? `<div class="pin-lock" title="PIN protected"><i class="fa-solid fa-lock"></i></div>` : '';
+    const capHtml = (j.show_capital !== false) && j.capital
+      ? `<div class="cap"><i class="fa-solid fa-wallet" style="font-size:10px"></i>$${Number(j.capital).toLocaleString()}</div>` : '';
     const pnl = pnlMap[j.id];
     let pnlHtml = '';
     if ((j.show_pnl !== false) && pnl != null) {
@@ -624,21 +1110,25 @@ function renderJournals() {
       const fmt = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toFixed(2);
       pnlHtml = `<div class="pnl-row"><span class="pnl-lbl">PNL</span><span class="pnl-val ${cls}">${fmt}</span></div>`;
     }
-    return `<div class="jcard" data-id="${j.id}">
+    return `<div class="jcard" data-id="${j.id}" style="animation-delay:${idx * 0.06}s">
       <i class="fa-solid fa-grip-dots-vertical drag-handle" title="Drag to reorder"></i>
-      <div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>
-      ${capHtml}${pnlHtml}
-      <button class="open-btn" onclick="goJournal('${j.id}')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
-      </button>
+      <div class="jcard-body">
+        <div>
+          <div class="jcard-top"><h3>${esc(j.name)}</h3>${pinHtml}</div>
+          ${capHtml}
+          ${pnlHtml}
+        </div>
+        <button class="open-btn" onclick="goJournal('${j.id}')">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Journal
+        </button>
+      </div>
     </div>`;
   }).join('');
 }
 
-// ── Open journal — store ID and navigate ──────────────────
+// ── Open journal ──────────────────────────────────────────
 function goJournal(id) {
   if (!id) return;
-  // Store in both storages for compatibility
   sessionStorage.setItem('tz_current_journal', id);
   localStorage.setItem('tz_current_journal', id);
   location.href = '/journal';
@@ -662,13 +1152,21 @@ function closeCreate() {
 async function doCreate() {
   const name    = document.getElementById('jName').value.trim();
   const capital = document.getElementById('jCapital').value.trim();
-  if (!name) { document.getElementById('jName').style.borderColor = 'var(--red,#ff5f6d)'; setTimeout(() => document.getElementById('jName').style.borderColor = '', 1500); return; }
+  if (!name) {
+    document.getElementById('jName').style.borderColor = 'var(--red,#ff5f6d)';
+    setTimeout(() => document.getElementById('jName').style.borderColor = '', 1500);
+    return;
+  }
   const btn = document.getElementById('createBtn');
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating…';
   try {
     await createJournal(currentUser.id, { name, capital: capital ? parseFloat(capital) : null, pin_hash: null });
     closeCreate();
     showToast('Journal created!', 'fa-solid fa-circle-check', 'green');
+    // Dismiss welcome if it was showing
+    if (!document.getElementById('welcomeOverlay').classList.contains('hidden')) {
+      dismissWelcome();
+    }
     await loadJournals();
   } catch (e) {
     showToast('Error: ' + e.message, 'fa-solid fa-circle-exclamation', 'red');
@@ -679,8 +1177,15 @@ async function doCreate() {
 document.getElementById('createModal').addEventListener('click', function(e) { if (e.target === this) closeCreate(); });
 
 // ── Settings ──────────────────────────────────────────────
-function openSettings() { closeThemeDropdown(); closeFontDropdown(); _updateThemeTrigger(); _updateFontTrigger(); document.getElementById('settingsModal').classList.add('open'); }
-function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); closeThemeDropdown(); closeFontDropdown(); }
+function openSettings() {
+  closeThemeDropdown(); closeFontDropdown();
+  _updateThemeTrigger(); _updateFontTrigger();
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+  closeThemeDropdown(); closeFontDropdown();
+}
 document.getElementById('settingsModal').addEventListener('click', function(e) { if (e.target === this) closeSettings(); });
 
 // ── Delete account ────────────────────────────────────────
