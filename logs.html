@@ -724,9 +724,9 @@ window.addEventListener('message', e => {
   }
 });
 
-const jid = sessionStorage.getItem('tz_current_journal') || (()=>{
-  try { return parent?.sessionStorage?.getItem('tz_current_journal'); } catch(e) { return null; }
-})();
+const jid = sessionStorage.getItem('tz_current_journal')
+  || localStorage.getItem('tz_current_journal')
+  || (()=>{ try { return parent?.sessionStorage?.getItem('tz_current_journal') || parent?.localStorage?.getItem('tz_current_journal'); } catch(e) { return null; } })();
 
 let currentUser=null, trades=[], settings=null, userIsPro=false;
 let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';

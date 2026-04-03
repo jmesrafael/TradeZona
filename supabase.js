@@ -229,3 +229,215 @@ if (!window.TZ) {
     fontList:   [],
   };
 }
+// ── Journal settings helpers ──────────────────────────────
+
+async function getJournalSettings(journalId) {
+  const { data, error } = await db
+    .from('journal_settings')
+    .select('*')
+    .eq('journal_id', journalId)
+    .maybeSingle();
+  if (error) console.error('[supabase] getJournalSettings error:', error);
+
+  if (!data) {
+    // Auto-create settings row if missing
+    const { data: newRow } = await db
+      .from('journal_settings')
+      .upsert({
+        journal_id: journalId,
+        user_id: (await db.auth.getUser()).data.user?.id,
+        strategies: [], timeframes: [], pairs: [], moods: [], mood_colors: {}
+      }, { onConflict: 'journal_id' })
+      .select('*')
+      .maybeSingle();
+    return newRow || { strategies: [], timeframes: [], pairs: [], moods: [], mood_colors: {} };
+  }
+  return data;
+}
+
+async function updateJournalSettings(journalId, updates) {
+  const { error } = await db
+    .from('journal_settings')
+    .update(updates)
+    .eq('journal_id', journalId);
+  if (error) throw error;
+}
+
+async function updateJournal(journalId, updates) {
+  const { data, error } = await db
+    .from('journals')
+    .update(updates)
+    .eq('id', journalId)
+    .select('*')
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+
+// ── Trade helpers ─────────────────────────────────────────
+
+// Maps a raw DB row → the shape logs.html expects
+function dbToTrade(row) {
+  return {
+    id:         row.id,
+    date:       row.trade_date   || '',
+    time:       row.trade_time   || '',
+    pair:       row.pair         || '',
+    position:   row.position     || 'Long',
+    strategy:   row.strategy     || [],
+    timeframe:  row.timeframe    || [],
+    pnl:        row.pnl          != null ? String(row.pnl) : '',
+    r:          row.r_factor     != null ? String(row.r_factor) : '',
+    confidence: row.confidence   || 0,
+    mood:       row.mood         || [],
+    notes:      row.notes        || '',
+    images:     [],   // loaded separately via getTradeImages
+  };
+}
+
+async function createTrade(userId, journalId, fields) {
+  const { data, error } = await db
+    .from('trades')
+    .insert({
+      user_id:    userId,
+      journal_id: journalId,
+      trade_date: fields.date   || null,
+      trade_time: fields.time   || null,
+      pair:       fields.pair   || null,
+      position:   fields.position || 'Long',
+      strategy:   fields.strategy  || [],
+      timeframe:  fields.timeframe || [],
+      pnl:        fields.pnl  !== '' && fields.pnl  != null ? parseFloat(fields.pnl)  : null,
+      r_factor:   fields.r    !== '' && fields.r    != null ? parseFloat(fields.r)    : null,
+      confidence: fields.confidence || null,
+      mood:       fields.mood  || [],
+      notes:      fields.notes || null,
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function updateTrade(tradeId, fields) {
+  const { error } = await db
+    .from('trades')
+    .update({
+      trade_date: fields.date   || null,
+      trade_time: fields.time   || null,
+      pair:       fields.pair   || null,
+      position:   fields.position || 'Long',
+      strategy:   fields.strategy  || [],
+      timeframe:  fields.timeframe || [],
+      pnl:        fields.pnl  !== '' && fields.pnl  != null ? parseFloat(fields.pnl)  : null,
+      r_factor:   fields.r    !== '' && fields.r    != null ? parseFloat(fields.r)    : null,
+      confidence: fields.confidence || null,
+      mood:       fields.mood  || [],
+      notes:      fields.notes || null,
+    })
+    .eq('id', tradeId);
+  if (error) throw error;
+}
+
+async function deleteTrade(tradeId) {
+  // Delete associated images first
+  const { data: imgs } = await db
+    .from('trade_images')
+    .select('id, storage_url')
+    .eq('trade_id', tradeId);
+
+  if (imgs?.length) {
+    const paths = imgs.map(i => i.storage_url).filter(Boolean);
+    if (paths.length) {
+      await db.storage.from('trade-images').remove(paths);
+    }
+    await db.from('trade_images').delete().eq('trade_id', tradeId);
+  }
+
+  const { error } = await db.from('trades').delete().eq('id', tradeId);
+  if (error) throw error;
+}
+
+
+// ── Trade image helpers ───────────────────────────────────
+
+async function addTradeImage(userId, tradeId, dataUrl) {
+  // Store as base64 in the data column (no external storage needed)
+  const { data, error } = await db
+    .from('trade_images')
+    .insert({
+      user_id:  userId,
+      trade_id: tradeId,
+      data:     dataUrl,
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function deleteTradeImage(imageId) {
+  const { data: img } = await db
+    .from('trade_images')
+    .select('storage_url')
+    .eq('id', imageId)
+    .maybeSingle();
+
+  if (img?.storage_url) {
+    await db.storage.from('trade-images').remove([img.storage_url]);
+  }
+
+  const { error } = await db.from('trade_images').delete().eq('id', imageId);
+  if (error) throw error;
+}
+
+async function getImageUrl(img) {
+  if (!img) return '';
+  if (img.data) return img.data;
+  if (img.url)  return img.url;
+  if (img.storage_url) {
+    const { data } = db.storage.from('trade-images').getPublicUrl(img.storage_url);
+    return data?.publicUrl || '';
+  }
+  return '';
+}
+
+// Attach images to trade objects after loading
+async function getTradeImages(tradeId) {
+  const { data, error } = await db
+    .from('trade_images')
+    .select('*')
+    .eq('trade_id', tradeId)
+    .order('created_at', { ascending: true });
+  if (error) console.error('[supabase] getTradeImages error:', error);
+  return data || [];
+}
+
+
+// ── Realtime subscription ─────────────────────────────────
+
+function subscribeTrades(journalId, onChange) {
+  return db
+    .channel('trades:' + journalId)
+    .on('postgres_changes', {
+      event:  '*',
+      schema: 'public',
+      table:  'trades',
+      filter: `journal_id=eq.${journalId}`,
+    }, onChange)
+    .subscribe();
+}
+
+
+// ── PIN helper ────────────────────────────────────────────
+
+async function hashPin(pin) {
+  const buf = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(pin)
+  );
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
