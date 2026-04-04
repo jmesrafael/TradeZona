@@ -951,6 +951,10 @@ td:nth-child(9){width:64px}
               <span class="share-tog-chk" id="chkUsername">✓</span>
               <span class="share-tog-lbl" style="font-size:12px">Show Username</span>
             </label>
+            <label class="share-tog on" id="togReferral" style="cursor:pointer" onclick="toggleShareBranding('referral')">
+              <span class="share-tog-chk" id="chkReferral">✓</span>
+              <span class="share-tog-lbl" style="font-size:12px">Show Referral Code</span>
+            </label>
           </div>
         </div>
         <div>
@@ -2067,7 +2071,8 @@ function updateAnalytics(){
 let _shareVisibility={totalPnl:true,winRate:true,totalTrades:true,wins:true,losses:true,avgR:true,winStreak:true,lossStreak:true};
 let _shareHighlighted=new Set();
 let _shareOrientation='landscape';
-let _shareBranding={username:true};
+// ── CHANGE 1: Added 'referral' to branding state ──
+let _shareBranding={username:true,referral:true};
 
 const METRIC_DEFS={
   totalPnl:{label:'Total PNL',format:(d)=>{const n=d.totalPnl;return{val:(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2),pos:n>0,neg:n<0};}},
@@ -2089,35 +2094,177 @@ function getThemeVars(){
 }
 
 const CARD_W_LAND=600,CARD_W_PORT=380,PAD=32;
+
+// ── CHANGE 2: Rewrote _drawCard to put logo on its own line,
+//    "PERFORMANCE SUMMARY" on the next line, and referral code below username ──
 function _drawCard(ctx,scale,data,visKeys,highlighted,orientation,branding){
   if(!scale||scale<=0||!isFinite(scale))scale=1;
   const tv=getThemeVars();const isPort=orientation==='portrait';const CARD_W=isPort?CARD_W_PORT:CARD_W_LAND;const W=Math.ceil(CARD_W*scale);const ac=tv.accentRgb;const accentHex=tv.accent2;const fh=tv.fontHead||'Space Grotesk';const fb=tv.fontBody||'Inter';
   const LABEL_SZ=(isPort?9:10)*scale;const VALUE_SZ=(isPort?22:26)*scale;const METRIC_PAD=(isPort?14:16)*scale;const METRIC_GAP=(isPort?8:10)*scale;
   const maxCols=isPort?2:4;const COLS=visKeys.length===0?1:Math.min(maxCols,visKeys.length<=2?visKeys.length:visKeys.length<=4?2:isPort?2:visKeys.length<=6?3:4);const ROWS=Math.ceil(Math.max(1,visKeys.length)/COLS);
   const CELL_W=(W-PAD*scale*2-METRIC_GAP*(COLS-1))/COLS;const CELL_H=Math.ceil(LABEL_SZ+8*scale+VALUE_SZ+METRIC_PAD*2);const GRID_H=ROWS*CELL_H+(ROWS-1)*METRIC_GAP;
-  const HEADER_H=(isPort?48:52)*scale;const DIV_Y=HEADER_H+14*scale;const GRID_Y=DIV_Y+12*scale;
-  let footerH=14*scale;if(_shareBranding.username&&branding?.username)footerH+=(isPort?16:14)*scale;
-  const FOOTER_Y=GRID_Y+(visKeys.length>0?GRID_H+20*scale:50*scale);const TOTAL_H=Math.ceil(FOOTER_Y+footerH+16*scale);
+
+  // ── NEW HEADER: Logo line + subtitle line stacked ──
+  const LOGO_SZ   = (isPort?15:17)*scale;
+  const SUBTITLE_SZ = (isPort?8:9)*scale;
+  const LOGO_TOP  = 18*scale;                        // top padding
+  const LOGO_LINE_H = LOGO_SZ * 1.3;                 // height of logo row
+  const SUB_LINE_H  = SUBTITLE_SZ * 1.6;             // height of subtitle row
+  const HEADER_H  = LOGO_TOP + LOGO_LINE_H + 4*scale + SUB_LINE_H + 14*scale; // total header
+
+  const DIV_Y=HEADER_H;
+  const GRID_Y=DIV_Y+12*scale;
+
+  // Footer: determine how many branding lines we have
+  let brandingLines = 0;
+  if (_shareBranding.username && branding?.username) brandingLines++;
+  if (_shareBranding.referral && branding?.referralCode) brandingLines++;
+  const BRANDING_LINE_H = (isPort?14:13)*scale;
+  const FOOTER_INNER_H = brandingLines > 0 ? brandingLines * BRANDING_LINE_H + 4*scale : 0;
+  const FOOTER_Y = GRID_Y + (visKeys.length > 0 ? GRID_H + 20*scale : 50*scale);
+  const TOTAL_H  = Math.ceil(FOOTER_Y + FOOTER_INNER_H + 18*scale);
+
   ctx.canvas.width=Math.max(1,W);ctx.canvas.height=Math.max(1,TOTAL_H);
+
+  // Background
   ctx.fillStyle=tv.bg;ctx.fillRect(0,0,W,TOTAL_H);
   const glow=ctx.createRadialGradient(W/2,0,0,W/2,0,W*0.65);glow.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0.16)`);glow.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);ctx.fillStyle=glow;ctx.fillRect(0,0,W,TOTAL_H);
   const g2=ctx.createRadialGradient(W,TOTAL_H,0,W,TOTAL_H,W*0.4);g2.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0.07)`);g2.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);ctx.fillStyle=g2;ctx.fillRect(0,0,W,TOTAL_H);
-  const x0=PAD*scale;const LOGO_CY=HEADER_H/2;
-  ctx.font=`700 ${(isPort?15:17)*scale}px '${fh}','Inter',sans-serif`;ctx.fillStyle=tv.text;ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText('Trade',x0,LOGO_CY);const tw=ctx.measureText('Trade').width;ctx.fillStyle=accentHex;ctx.fillText('Zona',x0+tw,LOGO_CY);
-  ctx.font=`600 ${(isPort?8:9)*scale}px '${fh}','Inter',sans-serif`;ctx.fillStyle=`rgba(${ac.r},${ac.g},${ac.b},0.55)`;ctx.textAlign='center';ctx.fillText('PERFORMANCE SUMMARY',W/2,LOGO_CY);ctx.textAlign='left';
-  const divGrad=ctx.createLinearGradient(x0,DIV_Y,W-x0,DIV_Y);divGrad.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0.35)`);divGrad.addColorStop(0.6,`rgba(${ac.r},${ac.g},${ac.b},0.08)`);divGrad.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);ctx.strokeStyle=divGrad;ctx.lineWidth=1*scale;ctx.beginPath();ctx.moveTo(x0,DIV_Y);ctx.lineTo(W-x0,DIV_Y);ctx.stroke();
-  if(visKeys.length===0){ctx.font=`400 ${13*scale}px '${fh}','Inter',sans-serif`;ctx.fillStyle='rgba(255,255,255,0.2)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Select metrics to display',W/2,GRID_Y+25*scale);ctx.textAlign='left';}
-  else{visKeys.forEach((k,i)=>{const col=i%COLS,row=Math.floor(i/COLS);const cx=x0+col*(CELL_W+METRIC_GAP),cy=GRID_Y+row*(CELL_H+METRIC_GAP);const hl=highlighted.has(k),def=METRIC_DEFS[k];const{val,pos,neg}=def.format(data);_roundRect(ctx,cx,cy,CELL_W,CELL_H,10*scale);ctx.fillStyle=hl?`rgba(${ac.r},${ac.g},${ac.b},0.1)`:'rgba(255,255,255,0.04)';ctx.fill();_roundRect(ctx,cx+0.5,cy+0.5,CELL_W-1,CELL_H-1,10*scale);ctx.strokeStyle=hl?`rgba(${ac.r},${ac.g},${ac.b},0.3)`:'rgba(255,255,255,0.08)';ctx.lineWidth=1*scale;ctx.stroke();if(hl){const barGrad=ctx.createLinearGradient(cx,cy,cx+CELL_W,cy);barGrad.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0)`);barGrad.addColorStop(0.5,`rgba(${ac.r},${ac.g},${ac.b},0.9)`);barGrad.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);ctx.save();ctx.beginPath();_roundRect(ctx,cx,cy,CELL_W,2.5*scale,10*scale);ctx.clip();ctx.fillStyle=barGrad;ctx.fillRect(cx,cy,CELL_W,2.5*scale);ctx.restore();}ctx.font=`500 ${LABEL_SZ}px '${fh}','Inter',sans-serif`;ctx.fillStyle='rgba(255,255,255,0.38)';ctx.textBaseline='top';ctx.textAlign='left';ctx.fillText(def.label.toUpperCase(),cx+METRIC_PAD,cy+METRIC_PAD);ctx.font=`700 ${VALUE_SZ}px '${fh}','Inter',sans-serif`;ctx.textBaseline='top';if(hl)ctx.fillStyle=accentHex;else if(pos)ctx.fillStyle='#19c37d';else if(neg)ctx.fillStyle='#ff5f6d';else ctx.fillStyle=tv.text;ctx.fillText(val,cx+METRIC_PAD,cy+METRIC_PAD+LABEL_SZ+7*scale);});}
-  const d=new Date();const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const todayFormatted=`${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  ctx.font=`500 ${(isPort?9:10)*scale}px '${fb}','Inter',sans-serif`;ctx.fillStyle=`rgba(255,255,255,0.28)`;ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(todayFormatted,W-x0,FOOTER_Y+7*scale);ctx.textAlign='left';
-  let userY=FOOTER_Y+7*scale;
-  if(_shareBranding.username&&branding?.username){ctx.font=`600 ${(isPort?11:12)*scale}px '${fh}','Inter',sans-serif`;ctx.fillStyle=tv.text;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('@'+branding.username,x0,userY);}
+
+  const x0=PAD*scale;
+
+  // ── LINE 1: "TradeZona" logo — left aligned ──
+  const LOGO_CY = LOGO_TOP + LOGO_LINE_H / 2;
+  ctx.font=`700 ${LOGO_SZ}px '${fh}','Inter',sans-serif`;
+  ctx.textBaseline='middle';ctx.textAlign='left';
+  ctx.fillStyle=tv.text;
+  ctx.fillText('Trade',x0,LOGO_CY);
+  const tradeW=ctx.measureText('Trade').width;
+  ctx.fillStyle=accentHex;
+  ctx.fillText('Zona',x0+tradeW,LOGO_CY);
+
+  // ── LINE 2: "PERFORMANCE SUMMARY" subtitle — left aligned, below logo ──
+  const SUB_CY = LOGO_TOP + LOGO_LINE_H + 4*scale + SUB_LINE_H / 2;
+  ctx.font=`600 ${SUBTITLE_SZ}px '${fh}','Inter',sans-serif`;
+  ctx.fillStyle=`rgba(${ac.r},${ac.g},${ac.b},0.55)`;
+  ctx.textAlign='left';
+  ctx.fillText('PERFORMANCE SUMMARY', x0, SUB_CY);
+
+  // ── Divider ──
+  const divGrad=ctx.createLinearGradient(x0,DIV_Y,W-x0,DIV_Y);
+  divGrad.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0.35)`);
+  divGrad.addColorStop(0.6,`rgba(${ac.r},${ac.g},${ac.b},0.08)`);
+  divGrad.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);
+  ctx.strokeStyle=divGrad;ctx.lineWidth=1*scale;
+  ctx.beginPath();ctx.moveTo(x0,DIV_Y);ctx.lineTo(W-x0,DIV_Y);ctx.stroke();
+
+  // ── Metric grid ──
+  if(visKeys.length===0){
+    ctx.font=`400 ${13*scale}px '${fh}','Inter',sans-serif`;
+    ctx.fillStyle='rgba(255,255,255,0.2)';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Select metrics to display',W/2,GRID_Y+25*scale);
+    ctx.textAlign='left';
+  } else {
+    visKeys.forEach((k,i)=>{
+      const col=i%COLS,row=Math.floor(i/COLS);
+      const cx=x0+col*(CELL_W+METRIC_GAP),cy=GRID_Y+row*(CELL_H+METRIC_GAP);
+      const hl=highlighted.has(k),def=METRIC_DEFS[k];
+      const{val,pos,neg}=def.format(data);
+      _roundRect(ctx,cx,cy,CELL_W,CELL_H,10*scale);
+      ctx.fillStyle=hl?`rgba(${ac.r},${ac.g},${ac.b},0.1)`:'rgba(255,255,255,0.04)';ctx.fill();
+      _roundRect(ctx,cx+0.5,cy+0.5,CELL_W-1,CELL_H-1,10*scale);
+      ctx.strokeStyle=hl?`rgba(${ac.r},${ac.g},${ac.b},0.3)`:'rgba(255,255,255,0.08)';ctx.lineWidth=1*scale;ctx.stroke();
+      if(hl){
+        const barGrad=ctx.createLinearGradient(cx,cy,cx+CELL_W,cy);
+        barGrad.addColorStop(0,`rgba(${ac.r},${ac.g},${ac.b},0)`);
+        barGrad.addColorStop(0.5,`rgba(${ac.r},${ac.g},${ac.b},0.9)`);
+        barGrad.addColorStop(1,`rgba(${ac.r},${ac.g},${ac.b},0)`);
+        ctx.save();ctx.beginPath();_roundRect(ctx,cx,cy,CELL_W,2.5*scale,10*scale);ctx.clip();
+        ctx.fillStyle=barGrad;ctx.fillRect(cx,cy,CELL_W,2.5*scale);ctx.restore();
+      }
+      ctx.font=`500 ${LABEL_SZ}px '${fh}','Inter',sans-serif`;
+      ctx.fillStyle='rgba(255,255,255,0.38)';ctx.textBaseline='top';ctx.textAlign='left';
+      ctx.fillText(def.label.toUpperCase(),cx+METRIC_PAD,cy+METRIC_PAD);
+      ctx.font=`700 ${VALUE_SZ}px '${fh}','Inter',sans-serif`;ctx.textBaseline='top';
+      if(hl)ctx.fillStyle=accentHex;
+      else if(pos)ctx.fillStyle='#19c37d';
+      else if(neg)ctx.fillStyle='#ff5f6d';
+      else ctx.fillStyle=tv.text;
+      ctx.fillText(val,cx+METRIC_PAD,cy+METRIC_PAD+LABEL_SZ+7*scale);
+    });
+  }
+
+  // ── Footer ──
+  // Date — right aligned
+  const d=new Date();const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const todayFormatted=`${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  ctx.font=`500 ${(isPort?9:10)*scale}px '${fb}','Inter',sans-serif`;
+  ctx.fillStyle=`rgba(255,255,255,0.28)`;ctx.textAlign='right';ctx.textBaseline='middle';
+  ctx.fillText(todayFormatted, W-x0, FOOTER_Y + BRANDING_LINE_H/2);
+  ctx.textAlign='left';
+
+  // ── CHANGE 3: Username + referral code stacked in footer ──
+  let brandingY = FOOTER_Y;
+
+  if (_shareBranding.username && branding?.username) {
+    ctx.font=`600 ${(isPort?11:12)*scale}px '${fh}','Inter',sans-serif`;
+    ctx.fillStyle=tv.text;ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText('@' + branding.username, x0, brandingY + BRANDING_LINE_H/2);
+    brandingY += BRANDING_LINE_H;
+  }
+
+  if (_shareBranding.referral && branding?.referralCode) {
+    ctx.font=`500 ${(isPort?9:10)*scale}px '${fb}','Inter',sans-serif`;
+    ctx.fillStyle=`rgba(${ac.r},${ac.g},${ac.b},0.65)`;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText('ref: ' + branding.referralCode, x0, brandingY + BRANDING_LINE_H/2);
+  }
 }
+
 function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
-function getBrandingData(){const username=currentUser?.user_metadata?.username||currentUser?.email?.split('@')[0]||'';return{username};}
+
+// ── CHANGE 4: getBrandingData now also returns referralCode ──
+function getBrandingData(){
+  const username=currentUser?.user_metadata?.username||currentUser?.email?.split('@')[0]||'';
+  // referral_code may be stored in user_metadata or profile — adjust key to match your DB
+  const referralCode=currentUser?.user_metadata?.referral_code||currentUser?.user_metadata?.referralCode||'';
+  return{username, referralCode};
+}
+
 function setOrientation(o){_shareOrientation=o;document.getElementById('orientLand').classList.toggle('active',o==='landscape');document.getElementById('orientPort').classList.toggle('active',o==='portrait');_refreshPreview();}
-function toggleShareBranding(key){_shareBranding[key]=!_shareBranding[key];const tog=document.getElementById('tog'+key.charAt(0).toUpperCase()+key.slice(1));const chk=document.getElementById('chk'+key.charAt(0).toUpperCase()+key.slice(1));if(tog)tog.classList.toggle('on',_shareBranding[key]);if(chk)chk.textContent=_shareBranding[key]?'✓':'';_refreshPreview();}
-function openShareModal(){document.getElementById('btnShareNative').style.display=navigator.share?'flex':'none';_shareHighlighted=new Set();_shareOrientation='landscape';_shareBranding={username:true};Object.keys(_shareVisibility).forEach(k=>_shareVisibility[k]=true);document.querySelectorAll('.share-tog[data-metric]').forEach(el=>{el.classList.add('on');el.querySelector('.share-tog-chk').textContent='✓';});document.querySelectorAll('.share-hl').forEach(el=>el.classList.remove('on'));document.getElementById('orientLand').classList.add('active');document.getElementById('orientPort').classList.remove('active');const tuEl=document.getElementById('togUsername');const cuEl=document.getElementById('chkUsername');if(tuEl)tuEl.classList.add('on');if(cuEl)cuEl.textContent='✓';document.getElementById('shareGenerating').classList.remove('show');document.getElementById('shareOverlay').classList.add('open');setTimeout(()=>_refreshPreview(),80);}
+
+// ── CHANGE 5: toggleShareBranding handles both 'username' and 'referral' ──
+function toggleShareBranding(key){
+  _shareBranding[key]=!_shareBranding[key];
+  const togId='tog'+key.charAt(0).toUpperCase()+key.slice(1);
+  const chkId='chk'+key.charAt(0).toUpperCase()+key.slice(1);
+  const tog=document.getElementById(togId);
+  const chk=document.getElementById(chkId);
+  if(tog)tog.classList.toggle('on',_shareBranding[key]);
+  if(chk)chk.textContent=_shareBranding[key]?'✓':'';
+  _refreshPreview();
+}
+
+function openShareModal(){
+  document.getElementById('btnShareNative').style.display=navigator.share?'flex':'none';
+  _shareHighlighted=new Set();_shareOrientation='landscape';
+  // ── CHANGE 6: Reset both branding toggles ──
+  _shareBranding={username:true,referral:true};
+  Object.keys(_shareVisibility).forEach(k=>_shareVisibility[k]=true);
+  document.querySelectorAll('.share-tog[data-metric]').forEach(el=>{el.classList.add('on');el.querySelector('.share-tog-chk').textContent='✓';});
+  document.querySelectorAll('.share-hl').forEach(el=>el.classList.remove('on'));
+  document.getElementById('orientLand').classList.add('active');
+  document.getElementById('orientPort').classList.remove('active');
+  // Reset username toggle
+  const tuEl=document.getElementById('togUsername');const cuEl=document.getElementById('chkUsername');
+  if(tuEl)tuEl.classList.add('on');if(cuEl)cuEl.textContent='✓';
+  // Reset referral toggle
+  const trEl=document.getElementById('togReferral');const crEl=document.getElementById('chkReferral');
+  if(trEl)trEl.classList.add('on');if(crEl)crEl.textContent='✓';
+  document.getElementById('shareGenerating').classList.remove('show');
+  document.getElementById('shareOverlay').classList.add('open');
+  setTimeout(()=>_refreshPreview(),80);
+}
 function closeShareModal(){document.getElementById('shareOverlay').classList.remove('open');}
 function toggleShareMetric(el){const m=el.dataset.metric;_shareVisibility[m]=!_shareVisibility[m];el.classList.toggle('on',_shareVisibility[m]);el.querySelector('.share-tog-chk').textContent=_shareVisibility[m]?'✓':'';if(!_shareVisibility[m]){_shareHighlighted.delete(m);const hl=document.querySelector(`.share-hl[data-metric="${m}"]`);if(hl)hl.classList.remove('on');}_refreshPreview();}
 function toggleShareHighlight(el){const m=el.dataset.metric;if(!_shareVisibility[m])return;if(_shareHighlighted.has(m)){_shareHighlighted.delete(m);el.classList.remove('on');}else{_shareHighlighted.add(m);el.classList.add('on');}_refreshPreview();}
@@ -2150,39 +2297,28 @@ window.addEventListener('resize',()=>{
 });
 
 // ── FIX: Suppress "unsaved changes" beforeunload prompt ──────────────────
-// The browser fires this when form inputs (textarea, text inputs) have been
-// modified since page load. We handle all saving ourselves via Supabase,
-// so we never want the native browser dialog to appear.
 window.addEventListener('beforeunload', e => {
-  // Remove the returnValue so no dialog appears
   delete e.returnValue;
-  // Also prevent the event from bubbling to any parent frame listener
   e.stopImmediatePropagation();
 });
 
-// Also mark the textarea as not needing browser-native save tracking
-// by resetting its defaultValue whenever we save or close notes
 const _origCloseNotes = closeNotes;
 closeNotes = function() {
   const ta = document.getElementById('nmText');
-  if (ta) ta.defaultValue = ta.value; // sync so browser sees no "change"
+  if (ta) ta.defaultValue = ta.value;
   _origCloseNotes();
 };
 
-// Keep all dynamic inputs in sync so the browser never detects a "dirty" form
 document.addEventListener('input', e => {
   const el = e.target;
   if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-    // Sync defaultValue = current value so browser thinks nothing changed
     if ('defaultValue' in el) el.defaultValue = el.value;
   }
 }, true);
 
 // ── Security: block view-source, devtools shortcuts, right-click, drag ───
-// Right-click context menu
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-// Keyboard shortcuts: F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S, Ctrl+P
 document.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey;
   const shift = e.shiftKey;
@@ -2199,14 +2335,12 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
-// Block text selection outside of input/textarea (allow typing but not copy-scraping)
 document.addEventListener('selectstart', e => {
   const tag = e.target.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return; // allow in inputs
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
   e.preventDefault();
 });
 
-// Block drag (prevents image-saving by drag)
 document.addEventListener('dragstart', e => e.preventDefault());
 </script>
 </body>
