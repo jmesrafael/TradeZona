@@ -252,6 +252,33 @@ iframe.ready{opacity:1}
 .file-badge .fn{font-size:13px;font-weight:500;color:var(--accent2);word-break:break-all}
 .file-badge .clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 5px;border-radius:4px;transition:color var(--transition-fast);flex-shrink:0}
 .file-badge .clr:hover{color:var(--red)}
+.badge-expiring {
+  background: rgba(245,158,11,.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,.35);
+  animation: pulse 2s infinite;
+}
+.badge-pro {
+  background: linear-gradient(105deg, #7a5a00 0%, #c9973a 18%, #f5c842 35%, #ffe17a 50%, #f5c842 65%, #c9973a 82%, #7a5a00 100%);
+  background-size: 200% auto;
+  color: #3a2800;
+  border: 1px solid #c9973a;
+  text-shadow: 0 1px 0 rgba(255,230,100,.5);
+  box-shadow: 0 1px 4px rgba(0,0,0,.35), 0 0 0 1px rgba(255,220,80,.15) inset, 0 1px 0 rgba(255,255,180,.3) inset;
+  animation: goldShimmer 3.5s linear infinite;
+  overflow: hidden;
+  position: relative;
+}
+.badge-pro::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -80%;
+  width: 45%; height: 100%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,.55) 50%, transparent 80%);
+  transform: skewX(-15deg);
+  animation: goldGlare 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
 .mode-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .mode-opt{padding:11px 10px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;transition:all var(--transition-fast)}
@@ -577,6 +604,22 @@ const [profile, journals, settingsData] = await Promise.all([
 userIsPro = profile?.plan === 'pro';
 window._userIsPro = userIsPro;
 document.getElementById('hUserName').textContent = profile?.name || currentUser.email;
+// ── Plan badge (mirrors dashboard logic) ──────────────────────────
+const _badge = document.getElementById('hPlanBadge');
+if (userIsPro) {
+  const _sub = getSubscriptionStatus(profile);
+  if (_sub.expiring) {
+    _badge.textContent = `Pro · ${_sub.daysLeft}d left`;
+    _badge.className = 'plan-badge badge-expiring';
+  } else if (_sub.expired) {
+    _badge.textContent = 'Pro Expired';
+    _badge.className = 'plan-badge badge-free';
+  } else {
+    _badge.textContent = 'Pro';
+    _badge.className = 'plan-badge badge-pro';
+  }
+}
+// Free users: HTML default ("Free" / badge-free) stays unchanged
 
 journalObj = journals.find(j => j.id === journalId);
 if (!journalObj) { location.href = '/dashboard'; return; }
