@@ -16,17 +16,6 @@ html{height:100%}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes calcPop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes goldShimmer{
-  0%{background-position:200% center}
-  100%{background-position:-200% center}
-}
-@keyframes goldGlare{
-  0%{left:-80%;opacity:0}
-  10%{opacity:1}
-  50%{left:110%;opacity:1}
-  51%{opacity:0}
-  100%{left:110%;opacity:0}
-}
 body{background:var(--bg);color:var(--text);font-family:var(--font-body,'Inter',sans-serif);height:100%;overflow:hidden;display:flex;flex-direction:column}
 
 /* ── Page loader ── */
@@ -46,71 +35,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:11p
 .huser-info{display:flex;align-items:center;gap:7px;padding:5px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:border-color var(--transition-base)}
 .huser-info:hover{border-color:var(--accent2)}
 .huser-name{font-size:12px;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* ── Plan badge base ── */
-.plan-badge{
-  font-size:9px;font-weight:700;
-  padding:3px 9px;
-  border-radius:var(--radius-pill);
-  text-transform:uppercase;letter-spacing:.6px;
-  flex-shrink:0;
-  position:relative;
-  overflow:hidden;
-}
-
-/* Free badge — muted, theme-adaptive */
-.badge-free{
-  background:rgba(128,128,128,.1);
-  color:var(--muted);
-  border:1px solid var(--border);
-}
-
-/* ── PRO badge — golden metallic with animated glare ── */
-.badge-pro{
-  background:linear-gradient(
-    105deg,
-    #7a5a00 0%,
-    #c9973a 18%,
-    #f5c842 35%,
-    #ffe17a 50%,
-    #f5c842 65%,
-    #c9973a 82%,
-    #7a5a00 100%
-  );
-  background-size:200% auto;
-  color:#3a2800;
-  border:1px solid #c9973a;
-  text-shadow:0 1px 0 rgba(255,230,100,.5);
-  box-shadow:
-    0 1px 4px rgba(0,0,0,.35),
-    0 0 0 1px rgba(255,220,80,.15) inset,
-    0 1px 0 rgba(255,255,180,.3) inset;
-  animation:goldShimmer 3.5s linear infinite;
-  cursor:pointer;
-}
-/* Glare sweep */
-.badge-pro::after{
-  content:'';
-  position:absolute;
-  top:0;left:-80%;
-  width:45%;height:100%;
-  background:linear-gradient(
-    105deg,
-    transparent 20%,
-    rgba(255,255,255,.55) 50%,
-    transparent 80%
-  );
-  transform:skewX(-15deg);
-  animation:goldGlare 3.5s ease-in-out infinite;
-  pointer-events:none;
-}
-
-/* Expiring — amber pulse */
-.badge-expiring{
-  background:rgba(245,158,11,.12);
-  color:#fbbf24;
-  border:1px solid rgba(245,158,11,.35);
-}
+.plan-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--radius-pill);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.badge-pro{background:rgba(var(--accent-rgb,0,255,136),.15);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)}
+.badge-free{background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border)}
 
 /* ── Nav ── */
 nav{display:flex;gap:2px;padding:8px 18px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;overflow-x:auto;scrollbar-width:none;align-items:center}
@@ -118,6 +45,7 @@ nav::-webkit-scrollbar{display:none}
 .tab{padding:7px 13px;background:none;border:none;color:var(--muted);font-size:13px;font-family:var(--font-body,'Inter',sans-serif);cursor:pointer;border-radius:var(--radius-md);transition:all var(--transition-base);white-space:nowrap;display:flex;align-items:center;gap:5px}
 .tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .tab.active{color:var(--accent);background:rgba(var(--accent-rgb,0,255,136),.08)}
+/* Settings tab — icon only */
 .tab.settings-tab{padding:7px 10px}
 .tab-spacer{flex:1}
 
@@ -202,6 +130,8 @@ iframe.ready{opacity:1}
 .danger-sec .ssec-title i{color:var(--red)}
 .btn-danger{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid rgba(255,95,109,.4);color:var(--red);border-radius:var(--radius-md);padding:9px 15px;font-family:var(--font-body,'Inter',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--transition-base)}
 .btn-danger:hover{background:rgba(255,95,109,.1);border-color:var(--red)}
+
+/* ── Legal links row ── */
 .legal-links{font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px;padding-top:8px}
 .legal-links a{color:var(--muted);text-decoration:underline;text-underline-offset:2px;transition:color var(--transition-fast)}
 .legal-links a:hover{color:var(--text)}
@@ -348,6 +278,8 @@ iframe.ready{opacity:1}
 .prog-bar{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
 .prog-lbl{font-size:12px;color:var(--muted)}
 .del-journal-inner{background:var(--panel);border:1px solid rgba(255,95,109,.35);border-radius:var(--radius-xl);width:100%;max-width:400px;padding:26px}
+
+/* image-in-backup info note */
 .img-backup-note{font-size:11px;color:var(--muted);padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);display:flex;align-items:flex-start;gap:7px;line-height:1.6;margin-top:10px}
 .img-backup-note i{color:var(--accent2);flex-shrink:0;margin-top:1px}
 
@@ -394,7 +326,6 @@ iframe.ready{opacity:1}
     <div class="huser-info" onclick="location.href='/subscription'" title="View subscription">
       <i class="fa-solid fa-circle-user" style="color:var(--muted);font-size:13px"></i>
       <span class="huser-name" id="hUserName">—</span>
-      <!-- Badge starts as free, JS updates it after plan check -->
       <span class="plan-badge badge-free" id="hPlanBadge">Free</span>
     </div>
   </div>
@@ -406,6 +337,7 @@ iframe.ready{opacity:1}
   <button class="tab"        data-tab="notes"      onclick="switchTab('notes')"><i class="fa-solid fa-note-sticky"></i><span class="tab-txt"> Notes</span></button>
   <button class="tab"        data-tab="analytics"  onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i><span class="tab-txt"> Analytics</span></button>
   <div class="tab-spacer"></div>
+  <!-- Settings: icon only -->
   <button class="tab settings-tab" data-tab="settings" onclick="switchTab('settings')" title="Settings"><i class="fa-solid fa-gear"></i></button>
 </nav>
 
@@ -438,6 +370,7 @@ iframe.ready{opacity:1}
         <div class="ssec-title"><i class="fa-solid fa-book-open"></i>Journal Info</div>
         <div class="field-row"><div class="field-lbl">Journal Name</div><input type="text" class="field-input" id="js-name" maxlength="60" placeholder="My Journal" oninput="markDirty()"></div>
         <div class="field-row"><div class="field-lbl">Account Capital <span style="font-size:10px;color:var(--muted)">(optional)</span></div><div style="position:relative"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none">$</span><input type="number" class="field-input" id="js-capital" placeholder="0.00" min="0" step="0.01" style="padding-left:26px" oninput="markDirty()"></div></div>
+        <!-- Pro plan duration row -->
         <div class="field-row" id="proDurationRow" style="display:none">
           <div class="field-lbl">Pro Plan</div>
           <div style="background:var(--bg);border:1px solid rgba(var(--accent-rgb,0,255,136),.2);border-radius:var(--radius-md);padding:9px 12px;display:flex;align-items:center;gap:8px">
@@ -472,6 +405,7 @@ iframe.ready{opacity:1}
 
       <div class="ssec full"><div class="ssec-title"><i class="fa-solid fa-database"></i>Export &amp; Import</div><div id="exportImportContent"></div></div>
 
+      <!-- Legal links -->
       <div class="ssec full" style="padding:14px 18px">
         <div class="ssec-title"><i class="fa-solid fa-scale-balanced"></i>Legal</div>
         <div class="legal-links">
@@ -492,13 +426,13 @@ iframe.ready{opacity:1}
   </div>
 </div>
 
-<!-- FLOATING CALCULATOR FAB -->
+<!-- ══════════ FLOATING CALCULATOR FAB ══════════ -->
 <button id="calcFab" onclick="toggleCalc()" aria-label="Open Risk Calculator">
   <i class="fa-solid fa-calculator" id="calcFabIcon"></i>
 </button>
 <span id="calcFabTip">Risk Calculator</span>
 
-<!-- CALCULATOR MODAL -->
+<!-- ══════════ CALCULATOR MODAL ══════════ -->
 <div id="calcModal">
   <div id="calcDragHdr">
     <div class="calc-drag-title"><i class="fa-solid fa-calculator"></i> Risk Calculator</div>
@@ -630,98 +564,40 @@ let journalObj=null, settings=null, currentUser=null, userIsPro=false, isDirty=f
 let exportScope='full', importMode='replace', importPayload=null;
 let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
 
-// ── Helper: update the header plan badge ────────────────────────────────────
-function _updateHeaderBadge() {
-  const badge = document.getElementById('hPlanBadge');
-  if (!badge) return;
-  if (userIsPro) {
-    badge.className = 'plan-badge badge-pro';
-    badge.textContent = 'Pro';
-  } else {
-    badge.className = 'plan-badge badge-free';
-    badge.textContent = 'Free';
-  }
-}
-
 (async()=>{
-  const{data:{user}}=await db.auth.getUser();
-  currentUser=user;
-  if(!currentUser||!journalId){showToast('Session expired.','fa-solid fa-circle-exclamation','red');return;}
-  try{userIsPro=parent?._userIsPro||false;}catch(e){}
-  if(!userIsPro){const p=await getProfile(currentUser.id);userIsPro=p?.plan==='pro';}
+  currentUser=await requireAuth();if(!currentUser)return;
+  if(!journalId){location.href='/dashboard';return;}
+// Fire all three at once instead of one-by-one
+const [profile, journals, settingsData] = await Promise.all([
+  getProfile(currentUser.id),
+  getJournals(currentUser.id),
+  getJournalSettings(journalId)
+]);
 
-  // ── FIX: Update badge immediately after plan is resolved ──
-  _updateHeaderBadge();
+userIsPro = profile?.plan === 'pro';
+window._userIsPro = userIsPro;
+document.getElementById('hUserName').textContent = profile?.name || currentUser.email;
 
-  settings=await getJournalSettings(jid||journalId);
-  const [raw_profile, journals_data, settingsData] = await Promise.all([
-    getProfile(currentUser.id),
-    getJournals?getJournals(currentUser.id):Promise.resolve([]),
-    getJournalSettings(journalId)
-  ]);
-  // Re-check pro from profile in case parent didn't pass it
-  if(raw_profile?.plan==='pro') { userIsPro=true; _updateHeaderBadge(); }
-  settings = settingsData;
+journalObj = journals.find(j => j.id === journalId);
+if (!journalObj) { location.href = '/dashboard'; return; }
 
-  document.getElementById('hUserName').textContent = raw_profile?.name || currentUser.email;
-
-  // Find journalObj
-  if(journals_data && journals_data.length) {
-    journalObj = journals_data.find(j => j.id === journalId) || null;
-  }
-  if(!journalObj) {
-    // Fallback: load journals separately
-    try {
-      const jlist = await getJournals(currentUser.id);
-      journalObj = jlist.find(j => j.id === journalId) || null;
-      if(!journalObj){location.href='/dashboard';return;}
-    } catch(e) {}
-  }
-
+settings = settingsData;
   bcast({type:'tz_plan',isPro:userIsPro});
-
-  // Show pro duration
-  if(userIsPro&&raw_profile?.pro_expires_at){
-    const exp=new Date(raw_profile.pro_expires_at);
+  // Show pro duration in settings
+  if(userIsPro&&profile?.pro_expires_at){
+    const exp=new Date(profile.pro_expires_at);
     document.getElementById('proDurationRow').style.display='block';
     document.getElementById('proDurationText').textContent='Active — renews '+exp.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   } else if(userIsPro){
     document.getElementById('proDurationRow').style.display='block';
     document.getElementById('proDurationText').textContent='Active';
   }
-
   document.getElementById('pageLoader').classList.add('gone');
   setTimeout(()=>{const pl=document.getElementById('pageLoader');if(pl)pl.style.display='none';},400);
   const lf=document.getElementById('logsFrame');
   if(lf?.contentDocument?.readyState==='complete')frameReady('logs');
   _preloadTabs();
 })();
-
-// Simplified init — rewritten to match original but with the badge fix baked in
-// The original used a different pattern; here we keep the working version above
-// and add a message listener for plan updates from parent
-window.addEventListener('message', e => {
-  if(e.data?.type==='tz_plan' && e.data.isPro !== undefined) {
-    userIsPro = !!e.data.isPro;
-    _updateHeaderBadge();
-  }
-  if(e.data?.type==='tz_settings_updated') reloadSettings();
-  if(e.data?.type==='tz_flush_request') flushAll?.();
-  if(e.data?.type==='tz_analytics_toggle') {
-    analyticsOn = !!e.data.on;
-    localStorage.setItem('tl_analytics_on', analyticsOn);
-    applyAnalyticsState?.();
-    updateAnalytics?.();
-  }
-  if(e.data?.type==='tz_flushed' && _flushTarget) {
-    clearTimeout(_flushTimer);
-    const d=_flushTarget; _flushTarget=null; location.href=d;
-  }
-  if(e.data?.type==='tz_analytics_state') {
-    const sw=document.getElementById('analyticsToggleSwitch');
-    if(sw) sw.classList.toggle('on',!!e.data.on);
-  }
-});
 
 function _preloadTabs(){
   [{id:'calFrame',src:'calendar.html'},{id:'notesFrame',src:'notes.html'},{id:'analyticsFrame',src:'analytics.html'}]
@@ -736,6 +612,10 @@ function navigateSafely(dest){
   _flushTimer=setTimeout(()=>{_flushTarget=null;location.href=dest;},2000);
   try{lf.contentWindow.postMessage({type:'tz_flush_request'},'*');}catch(e){location.href=dest;}
 }
+window.addEventListener('message',e=>{
+  if(e.data?.type==='tz_flushed'&&_flushTarget){clearTimeout(_flushTimer);const d=_flushTarget;_flushTarget=null;location.href=d;}
+  if(e.data?.type==='tz_analytics_state'){const sw=document.getElementById('analyticsToggleSwitch');if(sw)sw.classList.toggle('on',!!e.data.on);}
+});
 
 function goBack(){if(activeTab==='settings'&&isDirty){showToast('Save or discard settings first.','fa-solid fa-triangle-exclamation','red');return;}navigateSafely('/dashboard');}
 function switchTab(name){
@@ -761,9 +641,6 @@ function bcast(msg){['logsFrame','calFrame','notesFrame','analyticsFrame'].forEa
 function markDirty(){isDirty=true;document.getElementById('unsavedBar').classList.add('show');}
 function clearDirty(){isDirty=false;document.getElementById('unsavedBar').classList.remove('show');}
 function discardChanges(){isDirty=false;document.getElementById('unsavedBar').classList.remove('show');populateSettings();}
-
-async function reloadSettings(){settings=await getJournalSettings(journalId);populateSettings();}
-
 function populateSettings(){
   if(!journalObj||!settings)return;
   document.getElementById('js-name').value=journalObj.name||'';
@@ -844,7 +721,7 @@ async function exportCSV(){
   }catch(e){showToast('CSV export failed: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 
-/* ── JSON Export ── */
+/* ── JSON Export (with images as base64) ── */
 function openExport(){exportScope='full';setScope('full');document.getElementById('exportOverlay').classList.add('open');refreshExpSummary();}
 function closeExport(){document.getElementById('exportOverlay').classList.remove('open');}
 function setScope(s){
@@ -861,50 +738,112 @@ async function refreshExpSummary(){
   el.innerHTML='<div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>';
   const trades=await getTrades(journalId);
   const s=settings||{};const f=exportScope==='full';
-  el.innerHTML=`
+  // Count trades with images
+// Count trades with images from DB
+let withImgs=0;
+for(const t of trades){
+  const imgs=await getTradeImages(t.id);
+  if(imgs.length>0)withImgs++;
+}
+el.innerHTML=`
     <div class="es-row ok"><i class="fa-solid fa-check"></i> ${trades.length} trade${trades.length!==1?'s':''}</div>
     <div class="es-row ${f?'ok':''}"><i class="fa-solid fa-${f?'check':'xmark'}"></i> ${(s.strategies||[]).length} strategy tags</div>
     <div class="es-row ${f?'ok':''}"><i class="fa-solid fa-${f?'check':'xmark'}"></i> ${(s.moods||[]).length} mood tags</div>
     <div class="es-row ${f?'ok':''}"><i class="fa-solid fa-${f?'check':'xmark'}"></i> Capital &amp; name</div>
     <div class="es-row ${f?'ok':''}" id="imgCountRow"><i class="fa-solid fa-spinner fa-spin"></i> Counting images…</div>
   `;
-  (async()=>{
-    let withImgs=0;
-    for(const t of trades){const imgs=await getTradeImages(t.id);if(imgs.length>0)withImgs++;}
-    const row=document.getElementById('imgCountRow');
-    if(row)row.outerHTML=`<div class="es-row ${f?'ok':''}"><i class="fa-solid fa-${f?'images':'xmark'}"></i> ${withImgs} trade${withImgs!==1?'s':''} with images${f?' (embedded in backup)':' (not included)'}</div>`;
-  })();
+// Count images in background without blocking
+(async()=>{
+  let withImgs=0;
+  for(const t of trades){
+    const imgs=await getTradeImages(t.id);
+    if(imgs.length>0)withImgs++;
+  }
+  const row=document.getElementById('imgCountRow');
+  if(row)row.outerHTML=`<div class="es-row ${f?'ok':''}"><i class="fa-solid fa-${f?'images':'xmark'}"></i> ${withImgs} trade${withImgs!==1?'s':''} with images${f?' (embedded in backup)':' (not included)'}</div>`;
+})();
 }
 
-async function storagePathToBase64(storagePath){
-  try{const{data,error}=await db.storage.from('trade-images').download(storagePath);if(error||!data)return null;return await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>res(null);r.readAsDataURL(data);});}catch{return null;}
+/**
+ * Fetch an image URL and convert it to a base64 data URL.
+ * Returns null if the fetch fails (don't abort the whole export).
+ */
+async function storagePathToBase64(storagePath) {
+  try {
+    const { data, error } = await db.storage
+      .from('trade-images')
+      .download(storagePath);
+    if (error || !data) return null;
+    return await new Promise(res => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = () => res(null);
+      r.readAsDataURL(data);
+    });
+  } catch { return null; }
 }
+
 async function confirmExport(){
   const btn=document.getElementById('exportBtn');
   btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Preparing…';
   try{
-    const trades=await getTrades(journalId);const isFull=exportScope==='full';const tradeRows=trades.map(dbToTrade);
-    if(isFull){
-      btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Embedding images…';
-      for(let i=0;i<tradeRows.length;i++){
-        const t=tradeRows[i];const rawImgs=await getTradeImages(t.id);
-        if(rawImgs.length>0){const b64Imgs=[];for(const img of rawImgs){if(img.storage_url&&!img.data){const b64=await storagePathToBase64(img.storage_url);if(b64)b64Imgs.push(b64);}else if(img.data){b64Imgs.push(img.data);}}tradeRows[i]={...t,images:b64Imgs};}
-        btn.innerHTML=`<i class="fa-solid fa-spinner fa-spin"></i> Embedding images… (${i+1}/${tradeRows.length})`;
+    const trades=await getTrades(journalId);
+    const isFull=exportScope==='full';
+    const tradeRows=trades.map(dbToTrade);
+
+if (isFull) {
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Embedding images…';
+  for (let i = 0; i < tradeRows.length; i++) {
+    const t = tradeRows[i];
+    const rawImgs = await getTradeImages(t.id);
+    if (rawImgs.length > 0) {
+      const b64Imgs = [];
+      for (const img of rawImgs) {
+        // Use storage path directly — no signed URL needed, avoids CORS
+        if (img.storage_url && !img.data) {
+          const b64 = await storagePathToBase64(img.storage_url);
+          if (b64) b64Imgs.push(b64);
+        } else if (img.data) {
+          // Legacy base64 stored directly in DB
+          b64Imgs.push(img.data);
+        }
       }
+      tradeRows[i] = { ...t, images: b64Imgs };
     }
-    const payload={_meta:{version:'2.1',app:'TradeZona',journalName:journalObj.name,exportedAt:new Date().toISOString(),exportScope,tradeCount:trades.length,imagesEmbedded:isFull,},trades:tradeRows,...(isFull&&settings?{settings:{strategies:settings.strategies||[],timeframes:settings.timeframes||[],pairs:settings.pairs||[],moods:settings.moods||[],mood_colors:settings.mood_colors||{},capital:journalObj.capital,journalName:journalObj.name}}:{})};
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Embedding images… (${i+1}/${tradeRows.length})`;
+  }
+}
+    const payload={
+      _meta:{
+        version:'2.1',app:'TradeZona',journalName:journalObj.name,
+        exportedAt:new Date().toISOString(),exportScope,
+        tradeCount:trades.length,imagesEmbedded:isFull,
+      },
+      trades:tradeRows,
+      ...(isFull&&settings?{settings:{
+        strategies:settings.strategies||[],timeframes:settings.timeframes||[],
+        pairs:settings.pairs||[],moods:settings.moods||[],
+        mood_colors:settings.mood_colors||{},capital:journalObj.capital,journalName:journalObj.name
+      }}:{})
+    };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const fname=`${journalObj.name.replace(/[^a-z0-9]/gi,'_')}_${exportScope}_${new Date().toISOString().slice(0,10)}.json`;
     Object.assign(document.createElement('a'),{href:url,download:fname}).click();
-    URL.revokeObjectURL(url);closeExport();
+    URL.revokeObjectURL(url);
+    closeExport();
     showToast(`Exported ${trades.length} trades${isFull?' with images':''}!`,'fa-solid fa-circle-check','green');
   }catch(e){showToast('Export failed: '+e.message,'fa-solid fa-circle-exclamation','red');}
   finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-download"></i>Download .json';}
 }
 
-/* ── Import ── */
-function openImport(){importPayload=null;clearFile();setImpMode('replace');['previewBox','settingsRestoreRow','importProgress'].forEach(id=>document.getElementById(id).classList.remove('show'));document.getElementById('importConfirmBtn').disabled=true;document.getElementById('importOverlay').classList.add('open');}
+/* ── Import (images from base64 auto-restored) ── */
+function openImport(){
+  importPayload=null;clearFile();setImpMode('replace');
+  ['previewBox','settingsRestoreRow','importProgress'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  document.getElementById('importConfirmBtn').disabled=true;
+  document.getElementById('importOverlay').classList.add('open');
+}
 function closeImport(){document.getElementById('importOverlay').classList.remove('open');}
 function setImpMode(m){importMode=m;document.getElementById('modeReplace').classList.toggle('active',m==='replace');document.getElementById('modeMerge').classList.toggle('active',m==='merge');if(importPayload)refreshImpPreview();}
 function dzOver(e){e.preventDefault();document.getElementById('importDZ').classList.add('over');}
@@ -915,31 +854,97 @@ function clearFile(){importPayload=null;document.getElementById('fileBadge').cla
 function loadImpFile(file){
   const r=new FileReader();
   r.onload=e=>{
-    try{const p=JSON.parse(e.target.result);importPayload=Array.isArray(p)?{_meta:{journalName:'Unknown',tradeCount:p.length},trades:p}:p.trades&&Array.isArray(p.trades)?p:null;if(!importPayload){showToast('Invalid file.','fa-solid fa-circle-exclamation','red');return;}document.getElementById('fileNameLabel').textContent=file.name;document.getElementById('fileBadge').classList.add('show');refreshImpPreview();document.getElementById('importConfirmBtn').disabled=false;}
-    catch{showToast('Could not parse file.','fa-solid fa-circle-exclamation','red');}
-  };r.readAsText(file);
+    try{
+      const p=JSON.parse(e.target.result);
+      importPayload=Array.isArray(p)?{_meta:{journalName:'Unknown',tradeCount:p.length},trades:p}:p.trades&&Array.isArray(p.trades)?p:null;
+      if(!importPayload){showToast('Invalid file.','fa-solid fa-circle-exclamation','red');return;}
+      document.getElementById('fileNameLabel').textContent=file.name;
+      document.getElementById('fileBadge').classList.add('show');
+      refreshImpPreview();
+      document.getElementById('importConfirmBtn').disabled=false;
+    }catch{showToast('Could not parse file.','fa-solid fa-circle-exclamation','red');}
+  };
+  r.readAsText(file);
 }
 async function refreshImpPreview(){
-  if(!importPayload)return;document.getElementById('previewBox').classList.add('show');
-  const inc=importPayload.trades||[];const cur=await getTrades(journalId);const curIds=new Set(cur.map(t=>t.id));const dups=inc.filter(t=>curIds.has(t.id)).length;const hasS=!!(importPayload.settings);
+  if(!importPayload)return;
+  document.getElementById('previewBox').classList.add('show');
+  const inc=importPayload.trades||[];
+  const cur=await getTrades(journalId);
+  const curIds=new Set(cur.map(t=>t.id));
+  const dups=inc.filter(t=>curIds.has(t.id)).length;
+  const hasS=!!(importPayload.settings);
+  // Count trades with embedded images
   const withImgs=inc.filter(t=>t.images&&t.images.some(img=>typeof img==='string'&&img.startsWith('data:'))).length;
-  document.getElementById('pvTotal').textContent=inc.length;document.getElementById('pvJournal').textContent=importPayload._meta?.journalName||'—';document.getElementById('pvHasSettings').textContent=hasS?'Yes':'No';document.getElementById('pvHasImages').textContent=withImgs>0?`Yes (${withImgs} trades)`:'No';document.getElementById('pvHasImages').className='pv-val '+(withImgs>0?'pv-ok':'pv-info');
-  if(importMode==='merge'){document.getElementById('pvNewRow').style.display='';document.getElementById('pvDupRow').style.display=dups>0?'':'none';document.getElementById('pvCurRow').style.display='none';document.getElementById('pvNew').textContent=inc.length-dups;document.getElementById('pvDup').textContent=dups;}
-  else{document.getElementById('pvNewRow').style.display='none';document.getElementById('pvDupRow').style.display='none';document.getElementById('pvCurRow').style.display='';document.getElementById('pvCur').textContent=cur.length;}
+  document.getElementById('pvTotal').textContent=inc.length;
+  document.getElementById('pvJournal').textContent=importPayload._meta?.journalName||'—';
+  document.getElementById('pvHasSettings').textContent=hasS?'Yes':'No';
+  document.getElementById('pvHasImages').textContent=withImgs>0?`Yes (${withImgs} trades)`:'No';
+  document.getElementById('pvHasImages').className='pv-val '+(withImgs>0?'pv-ok':'pv-info');
+  if(importMode==='merge'){
+    document.getElementById('pvNewRow').style.display='';
+    document.getElementById('pvDupRow').style.display=dups>0?'':'none';
+    document.getElementById('pvCurRow').style.display='none';
+    document.getElementById('pvNew').textContent=inc.length-dups;
+    document.getElementById('pvDup').textContent=dups;
+  } else {
+    document.getElementById('pvNewRow').style.display='none';
+    document.getElementById('pvDupRow').style.display='none';
+    document.getElementById('pvCurRow').style.display='';
+    document.getElementById('pvCur').textContent=cur.length;
+  }
   document.getElementById('settingsRestoreRow').classList.toggle('show',hasS);
 }
 async function confirmImport(){
-  if(!importPayload)return;const cb=document.getElementById('importConfirmBtn'),cancel=document.getElementById('importCancelBtn');cb.disabled=true;cancel.disabled=true;document.getElementById('importProgress').classList.add('show');
+  if(!importPayload)return;
+  const cb=document.getElementById('importConfirmBtn'),cancel=document.getElementById('importCancelBtn');
+  cb.disabled=true;cancel.disabled=true;
+  document.getElementById('importProgress').classList.add('show');
   const sp=(p,l)=>{document.getElementById('impProgBar').style.width=p+'%';document.getElementById('impProgSub').textContent=l;};
   try{
-    const inc=importPayload.trades||[];const cur=await getTrades(journalId);const curIds=new Set(cur.map(t=>t.id));let fc=0;
-    if(importMode==='replace'){document.getElementById('impProgLabel').textContent='Deleting…';for(let i=0;i<cur.length;i++){await deleteTrade(cur[i].id);sp(5+Math.round((i+1)/cur.length*35),`${i+1}/${cur.length}`);}document.getElementById('impProgLabel').textContent='Importing…';for(let i=0;i<inc.length;i++){const{id:_,...d}=inc[i];await createTrade(currentUser.id,journalId,d);fc++;sp(40+Math.round((i+1)/inc.length*50),`${i+1}/${inc.length}`);}}
-    else{const nt=inc.filter(t=>!curIds.has(t.id));document.getElementById('impProgLabel').textContent='Merging…';for(let i=0;i<nt.length;i++){const{id:_,...d}=nt[i];await createTrade(currentUser.id,journalId,d);fc++;sp(10+Math.round((i+1)/nt.length*80),`${i+1}/${nt.length}`);} fc=cur.length+nt.length;}
+    const inc=importPayload.trades||[];
+    const cur=await getTrades(journalId);
+    const curIds=new Set(cur.map(t=>t.id));
+    let fc=0;
+    if(importMode==='replace'){
+      document.getElementById('impProgLabel').textContent='Deleting…';
+      for(let i=0;i<cur.length;i++){await deleteTrade(cur[i].id);sp(5+Math.round((i+1)/cur.length*35),`${i+1}/${cur.length}`);}
+      document.getElementById('impProgLabel').textContent='Importing…';
+      for(let i=0;i<inc.length;i++){
+        const{id:_,...d}=inc[i];
+        await createTrade(currentUser.id,journalId,d);
+        fc++;sp(40+Math.round((i+1)/inc.length*50),`${i+1}/${inc.length}`);
+      }
+    } else {
+      const nt=inc.filter(t=>!curIds.has(t.id));
+      document.getElementById('impProgLabel').textContent='Merging…';
+      for(let i=0;i<nt.length;i++){
+        const{id:_,...d}=nt[i];
+        await createTrade(currentUser.id,journalId,d);
+        fc++;sp(10+Math.round((i+1)/nt.length*80),`${i+1}/${nt.length}`);
+      }
+      fc=cur.length+nt.length;
+    }
     const hasS=!!(importPayload.settings),shouldRestore=hasS&&document.getElementById('restoreSettingsChk')?.checked;
-    if(shouldRestore){sp(95,'Restoring settings…');const s=importPayload.settings;const su={};if(s.strategies)su.strategies=s.strategies;if(s.timeframes)su.timeframes=s.timeframes;if(s.pairs)su.pairs=s.pairs;if(s.moods)su.moods=s.moods;if(s.mood_colors)su.mood_colors=s.mood_colors;await updateJournalSettings(journalId,su);settings={...settings,...su};const ju={};if(s.capital)ju.capital=s.capital;if(s.journalName)ju.name=s.journalName;if(Object.keys(ju).length){await updateJournal(journalId,ju);Object.assign(journalObj,ju);if(s.journalName){document.getElementById('jnameHdr').textContent=s.journalName;document.title='TradeZona | '+s.journalName;}}}
-    sp(100,'Done!');await new Promise(r=>setTimeout(r,600));closeImport();document.getElementById('logsFrame').src='logs.html?t='+Date.now();if(activeTab==='settings')populateSettings();
+    if(shouldRestore){
+      sp(95,'Restoring settings…');
+      const s=importPayload.settings;const su={};
+      if(s.strategies)su.strategies=s.strategies;if(s.timeframes)su.timeframes=s.timeframes;
+      if(s.pairs)su.pairs=s.pairs;if(s.moods)su.moods=s.moods;if(s.mood_colors)su.mood_colors=s.mood_colors;
+      await updateJournalSettings(journalId,su);settings={...settings,...su};
+      const ju={};if(s.capital)ju.capital=s.capital;if(s.journalName)ju.name=s.journalName;
+      if(Object.keys(ju).length){await updateJournal(journalId,ju);Object.assign(journalObj,ju);if(s.journalName){document.getElementById('jnameHdr').textContent=s.journalName;document.title='TradeZona | '+s.journalName;}}
+    }
+    sp(100,'Done!');await new Promise(r=>setTimeout(r,600));
+    closeImport();
+    document.getElementById('logsFrame').src='logs.html?t='+Date.now();
+    if(activeTab==='settings')populateSettings();
     showToast(`Import complete — ${fc} trade${fc!==1?'s':''}${shouldRestore?' + settings':''}!`,'fa-solid fa-circle-check','green');
-  }catch(e){showToast('Import failed: '+e.message,'fa-solid fa-circle-exclamation','red');document.getElementById('importProgress').classList.remove('show');cb.disabled=false;cancel.disabled=false;}
+  }catch(e){
+    showToast('Import failed: '+e.message,'fa-solid fa-circle-exclamation','red');
+    document.getElementById('importProgress').classList.remove('show');
+    cb.disabled=false;cancel.disabled=false;
+  }
 }
 
 /* ── Delete Journal ── */
@@ -970,7 +975,7 @@ document.addEventListener('keydown',e=>{
 window.addEventListener('beforeunload',e=>{if(activeTab==='settings'&&isDirty){e.preventDefault();e.returnValue='';}});
 
 // ═══════════════════════════════════════════════════
-//  CALCULATOR
+//  CALCULATOR — FAB + DRAGGABLE MODAL
 // ═══════════════════════════════════════════════════
 let _calcOpen=false, _cAsset='crypto';
 
@@ -980,16 +985,28 @@ function toggleCalc(){
   const fab=document.getElementById('calcFab');
   const icon=document.getElementById('calcFabIcon');
   if(_calcOpen){
-    modal.classList.add('open');fab.classList.add('open');icon.className='fa-solid fa-xmark';
-    if(!modal._placed){modal.style.right='16px';modal.style.bottom='82px';modal.style.top='auto';modal.style.left='auto';modal.style.width='min(700px,96vw)';modal._placed=true;}
+    modal.classList.add('open');fab.classList.add('open');
+    icon.className='fa-solid fa-xmark';
+    if(!modal._placed){
+      modal.style.right='16px';modal.style.bottom='82px';
+      modal.style.top='auto';modal.style.left='auto';
+      modal.style.width='min(700px,96vw)';modal._placed=true;
+    }
     cCalc();
   } else {
-    modal.classList.remove('open');fab.classList.remove('open');icon.className='fa-solid fa-calculator';
+    modal.classList.remove('open');fab.classList.remove('open');
+    icon.className='fa-solid fa-calculator';
   }
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&_calcOpen)toggleCalc();});
 
-function cSetAsset(t){_cAsset=t;document.getElementById('cBtnCrypto').classList.toggle('active',t==='crypto');document.getElementById('cBtnForex').classList.toggle('active',t==='forex');const fp=document.getElementById('cForexPairField');if(fp)fp.classList.toggle('show',t==='forex');cCalc();}
+function cSetAsset(t){
+  _cAsset=t;
+  document.getElementById('cBtnCrypto').classList.toggle('active',t==='crypto');
+  document.getElementById('cBtnForex').classList.toggle('active',t==='forex');
+  const fp=document.getElementById('cForexPairField');if(fp)fp.classList.toggle('show',t==='forex');
+  cCalc();
+}
 function _g(id){return document.getElementById(id)?.value;}
 function _s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 function _fD(n){if(n===null||isNaN(n))return'—';return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -1006,13 +1023,31 @@ function cCalc(){
   const dist=Math.abs(ent-sl);if(!dist){_cClear();return;}
   const isJPY=pair.includes('JPY'),isSp=['XAUUSD','US30','NAS100'].includes(pair);
   let pos,unit,sldStr,sldUnit,maxL,profit=null,rr=null,formula;
-  if(_cAsset==='crypto'){pos=riskAmt/dist;maxL=pos*dist;unit='units';sldStr=_f(dist,dist<1?6:2);sldUnit='price diff';formula=`${_fD(riskAmt)} ÷ ${sldStr} = ${_f(pos,6)} units`;if(!isNaN(tp)&&tp>0&&tp!==ent){const d=Math.abs(tp-ent);profit=pos*d;rr=profit/riskAmt;}}
-  else if(isSp){pos=riskAmt/dist;maxL=riskAmt;unit=pair==='XAUUSD'?'oz':'contracts';sldStr=_f(dist,2);sldUnit='price dist';formula=`${_fD(riskAmt)} ÷ ${sldStr} = ${_f(pos,4)} ${unit}`;if(!isNaN(tp)&&tp>0&&tp!==ent){const d=Math.abs(tp-ent);profit=pos*d;rr=profit/riskAmt;}}
-  else{const mult=isJPY?100:10000,pips=dist*mult,pipVal=10;pos=riskAmt/(pips*pipVal);maxL=pos*pips*pipVal;unit='std lots';sldStr=_f(pips,1);sldUnit='pips';formula=`${_f(pips,1)} pips × $${pipVal}/pip → ${_f(pos,4)} lots`;if(!isNaN(tp)&&tp>0&&tp!==ent){const tpP=Math.abs(tp-ent)*mult;profit=pos*tpP*pipVal;rr=profit/riskAmt;}}
-  _s('cPosSize',_f(pos,pos<0.001?6:pos<1?4:2));_s('cPosUnit',unit);_s('cSLDist',sldStr);_s('cSLUnit',sldUnit);_s('cMaxLoss',_fD(maxL));_s('cFormula',formula);
+  if(_cAsset==='crypto'){
+    pos=riskAmt/dist;maxL=pos*dist;unit='units';sldStr=_f(dist,dist<1?6:2);sldUnit='price diff';formula=`${_fD(riskAmt)} ÷ ${sldStr} = ${_f(pos,6)} units`;
+    if(!isNaN(tp)&&tp>0&&tp!==ent){const d=Math.abs(tp-ent);profit=pos*d;rr=profit/riskAmt;}
+  } else if(isSp){
+    pos=riskAmt/dist;maxL=riskAmt;unit=pair==='XAUUSD'?'oz':'contracts';sldStr=_f(dist,2);sldUnit='price dist';formula=`${_fD(riskAmt)} ÷ ${sldStr} = ${_f(pos,4)} ${unit}`;
+    if(!isNaN(tp)&&tp>0&&tp!==ent){const d=Math.abs(tp-ent);profit=pos*d;rr=profit/riskAmt;}
+  } else {
+    const mult=isJPY?100:10000,pips=dist*mult,pipVal=10;
+    pos=riskAmt/(pips*pipVal);maxL=pos*pips*pipVal;unit='std lots';sldStr=_f(pips,1);sldUnit='pips';formula=`${_f(pips,1)} pips × $${pipVal}/pip → ${_f(pos,4)} lots`;
+    if(!isNaN(tp)&&tp>0&&tp!==ent){const tpP=Math.abs(tp-ent)*mult;profit=pos*tpP*pipVal;rr=profit/riskAmt;}
+  }
+  _s('cPosSize',_f(pos,pos<0.001?6:pos<1?4:2));_s('cPosUnit',unit);
+  _s('cSLDist',sldStr);_s('cSLUnit',sldUnit);_s('cMaxLoss',_fD(maxL));
+  _s('cFormula',formula);
   const pnlSec=document.getElementById('cPnlSec');
-  if(profit!==null){pnlSec.style.display='block';_s('cLoss2',_fD(riskAmt));_s('cProfit',_fD(profit));const rrSec=document.getElementById('cRRSec');if(rr!==null){rrSec.style.display='block';const col=rr>=3?'var(--accent)':rr>=2?'var(--accent2)':rr>=1?'var(--amber)':'var(--red)';const rrEl=document.getElementById('cRR');rrEl.textContent='1 : '+_f(rr,2);rrEl.style.color=col;const bar=document.getElementById('cRRBar');bar.style.width=Math.min((rr/3)*100,100)+'%';bar.style.background=col;}else rrSec.style.display='none';}
-  else pnlSec.style.display='none';
+  if(profit!==null){
+    pnlSec.style.display='block';_s('cLoss2',_fD(riskAmt));_s('cProfit',_fD(profit));
+    const rrSec=document.getElementById('cRRSec');
+    if(rr!==null){
+      rrSec.style.display='block';
+      const col=rr>=3?'var(--accent)':rr>=2?'var(--accent2)':rr>=1?'var(--amber)':'var(--red)';
+      const rrEl=document.getElementById('cRR');rrEl.textContent='1 : '+_f(rr,2);rrEl.style.color=col;
+      const bar=document.getElementById('cRRBar');bar.style.width=Math.min((rr/3)*100,100)+'%';bar.style.background=col;
+    } else rrSec.style.display='none';
+  } else pnlSec.style.display='none';
 }
 function _cClear(){['cPosSize','cPosUnit','cSLDist','cSLUnit','cMaxLoss'].forEach(k=>_s(k,'—'));const p=document.getElementById('cPnlSec');if(p)p.style.display='none';_s('cFormula','Position = Risk ÷ SL Distance');}
 
@@ -1020,11 +1055,31 @@ function _cClear(){['cPosSize','cPosUnit','cSLDist','cSLUnit','cMaxLoss'].forEac
 (function(){
   const modal=document.getElementById('calcModal'),hdr=document.getElementById('calcDragHdr');
   let drag=false,ox=0,oy=0;
-  hdr.addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('.calc-x'))return;drag=true;const r=modal.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;modal.style.right='auto';modal.style.bottom='auto';modal.style.left=r.left+'px';modal.style.top=r.top+'px';document.body.style.userSelect='none';e.preventDefault();});
-  document.addEventListener('mousemove',e=>{if(!drag)return;const nx=Math.max(0,Math.min(e.clientX-ox,window.innerWidth-modal.offsetWidth));const ny=Math.max(0,Math.min(e.clientY-oy,window.innerHeight-modal.offsetHeight));modal.style.left=nx+'px';modal.style.top=ny+'px';});
+  hdr.addEventListener('mousedown',e=>{
+    if(e.button!==0||e.target.closest('.calc-x'))return;
+    drag=true;const r=modal.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;
+    modal.style.right='auto';modal.style.bottom='auto';modal.style.left=r.left+'px';modal.style.top=r.top+'px';
+    document.body.style.userSelect='none';e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!drag)return;
+    const nx=Math.max(0,Math.min(e.clientX-ox,window.innerWidth-modal.offsetWidth));
+    const ny=Math.max(0,Math.min(e.clientY-oy,window.innerHeight-modal.offsetHeight));
+    modal.style.left=nx+'px';modal.style.top=ny+'px';
+  });
   document.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});
-  hdr.addEventListener('touchstart',e=>{if(e.target.closest('.calc-x'))return;const r=modal.getBoundingClientRect();ox=e.touches[0].clientX-r.left;oy=e.touches[0].clientY-r.top;modal.style.right='auto';modal.style.bottom='auto';modal.style.left=r.left+'px';modal.style.top=r.top+'px';drag=true;e.preventDefault();},{passive:false});
-  document.addEventListener('touchmove',e=>{if(!drag)return;const nx=Math.max(0,Math.min(e.touches[0].clientX-ox,window.innerWidth-modal.offsetWidth));const ny=Math.max(0,Math.min(e.touches[0].clientY-oy,window.innerHeight-modal.offsetHeight));modal.style.left=nx+'px';modal.style.top=ny+'px';e.preventDefault();},{passive:false});
+  hdr.addEventListener('touchstart',e=>{
+    if(e.target.closest('.calc-x'))return;
+    const r=modal.getBoundingClientRect();ox=e.touches[0].clientX-r.left;oy=e.touches[0].clientY-r.top;
+    modal.style.right='auto';modal.style.bottom='auto';modal.style.left=r.left+'px';modal.style.top=r.top+'px';
+    drag=true;e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    const nx=Math.max(0,Math.min(e.touches[0].clientX-ox,window.innerWidth-modal.offsetWidth));
+    const ny=Math.max(0,Math.min(e.touches[0].clientY-oy,window.innerHeight-modal.offsetHeight));
+    modal.style.left=nx+'px';modal.style.top=ny+'px';e.preventDefault();
+  },{passive:false});
   document.addEventListener('touchend',()=>{drag=false;});
 })();
 </script>
