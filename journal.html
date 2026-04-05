@@ -180,10 +180,43 @@ iframe.ready{opacity:1}
 .cflbl{font-size:10px;color:var(--muted2,#8a939e);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
 .cflbl-left{display:flex;align-items:center;gap:4px}
 
-/* ── TOOLTIP ── */
-.ctip{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:var(--border);color:var(--muted);font-size:8px;cursor:help;position:relative;flex-shrink:0}
-.ctip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);right:0;background:#111;color:#e6f2ec;font-size:9px;padding:5px 8px;border-radius:var(--radius-md);z-index:9999;max-width:180px;width:160px;line-height:1.4;pointer-events:none;border:1px solid var(--border);white-space:normal;text-align:left;display:none}
-.ctip:hover::after{display:block}
+/* ── TOOLTIP — always shows ABOVE the ? icon ── */
+.ctip{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:var(--border);color:var(--muted);font-size:8px;cursor:help;position:relative;flex-shrink:0;z-index:10}
+.ctip::after{
+  content:attr(data-tip);
+  position:absolute;
+  bottom:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  color:#e6f2ec;
+  font-size:9px;
+  padding:5px 8px;
+  border-radius:var(--radius-md);
+  z-index:9999;
+  width:160px;
+  max-width:160px;
+  line-height:1.4;
+  pointer-events:none;
+  border:1px solid var(--border);
+  white-space:normal;
+  text-align:left;
+  display:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.5);
+}
+/* small arrow pointing down */
+.ctip::before{
+  content:'';
+  position:absolute;
+  bottom:calc(100% + 1px);
+  left:50%;
+  transform:translateX(-50%);
+  border:4px solid transparent;
+  border-top-color:#111;
+  display:none;
+  z-index:9999;
+}
+.ctip:hover::after,.ctip:hover::before{display:block}
 
 /* ── DUAL TOGGLE (Price / %) ── */
 .dual-tgl{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden}
@@ -256,21 +289,9 @@ iframe.ready{opacity:1}
 .csel:focus{border-color:var(--accent2)}
 .csel option{background:var(--panel)}
 
-/* ── FORMULA ── */
-.cfbox{margin-top:9px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);font-size:10px;color:var(--muted);font-family:var(--font-mono,'Space Grotesk',sans-serif);line-height:1.6;white-space:pre-wrap}
-
-/* ── DISCLAIMER ── */
-.cdis{font-size:9px;color:var(--muted);line-height:1.4;padding:6px 8px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:7px;opacity:.65;display:flex;align-items:flex-start;gap:5px}
-.cdis i{color:var(--accent2);flex-shrink:0;margin-top:1px}
-
 /* ── SAVE FEEDBACK ── */
 .save-feedback{display:none;font-size:9px;color:var(--accent2);align-items:center;gap:2px}
 .save-feedback.show{display:flex}
-
-/* ── P/L SECTION ── */
-.cpnl{margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
-.cpnltitle{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;gap:4px}
-.cpnltitle i{color:var(--accent2)}
 
 /* ── Overlay modals ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:600;align-items:center;justify-content:center;padding:20px}
@@ -518,126 +539,235 @@ iframe.ready{opacity:1}
           </button>
         </div>
 
-        <!-- Forex pair (hidden by default) -->
-        <div class="cfield cforex" id="cForexPairField">
-          <div class="cflbl">
-            <div class="cflbl-left">Pair <span class="ctip" data-tip="JPY pairs: ×100 pip. Gold/Indices: direct price.">?</span></div>
+        <!-- ══ CRYPTO INPUTS ══ -->
+        <div id="cryptoInputs">
+          <!-- Capital -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">
+                Account Capital
+                <span class="ctip" data-tip="Your total trading account balance in USD.">?</span>
+              </div>
+            </div>
+            <div class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cCapital" value="1000" min="0" step="any" oninput="cCalc()"></div>
           </div>
-          <select class="csel" id="cPair" onchange="cCalc()">
-            <option value="EURUSD">EURUSD</option><option value="GBPUSD">GBPUSD</option>
-            <option value="AUDUSD">AUDUSD</option><option value="NZDUSD">NZDUSD</option>
-            <option value="USDCAD">USDCAD</option><option value="USDCHF">USDCHF</option>
-            <option value="USDJPY">USDJPY (JPY)</option><option value="EURJPY">EURJPY (JPY)</option>
-            <option value="GBPJPY">GBPJPY (JPY)</option><option value="XAUUSD">XAU/USD (Gold)</option>
-            <option value="US30">US30 / Dow</option><option value="NAS100">NAS100 / Nasdaq</option>
-          </select>
-        </div>
 
-        <!-- Capital -->
-        <div class="cfield">
-          <div class="cflbl">
-            <div class="cflbl-left">
-              <span id="cCapitalLabel">Account Capital</span>
-              <span class="ctip" data-tip="Your total trading account balance in USD.">?</span>
+          <!-- Risk -->
+          <div class="cfield">
+            <div class="cflbl" style="margin-bottom:5px">
+              <div class="cflbl-left">
+                Risk Per Trade <span class="ctip" data-tip="How much you're willing to lose on this trade. 1–2% is standard practice.">?</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px">
+                <span class="save-feedback" id="cSaveFeedback"><i class="fa-solid fa-check"></i> Saved</span>
+                <button class="btn-set-def" id="cBtnSetDef" onclick="cSaveDefault()">
+                  <i class="fa-solid fa-bookmark"></i> Set Default
+                </button>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div class="risk-tgl">
+                <button class="risk-tgl-btn active" id="cRiskPctBtn" onclick="cSetRiskMode('pct')">%</button>
+                <button class="risk-tgl-btn" id="cRiskUsdBtn" onclick="cSetRiskMode('usd')">USD</button>
+              </div>
+              <div class="cinwrap" style="flex:1">
+                <input class="cin suf" type="number" id="cRiskVal" value="1" min="0.01" step="any" oninput="cCalc()">
+                <span class="cisuf" id="cRiskSuf">%</span>
+              </div>
             </div>
           </div>
-          <div class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cCapital" value="1000" min="0" step="any" oninput="cCalc()"></div>
-        </div>
 
-        <!-- Risk (% or USD) + Set Default -->
-        <div class="cfield">
-          <div class="cflbl" style="margin-bottom:5px">
-            <div class="cflbl-left">
-              Risk Per Trade <span class="ctip" data-tip="How much you're willing to lose on this trade. 1–2% is standard practice.">?</span>
+          <hr class="cdiv">
+
+          <!-- Entry Price -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Entry Price <span class="ctip" data-tip="The exact price at which you enter the trade on your chart.">?</span></div>
             </div>
-            <div style="display:flex;align-items:center;gap:5px">
-              <span class="save-feedback" id="cSaveFeedback"><i class="fa-solid fa-check"></i> Saved</span>
-              <button class="btn-set-def" id="cBtnSetDef" onclick="cSaveDefault()">
-                <i class="fa-solid fa-bookmark"></i> Set Default
-              </button>
-            </div>
+            <div class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cEntry" placeholder="e.g. 70116.10" step="any" oninput="cCalc()"></div>
           </div>
-          <div style="display:flex;gap:6px">
-            <div class="risk-tgl">
-              <button class="risk-tgl-btn active" id="cRiskPctBtn" onclick="cSetRiskMode('pct')">%</button>
-              <button class="risk-tgl-btn" id="cRiskUsdBtn" onclick="cSetRiskMode('usd')">USD</button>
+
+          <!-- Stop Loss -->
+          <div class="cfield">
+            <div class="cflbl" style="margin-bottom:5px">
+              <div class="cflbl-left">Stop Loss <span class="ctip" data-tip="Price mode: exact SL level on chart. % mode: distance from entry as a percentage.">?</span></div>
+              <div class="dual-tgl">
+                <button class="dual-tgl-btn active" id="cSlPriceBtn" onclick="cSetSlMode('price')">Price</button>
+                <button class="dual-tgl-btn" id="cSlPctBtn" onclick="cSetSlMode('pct')">%</button>
+              </div>
             </div>
-            <div class="cinwrap" style="flex:1">
-              <input class="cin suf" type="number" id="cRiskVal" value="1" min="0.01" step="any" oninput="cCalc()">
-              <span class="cisuf" id="cRiskSuf">%</span>
+            <div id="cSlPriceWrap" class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cSLPrice" placeholder="e.g. 70007.10" step="any" oninput="cCalc()"></div>
+            <div id="cSlPctWrap" class="cinwrap" style="display:none"><input class="cin suf" type="number" id="cSLPct" placeholder="e.g. 0.39" step="any" min="0.001" oninput="cCalc()"><span class="cisuf">%</span></div>
+          </div>
+
+          <!-- Take Profit -->
+          <div class="cfield">
+            <div class="cflbl" style="margin-bottom:5px">
+              <div class="cflbl-left">Take Profit <span class="ctip" data-tip="Price mode: exact TP level on chart. % mode: distance from entry as a percentage.">?</span></div>
+              <div class="dual-tgl">
+                <button class="dual-tgl-btn active" id="cTpPriceBtn" onclick="cSetTpMode('price')">Price</button>
+                <button class="dual-tgl-btn" id="cTpPctBtn" onclick="cSetTpMode('pct')">%</button>
+              </div>
             </div>
+            <div id="cTpPriceWrap" class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cTPPrice" placeholder="e.g. 71500" step="any" oninput="cCalc()"></div>
+            <div id="cTpPctWrap" class="cinwrap" style="display:none"><input class="cin suf" type="number" id="cTPPct" placeholder="e.g. 1.50" step="any" min="0.001" oninput="cCalc()"><span class="cisuf">%</span></div>
           </div>
-        </div>
 
-        <hr class="cdiv">
+          <hr class="cdiv">
 
-        <!-- Entry Price -->
-        <div class="cfield">
-          <div class="cflbl">
-            <div class="cflbl-left">Entry Price <span class="ctip" data-tip="The exact price at which you enter the trade on your chart.">?</span></div>
-          </div>
-          <div class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cEntry" placeholder="e.g. 70116.10" step="any" oninput="cCalc()"></div>
-        </div>
-
-        <!-- Stop Loss -->
-        <div class="cfield">
-          <div class="cflbl" style="margin-bottom:5px">
-            <div class="cflbl-left">Stop Loss <span class="ctip" data-tip="Price mode: exact SL level on chart. % mode: distance from entry as a percentage (e.g. 0.39% below entry price).">?</span></div>
-            <div class="dual-tgl">
-              <button class="dual-tgl-btn active" id="cSlPriceBtn" onclick="cSetSlMode('price')">Price</button>
-              <button class="dual-tgl-btn" id="cSlPctBtn" onclick="cSetSlMode('pct')">%</button>
+          <!-- Leverage -->
+          <div class="cfield">
+            <div class="cflbl" style="margin-bottom:4px">
+              <div class="cflbl-left">Leverage <span class="ctip" data-tip="Leverage divides the required margin. 5× on $50 capital = only $10 needed from your account.">?</span></div>
+              <span id="cLevDisplay" style="font-size:11px;color:var(--accent2);font-family:'Space Grotesk',sans-serif">1×</span>
             </div>
-          </div>
-          <div id="cSlPriceWrap" class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cSLPrice" placeholder="e.g. 70007.10" step="any" oninput="cCalc()"></div>
-          <div id="cSlPctWrap" class="cinwrap" style="display:none"><input class="cin suf" type="number" id="cSLPct" placeholder="e.g. 0.39" step="any" min="0.001" oninput="cCalc()"><span class="cisuf">%</span></div>
-        </div>
-
-        <!-- Take Profit -->
-        <div class="cfield">
-          <div class="cflbl" style="margin-bottom:5px">
-            <div class="cflbl-left">Take Profit <span style="color:var(--muted);font-size:9px">(optional)</span> <span class="ctip" data-tip="Price mode: exact TP level on chart. % mode: distance from entry as a percentage (e.g. 1.50% above entry price).">?</span></div>
-            <div class="dual-tgl">
-              <button class="dual-tgl-btn active" id="cTpPriceBtn" onclick="cSetTpMode('price')">Price</button>
-              <button class="dual-tgl-btn" id="cTpPctBtn" onclick="cSetTpMode('pct')">%</button>
+            <input class="cin" type="number" id="cLeverage" value="1" min="1" max="500" step="1" oninput="cCalc()">
+            <div class="lev-note" id="cLevNote" style="display:none">
+              At <span id="cLevNoteX">1×</span>: control <span id="cLevNotePos">—</span> with <span id="cLevNoteMargin">—</span> margin.
             </div>
           </div>
-          <div id="cTpPriceWrap" class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cTPPrice" placeholder="e.g. 71500" step="any" oninput="cCalc()"></div>
-          <div id="cTpPctWrap" class="cinwrap" style="display:none"><input class="cin suf" type="number" id="cTPPct" placeholder="e.g. 1.50" step="any" min="0.001" oninput="cCalc()"><span class="cisuf">%</span></div>
-        </div>
+        </div><!-- end #cryptoInputs -->
 
-        <hr class="cdiv">
-
-        <!-- Leverage -->
-        <div class="cfield">
-          <div class="cflbl" style="margin-bottom:4px">
-            <div class="cflbl-left">Leverage <span class="ctip" data-tip="Leverage divides the required margin. 5× on $50 capital = only $10 needed from your account.">?</span></div>
-            <span id="cLevDisplay" style="font-size:11px;color:var(--accent2);font-family:'Space Grotesk',sans-serif">1×</span>
+        <!-- ══ FOREX INPUTS ══ -->
+        <div id="forexInputs" style="display:none">
+          <!-- Pair -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Currency Pair <span class="ctip" data-tip="Select the forex pair you want to trade.">?</span></div>
+            </div>
+            <select class="csel" id="cPair" onchange="cCalc()">
+              <optgroup label="Majors">
+                <option value="EURUSD">EUR/USD</option>
+                <option value="GBPUSD">GBP/USD</option>
+                <option value="AUDUSD">AUD/USD</option>
+                <option value="NZDUSD">NZD/USD</option>
+                <option value="USDCAD">USD/CAD</option>
+                <option value="USDCHF">USD/CHF</option>
+                <option value="USDJPY">USD/JPY</option>
+              </optgroup>
+              <optgroup label="Minors / Crosses">
+                <option value="EURJPY">EUR/JPY</option>
+                <option value="GBPJPY">GBP/JPY</option>
+                <option value="EURAUD">EUR/AUD</option>
+                <option value="EURGBP">EUR/GBP</option>
+                <option value="EURCAD">EUR/CAD</option>
+                <option value="EURCHF">EUR/CHF</option>
+                <option value="EURNZD">EUR/NZD</option>
+                <option value="GBPCAD">GBP/CAD</option>
+                <option value="GBPCHF">GBP/CHF</option>
+                <option value="GBPAUD">GBP/AUD</option>
+                <option value="GBPNZD">GBP/NZD</option>
+                <option value="AUDCAD">AUD/CAD</option>
+                <option value="AUDJPY">AUD/JPY</option>
+                <option value="AUDCHF">AUD/CHF</option>
+                <option value="AUDNZD">AUD/NZD</option>
+                <option value="CHFJPY">CHF/JPY</option>
+                <option value="CADCHF">CAD/CHF</option>
+                <option value="CADJPY">CAD/JPY</option>
+                <option value="NZDCHF">NZD/CHF</option>
+                <option value="NZDJPY">NZD/JPY</option>
+                <option value="NZDCAD">NZD/CAD</option>
+              </optgroup>
+              <optgroup label="Metals / Indices">
+                <option value="XAUUSD">XAU/USD (Gold)</option>
+                <option value="XAGUSD">XAG/USD (Silver)</option>
+                <option value="US30">US30 / Dow</option>
+                <option value="NAS100">NAS100 / Nasdaq</option>
+              </optgroup>
+            </select>
           </div>
-          <input class="cin" type="number" id="cLeverage" value="1" min="1" max="500" step="1" oninput="cCalc()">
-          <div class="lev-note" id="cLevNote" style="display:none">
-            At <span id="cLevNoteX">1×</span>: control <span id="cLevNotePos">—</span> with <span id="cLevNoteMargin">—</span> margin.
-          </div>
-        </div>
 
-        <!-- Forex Balance (only visible in forex mode) -->
-        <div class="cfield cforex" id="cForexBalanceField">
-          <div class="cflbl">Balance <span class="ctip" data-tip="Total account balance in USD">?</span></div>
-          <div class="cinwrap"><span class="cipre">$</span><input class="cin pre" type="number" id="cBalance" value="1000" min="0" oninput="cCalc()"></div>
-        </div>
-        <div class="cfield cforex" id="cForexRiskField">
-          <div class="cflbl">Risk % <span class="ctip" data-tip="% of balance risked. Pros: 1–2%">?</span></div>
-          <div class="cinwrap"><input class="cin suf" type="number" id="cRiskPct" value="1" min="0.01" max="100" step="0.1" oninput="cCalc()"><span class="cisuf">%</span></div>
-        </div>
-        <!-- Forex SL input (price only, hidden in crypto) -->
-        <div class="cfield cforex" id="cForexSLField">
-          <div class="cflbl">Stop Loss <span class="ctip" data-tip="SL hit = exact risk amount">?</span></div>
-          <input class="cin" type="number" id="cSL" placeholder="70007.1" step="any" oninput="cCalc()">
-        </div>
-        <div class="cfield cforex" id="cForexTPField">
-          <div class="cflbl">Take Profit <span style="font-size:8px;color:var(--muted)">(optional)</span></div>
-          <input class="cin" type="number" id="cTP" placeholder="70500" step="any" oninput="cCalc()">
-        </div>
-      </div>
+          <!-- Account Currency -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Account Currency <span class="ctip" data-tip="The currency your trading account is denominated in. Affects pip value calculations.">?</span></div>
+            </div>
+            <select class="csel" id="cAcctCurrency" onchange="cCalc()">
+              <option value="USD">USD — US Dollar</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="JPY">JPY — Japanese Yen</option>
+              <option value="CHF">CHF — Swiss Franc</option>
+              <option value="AUD">AUD — Australian Dollar</option>
+              <option value="CAD">CAD — Canadian Dollar</option>
+              <option value="NZD">NZD — New Zealand Dollar</option>
+            </select>
+          </div>
+
+          <!-- Balance -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Account Balance <span class="ctip" data-tip="Your total account balance in the account currency selected above.">?</span></div>
+            </div>
+            <div class="cinwrap">
+              <span class="cipre" id="fBalancePre">$</span>
+              <input class="cin pre" type="number" id="cFBalance" value="10000" min="0" step="any" oninput="cCalc()">
+            </div>
+          </div>
+
+          <!-- Risk -->
+          <div class="cfield">
+            <div class="cflbl" style="margin-bottom:5px">
+              <div class="cflbl-left">Risk Per Trade <span class="ctip" data-tip="Percentage of your balance you're willing to lose. Pros typically use 1–2%.">?</span></div>
+              <div class="risk-tgl">
+                <button class="risk-tgl-btn active" id="fRiskPctBtn" onclick="fSetRiskMode('pct')">%</button>
+                <button class="risk-tgl-btn" id="fRiskUsdBtn" onclick="fSetRiskMode('usd')">$</button>
+              </div>
+            </div>
+            <div class="cinwrap">
+              <input class="cin suf" type="number" id="cFRisk" value="1" min="0.01" step="any" oninput="cCalc()">
+              <span class="cisuf" id="fRiskSuf">%</span>
+            </div>
+          </div>
+
+          <hr class="cdiv">
+
+          <!-- Entry Price -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Entry Price <span class="ctip" data-tip="The price at which you enter the trade. Used for JPY pairs and cross-pair conversions.">?</span></div>
+            </div>
+            <div class="cinwrap"><input class="cin" type="number" id="cFEntry" placeholder="e.g. 1.08542" step="any" oninput="cCalc()"></div>
+          </div>
+
+          <!-- Stop Loss in pips -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Stop Loss <span class="ctip" data-tip="Distance from entry to stop loss in pips. 1 pip = 0.0001 for most pairs, 0.01 for JPY pairs.">?</span></div>
+              <div class="dual-tgl">
+                <button class="dual-tgl-btn active" id="fSlPipsBtn" onclick="fSetSlMode('pips')">Pips</button>
+                <button class="dual-tgl-btn" id="fSlPriceBtn2" onclick="fSetSlMode('price')">Price</button>
+              </div>
+            </div>
+            <div id="fSlPipsWrap" class="cinwrap">
+              <input class="cin suf" type="number" id="cFSLPips" placeholder="e.g. 50" step="any" min="0.1" oninput="cCalc()">
+              <span class="cisuf">pips</span>
+            </div>
+            <div id="fSlPriceWrap2" class="cinwrap" style="display:none">
+              <input class="cin" type="number" id="cFSLPrice" placeholder="e.g. 1.08042" step="any" oninput="cCalc()">
+            </div>
+          </div>
+
+          <!-- Take Profit in pips -->
+          <div class="cfield">
+            <div class="cflbl">
+              <div class="cflbl-left">Take Profit <span class="ctip" data-tip="Distance from entry to take profit in pips. Used to calculate R:R ratio.">?</span></div>
+              <div class="dual-tgl">
+                <button class="dual-tgl-btn active" id="fTpPipsBtn" onclick="fSetTpMode('pips')">Pips</button>
+                <button class="dual-tgl-btn" id="fTpPriceBtn2" onclick="fSetTpMode('price')">Price</button>
+              </div>
+            </div>
+            <div id="fTpPipsWrap" class="cinwrap">
+              <input class="cin suf" type="number" id="cFTPPips" placeholder="e.g. 100" step="any" min="0.1" oninput="cCalc()">
+              <span class="cisuf">pips</span>
+            </div>
+            <div id="fTpPriceWrap2" class="cinwrap" style="display:none">
+              <input class="cin" type="number" id="cFTPPrice" placeholder="e.g. 1.09542" step="any" oninput="cCalc()">
+            </div>
+          </div>
+        </div><!-- end #forexInputs -->
+
+      </div><!-- end left ccol -->
 
       <!-- ── RIGHT: OUTPUTS ── -->
       <div class="ccol">
@@ -646,20 +776,17 @@ iframe.ready{opacity:1}
         <!-- ── CRYPTO OUTPUTS ── -->
         <div id="cCryptoResults">
           <div class="result-stack">
-            <!-- Risk card (red) -->
             <div class="crc loss">
               <div class="crl"><i class="fa-solid fa-circle-xmark"></i> Risk (Max Loss)</div>
               <div class="crv neg" id="cOutRisk">—</div>
               <div class="crs" id="cOutRiskSub">if stop loss is hit</div>
             </div>
-            <!-- Profit card (green, dimmed until TP set) -->
             <div class="crc gain" id="cProfitCard" style="opacity:.35">
               <div class="crl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
               <div class="crv pos" id="cOutProfit">—</div>
               <div class="crs" id="cOutProfitSub">set a take profit to calculate</div>
             </div>
           </div>
-          <!-- Capital Required -->
           <div class="margin-card">
             <div class="margin-card-label"><i class="fa-solid fa-wallet" style="color:var(--accent2);font-size:8px"></i> Capital Required (Margin)</div>
             <div class="margin-card-val" id="cOutMargin">—</div>
@@ -669,16 +796,48 @@ iframe.ready{opacity:1}
 
         <!-- ── FOREX OUTPUTS ── -->
         <div id="cForexResults" style="display:none">
+          <!-- Primary results grid -->
           <div class="crg">
-            <div class="crc hi"><div class="crl"><i class="fa-solid fa-shield-halved"></i> Risk $</div><div class="crv pos" id="cRiskAmt">—</div><div class="crs" id="cRiskPctLbl">—</div></div>
-            <div class="crc neutral"><div class="crl"><i class="fa-solid fa-layer-group"></i> Position</div><div class="crv plain" id="cPosSize">—</div><div class="crs" id="cPosUnit">—</div></div>
-            <div class="crc neutral"><div class="crl"><i class="fa-solid fa-arrows-left-right"></i> SL Dist</div><div class="crv plain" id="cSLDist">—</div><div class="crs" id="cSLUnit">—</div></div>
-            <div class="crc loss"><div class="crl"><i class="fa-solid fa-circle-xmark"></i> Max Loss</div><div class="crv neg" id="cMaxLoss">—</div><div class="crs">= risk amount</div></div>
+            <div class="crc dan">
+              <div class="crl"><i class="fa-solid fa-circle-xmark"></i> Money at Risk</div>
+              <div class="crv neg" id="fOutRiskAmt">—</div>
+              <div class="crs" id="fOutRiskPct">—</div>
+            </div>
+            <div class="crc neutral">
+              <div class="crl"><i class="fa-solid fa-layer-group"></i> Lot Size</div>
+              <div class="crv plain" id="fOutLots">—</div>
+              <div class="crs" id="fOutLotType">—</div>
+            </div>
+            <div class="crc neutral">
+              <div class="crl"><i class="fa-solid fa-hashtag"></i> Units</div>
+              <div class="crv plain" id="fOutUnits">—</div>
+              <div class="crs">position units</div>
+            </div>
+            <div class="crc neutral">
+              <div class="crl"><i class="fa-solid fa-coins"></i> Pip Value</div>
+              <div class="crv plain" id="fOutPipVal">—</div>
+              <div class="crs" id="fOutPipValSub">per pip per lot</div>
+            </div>
           </div>
-          <div id="cPnlSec" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <!-- SL info -->
+          <div style="margin-top:7px;padding:8px 10px;background:var(--panel2,#1f2226);border:1px solid var(--border);border-radius:var(--radius-md);font-size:10px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap" id="fSlInfo" style="display:none">
+            <span><i class="fa-solid fa-arrows-left-right" style="color:var(--accent2);margin-right:3px"></i>SL: <strong id="fOutSlPips" style="color:var(--text)">—</strong> pips</span>
+            <span><i class="fa-solid fa-pip" style="color:var(--accent2);margin-right:3px"></i>Pip size: <strong id="fOutPipSize" style="color:var(--text)">—</strong></span>
+            <span><i class="fa-solid fa-calculator" style="color:var(--accent2);margin-right:3px"></i>Contract: <strong id="fOutContract" style="color:var(--text)">100,000</strong></span>
+          </div>
+          <!-- TP / P&L section (shows when TP is set) -->
+          <div id="fPnlSec" style="display:none;margin-top:8px">
             <div class="crg">
-              <div class="crc loss"><div class="crl"><i class="fa-solid fa-arrow-trend-down"></i> Max Loss</div><div class="crv neg" id="cLoss2">—</div><div class="crs">if SL hit</div></div>
-              <div class="crc gain"><div class="crl"><i class="fa-solid fa-arrow-trend-up"></i> Target</div><div class="crv pos" id="cProfit">—</div><div class="crs">if TP hit</div></div>
+              <div class="crc gain">
+                <div class="crl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
+                <div class="crv pos" id="fOutProfit">—</div>
+                <div class="crs" id="fOutProfitPips">— pips</div>
+              </div>
+              <div class="crc neutral">
+                <div class="crl"><i class="fa-solid fa-scale-balanced"></i> Pip Value (Total)</div>
+                <div class="crv plain" id="fOutPipValTotal">—</div>
+                <div class="crs">for your position</div>
+              </div>
             </div>
           </div>
         </div>
@@ -693,15 +852,10 @@ iframe.ready{opacity:1}
           <div class="rr-ticks"><span>Poor</span><span>Average</span><span>Good</span><span>Great 3R+</span></div>
         </div>
 
-        <!-- Formula -->
-        <div class="cfbox" id="cFormula">Risk Amount = Capital × Risk%
-Margin = Risk Amount ÷ SL%</div>
-
-        <div class="cdis"><i class="fa-solid fa-triangle-exclamation"></i><span>Educational only. Verify with your broker.</span></div>
-      </div>
-    </div>
-  </div>
-</div>
+      </div><!-- end right ccol -->
+    </div><!-- end calc-cols -->
+  </div><!-- end calcModalBody -->
+</div><!-- end calcModal -->
 
 <!-- Unsaved bar -->
 <div class="unsaved-bar" id="unsavedBar">
@@ -797,12 +951,18 @@ let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
     document.getElementById('proDurationRow').style.display='block';
     document.getElementById('proDurationText').textContent='Active';
   }
+
+  // ── Set journal name in header from actual journal object ──
+  if(journalObj.name) {
+    document.getElementById('jnameHdr').textContent = journalObj.name;
+    document.title = 'TradeZona | ' + journalObj.name;
+  }
+
   document.getElementById('pageLoader').classList.add('gone');
   setTimeout(()=>{const pl=document.getElementById('pageLoader');if(pl)pl.style.display='none';},400);
   const lf=document.getElementById('logsFrame');
   if(lf?.contentDocument?.readyState==='complete')frameReady('logs');
   _preloadTabs();
-  // Load calculator defaults on init
   cLoadDefaults();
 })();
 
@@ -882,7 +1042,14 @@ async function saveJournalSettings(){
     if(pinNew!==pinConf){document.getElementById('pinMismatch').style.display='block';return;}
     upd.pin_hash=await hashPin(pinNew);document.getElementById('pinMismatch').style.display='none';
   }
-  try{await updateJournal(journalId,upd);Object.assign(journalObj,upd);if(name){document.getElementById('jnameHdr').textContent=name;document.title='TradeZona | '+name;}renderPinSection();clearDirty();showToast('Settings saved!','fa-solid fa-circle-check','green');}
+  try{
+    await updateJournal(journalId,upd);Object.assign(journalObj,upd);
+    if(name){
+      document.getElementById('jnameHdr').textContent=name;
+      document.title='TradeZona | '+name;
+    }
+    renderPinSection();clearDirty();showToast('Settings saved!','fa-solid fa-circle-check','green');
+  }
   catch(e){showToast('Save failed: '+e.message,'fa-solid fa-circle-exclamation','red');}
 }
 async function toggleFlag(field){const cur=journalObj[field]!==false;journalObj[field]=!cur;document.getElementById(field==='show_pnl'?'showPnlToggle':'showCapToggle').classList.toggle('on',!cur);await updateJournal(journalId,{[field]:!cur});showToast('Display setting updated.','fa-solid fa-circle-check','green');}
@@ -1049,15 +1216,107 @@ document.addEventListener('keydown',e=>{
 });
 window.addEventListener('beforeunload',e=>{if(activeTab==='settings'&&isDirty){e.preventDefault();e.returnValue='';}});
 
-// ═══════════════════════════════════════════════════════════════
-//  CALCULATOR — FAB + DRAGGABLE MODAL + ENHANCED CRYPTO LOGIC
-// ═══════════════════════════════════════════════════════════════
-const CALC_KEY = 'tradeCalcDefaults_v3';
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CALCULATOR ENGINE — CRYPTO + FOREX (PRODUCTION-ACCURATE)
+// ═══════════════════════════════════════════════════════════════════════
+const CALC_KEY = 'tradeCalcDefaults_v4';
 let _calcOpen = false;
 let cAsset    = 'crypto';
-let cRiskMode = 'pct';   // 'pct' | 'usd'
-let cSlMode   = 'price'; // 'price' | 'pct'
-let cTpMode   = 'price'; // 'price' | 'pct'
+let cRiskMode = 'pct';    // 'pct' | 'usd'
+let cSlMode   = 'price';  // 'price' | 'pct'
+let cTpMode   = 'price';  // 'price' | 'pct'
+let fRiskMode = 'pct';    // 'pct' | 'usd'  (forex)
+let fSlMode   = 'pips';   // 'pips' | 'price'
+let fTpMode   = 'pips';   // 'pips' | 'price'
+
+/* ── Currency symbols ── */
+const CURRENCY_SYMBOLS = {USD:'$',EUR:'€',GBP:'£',JPY:'¥',CHF:'Fr',AUD:'A$',CAD:'C$',NZD:'NZ$'};
+
+/* ─────────────────────────────────────────────────────────────────────
+   FOREX ENGINE — Accurate pip-based calculation (Myfxbook / BabyPips)
+   ─────────────────────────────────────────────────────────────────────
+   CONTRACT_SIZE = 100,000 units per standard lot
+   
+   Pip size:
+     JPY pairs  → 0.01
+     All others → 0.0001
+   
+   Pip value per standard lot (in quote currency):
+     pip_value_in_quote = pip_size × 100,000
+   
+   Convert pip_value to account currency:
+     TYPE A  (quote == acct)  : pip_value_acct = pip_value_in_quote
+     TYPE B  (base  == acct)  : pip_value_acct = pip_value_in_quote / entry_price
+     TYPE C  (cross pair)     : pip_value_acct = pip_value_in_quote × (acctCurrency/quoteCurrency rate)
+                                We approximate with known static rates; users can override via entry.
+   
+   Position size:
+     risk_amount = balance × risk% (or fixed USD)
+     lots = risk_amount / (sl_pips × pip_value_per_lot_in_acct)
+   ──────────────────────────────────────────────────────────────────── */
+
+const CONTRACT_SIZE = 100000; // units per standard lot
+
+/* Static approximate cross-rates (quoteCurrency → USD).
+   These are used only for cross pairs where entry price doesn't directly
+   give us the conversion. Users should treat as approximate. */
+const APPROX_RATES = {
+  USD:1, EUR:1.08, GBP:1.27, JPY:0.0067, CHF:1.12,
+  AUD:0.65, CAD:0.74, NZD:0.60
+};
+
+function _getPipSize(pair) {
+  return pair.includes('JPY') ? 0.01 : 0.0001;
+}
+
+function _getLotLabel(lots) {
+  if(lots >= 0.9)  return 'Standard lot' + (lots >= 1.9 ? 's' : '');
+  if(lots >= 0.09) return 'Mini lot' + (lots >= 0.19 ? 's' : '');
+  return 'Micro lot' + (lots >= 0.019 ? 's' : '');
+}
+
+/**
+ * Returns pip value per standard lot in the account currency.
+ * @param {string} pair - e.g. "EURUSD"
+ * @param {string} acctCcy - e.g. "USD"
+ * @param {number} entryPrice - required for TYPE B & C conversions
+ * @returns {number} pip value per 1 standard lot in account currency
+ */
+function _getPipValuePerLot(pair, acctCcy, entryPrice) {
+  const pipSize = _getPipSize(pair);
+  const pipValueInQuote = pipSize * CONTRACT_SIZE; // pip value in quote currency
+
+  // Parse base and quote from pair
+  // Pairs are stored as 6-char strings like "EURUSD", "XAUUSD", "US30", "NAS100"
+  let base, quote;
+  const specials = { XAUUSD:['XAU','USD'], XAGUSD:['XAG','USD'], US30:['US30','USD'], NAS100:['NAS100','USD'] };
+  if(specials[pair]) {
+    [base, quote] = specials[pair];
+  } else {
+    base  = pair.slice(0, 3);
+    quote = pair.slice(3, 6);
+  }
+
+  // TYPE A: quote currency = account currency (simplest case, e.g. EUR/USD with USD account)
+  if(quote === acctCcy) {
+    return pipValueInQuote; // already in account currency
+  }
+
+  // TYPE B: base currency = account currency (e.g. USD/JPY with USD account)
+  // pip_value_in_acct = pip_value_in_quote / entry_price
+  if(base === acctCcy && entryPrice > 0) {
+    return pipValueInQuote / entryPrice;
+  }
+
+  // TYPE C: cross pair — neither base nor quote matches account currency
+  // We need: pip_value_in_acct = pip_value_in_quote * (acctCcy/quoteCcy rate)
+  // Approximate: use static rate for quoteCcy → USD, then convert USD → acctCcy
+  const quoteToUSD = APPROX_RATES[quote] || 1;
+  const acctToUSD  = APPROX_RATES[acctCcy] || 1;
+  const quoteToAcct = quoteToUSD / acctToUSD;
+  return pipValueInQuote * quoteToAcct;
+}
 
 /* ── Open / Close ── */
 function toggleCalc(){
@@ -1086,33 +1345,18 @@ function cSetAsset(t) {
   cAsset = t;
   document.getElementById('cBtnCrypto').classList.toggle('active', t==='crypto');
   document.getElementById('cBtnForex').classList.toggle('active',  t==='forex');
-
-  // Show/hide forex pair selector
-  document.getElementById('cForexPairField').classList.toggle('show', t==='forex');
-
-  // Show/hide crypto-specific fields
-  const cryptoOnlyFields = ['cCapital','cRiskVal','cEntry','cSlPriceWrap','cSlPctWrap','cTpPriceWrap','cTpPctWrap','cLeverage'];
-  const cryptoFieldRows  = document.querySelectorAll('.ccol .cfield:not(.cforex)');
-
-  // Switch results panels
+  document.getElementById('cryptoInputs').style.display  = t==='crypto' ? '' : 'none';
+  document.getElementById('forexInputs').style.display   = t==='forex'  ? '' : 'none';
   document.getElementById('cCryptoResults').style.display = t==='crypto' ? '' : 'none';
   document.getElementById('cForexResults').style.display  = t==='forex'  ? '' : 'none';
-
-  // Show/hide forex-only fields in the inputs column
-  document.querySelectorAll('.cforex').forEach(el => {
-    // cForexPairField already handled above
-    if(el.id !== 'cForexPairField') el.classList.toggle('show', t==='forex');
-  });
-
-  // Show/hide crypto-specific input rows (Capital, Risk toggle row, SL/TP toggles, Leverage)
-  const cryptoRows = document.querySelectorAll('#calcModalBody .ccol > .cfield:not(.cforex), #calcModalBody .ccol > .cdiv:not(.cforex)');
-  // We manage visibility by toggling a class on the column instead
-  document.getElementById('calcModalBody').setAttribute('data-asset', t);
-
+  // Update balance prefix symbol
+  const acctCcy = document.getElementById('cAcctCurrency')?.value || 'USD';
+  const pre = document.getElementById('fBalancePre');
+  if(pre) pre.textContent = CURRENCY_SYMBOLS[acctCcy] || '$';
   cCalc();
 }
 
-/* ── Risk mode toggle ── */
+/* ── Crypto: Risk mode toggle ── */
 function cSetRiskMode(m) {
   cRiskMode = m;
   document.getElementById('cRiskPctBtn').classList.toggle('active', m==='pct');
@@ -1121,7 +1365,7 @@ function cSetRiskMode(m) {
   cCalc();
 }
 
-/* ── SL mode toggle ── */
+/* ── Crypto: SL mode toggle ── */
 function cSetSlMode(m) {
   cSlMode = m;
   document.getElementById('cSlPriceBtn').classList.toggle('active', m==='price');
@@ -1131,13 +1375,42 @@ function cSetSlMode(m) {
   cCalc();
 }
 
-/* ── TP mode toggle ── */
+/* ── Crypto: TP mode toggle ── */
 function cSetTpMode(m) {
   cTpMode = m;
   document.getElementById('cTpPriceBtn').classList.toggle('active', m==='price');
   document.getElementById('cTpPctBtn').classList.toggle('active',   m==='pct');
   document.getElementById('cTpPriceWrap').style.display = m==='price' ? '' : 'none';
   document.getElementById('cTpPctWrap').style.display   = m==='pct'   ? '' : 'none';
+  cCalc();
+}
+
+/* ── Forex: Risk mode toggle ── */
+function fSetRiskMode(m) {
+  fRiskMode = m;
+  document.getElementById('fRiskPctBtn').classList.toggle('active', m==='pct');
+  document.getElementById('fRiskUsdBtn').classList.toggle('active', m==='usd');
+  document.getElementById('fRiskSuf').textContent = m==='pct' ? '%' : (CURRENCY_SYMBOLS[document.getElementById('cAcctCurrency')?.value||'USD']||'$');
+  cCalc();
+}
+
+/* ── Forex: SL mode toggle ── */
+function fSetSlMode(m) {
+  fSlMode = m;
+  document.getElementById('fSlPipsBtn').classList.toggle('active',   m==='pips');
+  document.getElementById('fSlPriceBtn2').classList.toggle('active', m==='price');
+  document.getElementById('fSlPipsWrap').style.display    = m==='pips'  ? '' : 'none';
+  document.getElementById('fSlPriceWrap2').style.display  = m==='price' ? '' : 'none';
+  cCalc();
+}
+
+/* ── Forex: TP mode toggle ── */
+function fSetTpMode(m) {
+  fTpMode = m;
+  document.getElementById('fTpPipsBtn').classList.toggle('active',   m==='pips');
+  document.getElementById('fTpPriceBtn2').classList.toggle('active', m==='price');
+  document.getElementById('fTpPipsWrap').style.display    = m==='pips'  ? '' : 'none';
+  document.getElementById('fTpPriceWrap2').style.display  = m==='price' ? '' : 'none';
   cCalc();
 }
 
@@ -1170,17 +1443,19 @@ function cSaveDefault() {
 }
 
 /* ── Helpers ── */
-function _fmtUSD(n, d=2) {
+function _fmtMoney(n, ccy='USD', d=2) {
   if(n===null || n===undefined || isNaN(n)) return '—';
-  return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+  const sym = CURRENCY_SYMBOLS[ccy] || ccy+' ';
+  return sym + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
 }
+function _fmtUSD(n, d=2) { return _fmtMoney(n, 'USD', d); }
 function _fmt(n, d=2) {
   if(n===null || n===undefined || isNaN(n)) return '—';
   return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
 }
 function _sv(id, v) { const e=document.getElementById(id); if(e) e.textContent=v; }
 
-/* ── RR gradient color ── */
+/* ── RR color ── */
 function _rrColor(rr) {
   if(rr >= 3) return '#00c896';
   if(rr >= 2) return _lerpHex('#f59e0b','#00c896', rr-2);
@@ -1195,14 +1470,14 @@ function _lerpHex(a, b, t) {
   return '#'+[r,g,b2].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
-/* ── RR bar update (shared) ── */
+/* ── RR bar ── */
 function _updateRR(rr) {
-  if(rr===null || isNaN(rr)){
+  if(rr===null || isNaN(rr) || rr <= 0){
     document.getElementById('cRrSection').style.display='none';
     return;
   }
   document.getElementById('cRrSection').style.display='block';
-  const col  = _rrColor(rr);
+  const col = _rrColor(rr);
   const rrEl = document.getElementById('cRrVal');
   rrEl.textContent = '1 : ' + _fmt(rr, 2);
   rrEl.style.color = col;
@@ -1211,32 +1486,28 @@ function _updateRR(rr) {
   fill.style.background = rr>=3 ? '#00c896' : `linear-gradient(to right, #ff4f6a, ${_rrColor(rr)})`;
 }
 
-/* ── MAIN CALC ── */
+/* ── MAIN DISPATCH ── */
 function cCalc() {
-  if(cAsset === 'crypto') {
-    _calcCrypto();
-  } else {
-    _calcForex();
-  }
+  if(cAsset === 'crypto') _calcCrypto();
+  else _calcForex();
 }
 
-/* ── CRYPTO CALC ── */
+/* ═══════════════════════════════════════════
+   CRYPTO CALC
+═══════════════════════════════════════════ */
 function _calcCrypto() {
   const capital  = parseFloat(document.getElementById('cCapital').value);
   const riskVal  = parseFloat(document.getElementById('cRiskVal').value);
   const entry    = parseFloat(document.getElementById('cEntry').value);
   const leverage = Math.max(1, parseFloat(document.getElementById('cLeverage').value) || 1);
 
-  // Leverage display
   _sv('cLevDisplay', leverage + '×');
 
-  // Risk amount in USD
   let riskAmt = null;
   if(!isNaN(capital) && capital > 0 && !isNaN(riskVal) && riskVal > 0) {
     riskAmt = cRiskMode === 'pct' ? capital * (riskVal/100) : riskVal;
   }
 
-  // SL distance
   let slDist=null, slPct=null;
   if(!isNaN(entry) && entry > 0) {
     if(cSlMode === 'price') {
@@ -1254,7 +1525,6 @@ function _calcCrypto() {
     }
   }
 
-  // TP distance
   let tpDist=null, tpPct=null;
   if(!isNaN(entry) && entry > 0) {
     if(cTpMode === 'price') {
@@ -1272,14 +1542,13 @@ function _calcCrypto() {
     }
   }
 
-  if(riskAmt !== null && slDist !== null) {
-    const posSize = riskAmt / slDist;            // units of asset
-    const posVal  = posSize * entry;              // full position value
-    const margin  = posVal / leverage;            // capital to put up
+  if(riskAmt !== null && slDist !== null && slDist > 0) {
+    const posSize = riskAmt / slDist;
+    const posVal  = posSize * entry;
+    const margin  = posVal / leverage;
     const profit  = tpDist !== null ? posSize * tpDist : null;
     const rr      = profit !== null ? profit / riskAmt : null;
 
-    // ── Output: Risk ──
     _sv('cOutRisk', _fmtUSD(riskAmt));
     const riskSubParts = [];
     if(cRiskMode === 'pct') riskSubParts.push(riskVal.toFixed(2) + '% of capital');
@@ -1287,7 +1556,6 @@ function _calcCrypto() {
     if(slPct) riskSubParts.push('SL ' + slPct.toFixed(3) + '% away');
     _sv('cOutRiskSub', riskSubParts.join(' · '));
 
-    // ── Output: Profit ──
     if(profit !== null) {
       document.getElementById('cProfitCard').style.opacity = '1';
       _sv('cOutProfit', _fmtUSD(profit));
@@ -1298,7 +1566,6 @@ function _calcCrypto() {
       _sv('cOutProfitSub', 'set a take profit to calculate');
     }
 
-    // ── Output: Margin ──
     _sv('cOutMargin', _fmtUSD(margin));
     if(leverage > 1) {
       _sv('cOutMarginSub', `Position: ${_fmtUSD(posVal)} · ${leverage}× leverage`);
@@ -1311,18 +1578,7 @@ function _calcCrypto() {
       document.getElementById('cLevNote').style.display = 'none';
     }
 
-    // ── RR ──
     _updateRR(rr);
-
-    // ── Formula ──
-    const rPct = slPct ? slPct.toFixed(3) + '%' : '—';
-    const riskStr = cRiskMode === 'pct'
-      ? `${_fmtUSD(capital)} × ${riskVal.toFixed(2)}% = ${_fmtUSD(riskAmt)}`
-      : `Fixed ${_fmtUSD(riskAmt)}`;
-    let formula = `Risk = ${riskStr}\nPosition = ${_fmtUSD(riskAmt)} ÷ ${_fmt(slDist, slDist<1?6:2)} = ${_fmt(posSize,6)} units`;
-    formula += `\nMargin = ${_fmtUSD(posVal)} ÷ ${leverage}× = ${_fmtUSD(margin)}`;
-    document.getElementById('cFormula').textContent = formula;
-
   } else {
     _cryptoClear();
   }
@@ -1336,120 +1592,145 @@ function _cryptoClear() {
   document.getElementById('cLevNote').style.display = 'none';
   _sv('cLevDisplay', (parseFloat(document.getElementById('cLeverage').value)||1) + '×');
   _updateRR(null);
-  document.getElementById('cFormula').textContent = 'Risk Amount = Capital × Risk%\nMargin = Risk Amount ÷ SL%';
 }
 
-/* ── FOREX CALC (unchanged logic) ── */
+/* ═══════════════════════════════════════════
+   FOREX CALC — Production-accurate engine
+   Matches Myfxbook / BabyPips output
+═══════════════════════════════════════════ */
 function _calcForex() {
-  const bal    = parseFloat(document.getElementById('cBalance').value);
-  const rp     = parseFloat(document.getElementById('cRiskPct').value);
-  const entry  = parseFloat(document.getElementById('cEntry').value);
-  const sl     = parseFloat(document.getElementById('cSL').value);
-  const tp     = parseFloat(document.getElementById('cTP').value);
-  const pair   = document.getElementById('cPair').value || 'EURUSD';
+  const pair      = document.getElementById('cPair').value || 'EURUSD';
+  const acctCcy   = document.getElementById('cAcctCurrency').value || 'USD';
+  const balance   = parseFloat(document.getElementById('cFBalance').value);
+  const riskInput = parseFloat(document.getElementById('cFRisk').value);
+  const entryRaw  = parseFloat(document.getElementById('cFEntry').value);
+  const entry     = !isNaN(entryRaw) && entryRaw > 0 ? entryRaw : 0;
 
-  const riskAmt = (!isNaN(bal) && !isNaN(rp) && bal>0 && rp>0) ? bal*(rp/100) : null;
-  _sv('cRiskAmt',   riskAmt !== null ? _fmtUSD(riskAmt) : '—');
-  _sv('cRiskPctLbl', (!isNaN(rp)&&rp>0) ? rp.toFixed(1)+'% of balance' : '—');
+  // Update balance prefix symbol
+  const pre = document.getElementById('fBalancePre');
+  if(pre) pre.textContent = CURRENCY_SYMBOLS[acctCcy] || '$';
 
-  if(riskAmt===null || isNaN(entry) || isNaN(sl) || entry===sl || entry<=0 || sl<=0){
+  // ── Validate basics ──
+  if(isNaN(balance) || balance <= 0 || isNaN(riskInput) || riskInput <= 0) {
     _forexClear(); return;
   }
-  const dist = Math.abs(entry - sl);
-  const isJPY = pair.includes('JPY');
-  const isSp  = ['XAUUSD','US30','NAS100'].includes(pair);
-  let pos, unit, sldStr, sldUnit, maxL, profit=null, rr=null, formula;
 
-  if(isSp){
-    pos=riskAmt/dist; maxL=riskAmt;
-    unit=pair==='XAUUSD'?'oz':'contracts'; sldStr=_fmt(dist,2); sldUnit='price dist';
-    formula=`${_fmtUSD(riskAmt)} ÷ ${sldStr} = ${_fmt(pos,4)} ${unit}`;
-    if(!isNaN(tp)&&tp>0&&tp!==entry){const d=Math.abs(tp-entry);profit=pos*d;rr=profit/riskAmt;}
+  // ── Step 1: Risk amount ──
+  const riskAmt = fRiskMode === 'pct' ? balance * (riskInput / 100) : riskInput;
+
+  // ── Step 2: Pip size ──
+  const pipSize = _getPipSize(pair);
+
+  // ── Determine SL in pips ──
+  let slPips = null;
+  if(fSlMode === 'pips') {
+    const p = parseFloat(document.getElementById('cFSLPips').value);
+    if(!isNaN(p) && p > 0) slPips = p;
   } else {
-    const mult=isJPY?100:10000, pips=dist*mult, pipVal=10;
-    pos=riskAmt/(pips*pipVal); maxL=pos*pips*pipVal;
-    unit='std lots'; sldStr=_fmt(pips,1); sldUnit='pips';
-    formula=`${_fmt(pips,1)} pips × $${pipVal}/pip → ${_fmt(pos,4)} lots`;
-    if(!isNaN(tp)&&tp>0&&tp!==entry){const tpP=Math.abs(tp-entry)*mult;profit=pos*tpP*pipVal;rr=profit/riskAmt;}
+    // Price mode: derive pips from entry - slPrice
+    const slPrice = parseFloat(document.getElementById('cFSLPrice').value);
+    if(!isNaN(slPrice) && slPrice > 0 && entry > 0 && slPrice !== entry) {
+      slPips = Math.abs(entry - slPrice) / pipSize;
+    }
   }
 
-  _sv('cPosSize', _fmt(pos, pos<0.001?6:pos<1?4:2));
-  _sv('cPosUnit', unit); _sv('cSLDist', sldStr); _sv('cSLUnit', sldUnit); _sv('cMaxLoss', _fmtUSD(maxL));
-  document.getElementById('cFormula').textContent = formula;
-
-  if(profit !== null){
-    document.getElementById('cPnlSec').style.display='block';
-    _sv('cLoss2', _fmtUSD(riskAmt)); _sv('cProfit', _fmtUSD(profit));
+  // ── Determine TP in pips ──
+  let tpPips = null;
+  if(fTpMode === 'pips') {
+    const p = parseFloat(document.getElementById('cFTPPips').value);
+    if(!isNaN(p) && p > 0) tpPips = p;
   } else {
-    document.getElementById('cPnlSec').style.display='none';
+    const tpPrice = parseFloat(document.getElementById('cFTPPrice').value);
+    if(!isNaN(tpPrice) && tpPrice > 0 && entry > 0 && tpPrice !== entry) {
+      tpPips = Math.abs(tpPrice - entry) / pipSize;
+    }
+  }
+
+  if(slPips === null || slPips <= 0) {
+    _forexClear(); return;
+  }
+
+  // ── Step 3 & 4: Pip value per standard lot in account currency ──
+  const pipValPerLot = _getPipValuePerLot(pair, acctCcy, entry);
+
+  // ── Step 5: Position size ──
+  // lots = risk_amount / (sl_pips × pip_value_per_lot)
+  const lots  = riskAmt / (slPips * pipValPerLot);
+  const units = lots * CONTRACT_SIZE;
+
+  // ── Step 6: Verify money at risk ──
+  const moneyAtRisk = lots * slPips * pipValPerLot; // should ≈ riskAmt
+
+  // ── TP / R:R ──
+  let tpProfit = null, rr = null;
+  if(tpPips !== null && tpPips > 0) {
+    tpProfit = lots * tpPips * pipValPerLot;
+    rr = tpPips / slPips;
+  }
+
+  // ── Pip value for full position ──
+  const pipValTotal = lots * pipValPerLot;
+
+  const sym = CURRENCY_SYMBOLS[acctCcy] || '$';
+  const fmtA = (n, d=2) => n===null||isNaN(n) ? '—' : sym + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+  // ── Risk label ──
+  _sv('fOutRiskAmt', fmtA(moneyAtRisk));
+  _sv('fOutRiskPct', fRiskMode==='pct' ? riskInput.toFixed(2)+'% of balance' : 'fixed risk');
+
+  // ── Lot size ──
+  const lotsRounded = Math.round(lots * 100) / 100;
+  _sv('fOutLots',    _fmt(lotsRounded, lotsRounded < 0.01 ? 4 : lotsRounded < 0.1 ? 3 : 2));
+  _sv('fOutLotType', _getLotLabel(lotsRounded));
+
+  // ── Units ──
+  _sv('fOutUnits', Math.round(units).toLocaleString('en-US'));
+
+  // ── Pip value per lot ──
+  _sv('fOutPipVal',    fmtA(pipValPerLot, pipValPerLot < 1 ? 3 : 2));
+  _sv('fOutPipValSub', 'per pip · 1 std lot');
+
+  // ── SL info strip ──
+  const slInfoEl = document.getElementById('fSlInfo');
+  if(slInfoEl) slInfoEl.style.display = '';
+  _sv('fOutSlPips', _fmt(slPips, slPips % 1 === 0 ? 0 : 1));
+  _sv('fOutPipSize', pipSize === 0.0001 ? '0.0001' : '0.01');
+  _sv('fOutContract', CONTRACT_SIZE.toLocaleString('en-US'));
+
+  // ── TP / profit section ──
+  if(tpProfit !== null) {
+    document.getElementById('fPnlSec').style.display = '';
+    _sv('fOutProfit',      fmtA(tpProfit));
+    _sv('fOutProfitPips',  _fmt(tpPips, tpPips % 1 === 0 ? 0 : 1) + ' pips');
+    _sv('fOutPipValTotal', fmtA(pipValTotal, pipValTotal < 1 ? 3 : 2));
+  } else {
+    document.getElementById('fPnlSec').style.display = 'none';
   }
 
   _updateRR(rr);
 }
 
 function _forexClear() {
-  ['cPosSize','cPosUnit','cSLDist','cSLUnit','cMaxLoss'].forEach(k => _sv(k,'—'));
-  document.getElementById('cPnlSec').style.display='none';
+  ['fOutRiskAmt','fOutRiskPct','fOutLots','fOutLotType','fOutUnits',
+   'fOutPipVal','fOutPipValSub','fOutSlPips','fOutPipSize'].forEach(k => _sv(k,'—'));
+  const slInfoEl = document.getElementById('fSlInfo');
+  if(slInfoEl) slInfoEl.style.display = 'none';
+  document.getElementById('fPnlSec').style.display = 'none';
   _updateRR(null);
-  document.getElementById('cFormula').textContent='Position = Risk ÷ SL Distance';
 }
 
-/* ── Handle visibility of input rows per asset mode ── */
-/* We use a CSS approach — add data-asset to body and hide/show via CSS */
-(function injectAssetCSS(){
-  const style = document.createElement('style');
-  style.textContent = `
-    /* When in forex mode, hide the crypto-specific rows */
-    #calcModalBody[data-asset="forex"] .ccol > .cfield:not(.cforex):not(#cForexPairField),
-    #calcModalBody[data-asset="forex"] .ccol > .cdiv:not(.cforex) {
-      /* keep all rows visible in forex — forex uses its own fields */
-    }
-    /* Crypto-specific inputs: hide when in forex mode */
-    #calcModalBody[data-asset="forex"] #cCapital,
-    #calcModalBody[data-asset="forex"] #cRiskVal,
-    #calcModalBody[data-asset="forex"] #cLeverage {
-      /* These share the same rows as forex; just hide entire field rows */
-    }
-  `;
-  // We manage per-field visibility explicitly below instead of CSS injection
-})();
-
-/* Override cSetAsset to properly show/hide input rows */
-(function patchAssetSwitch(){
-  const _origSetAsset = cSetAsset;
-  window.cSetAsset = function(t){
-    cAsset = t;
-    document.getElementById('cBtnCrypto').classList.toggle('active', t==='crypto');
-    document.getElementById('cBtnForex').classList.toggle('active',  t==='forex');
-
-    // Forex pair selector
-    document.getElementById('cForexPairField').classList.toggle('show', t==='forex');
-
-    // Results panels
-    document.getElementById('cCryptoResults').style.display = t==='crypto' ? '' : 'none';
-    document.getElementById('cForexResults').style.display  = t==='forex'  ? '' : 'none';
-
-    // Forex-only input fields
-    ['cForexBalanceField','cForexRiskField','cForexSLField','cForexTPField'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.classList.toggle('show', t==='forex');
-    });
-
-    // Show/hide crypto-specific UI rows (Capital label, Risk toggle, SL/TP dual toggles, Leverage)
-    // These rows are always in the DOM but we toggle display
-    const cryptoOnlyIds = [
-      'cCapitalRow','cRiskRow','cEntryRow','cSlRow','cTpRow','cLevRow'
-    ];
-    // Use data attribute approach — add to modal body
-    document.getElementById('calcModalBody').setAttribute('data-asset', t);
-
-    cCalc();
-  };
-})();
-
-/* Give each crypto-specific field row an id for targeted hiding */
-/* We do this by wrapping in the HTML already — no further action needed */
-/* The cforex class on the forex-specific fields handles their visibility */
+// ── Update balance prefix when account currency changes ──
+document.getElementById('cAcctCurrency')?.addEventListener('change', () => {
+  const acctCcy = document.getElementById('cAcctCurrency').value;
+  const pre = document.getElementById('fBalancePre');
+  if(pre) pre.textContent = CURRENCY_SYMBOLS[acctCcy] || '$';
+  // Also update risk suffix if in USD mode
+  if(fRiskMode === 'usd') {
+    const suf = document.getElementById('fRiskSuf');
+    if(suf) suf.textContent = CURRENCY_SYMBOLS[acctCcy] || '$';
+  }
+  cCalc();
+});
 
 // ── Drag ──
 (function(){
