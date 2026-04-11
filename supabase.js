@@ -627,3 +627,54 @@ async function hashPin(pin) {
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 }
+
+// ── Custom Notes ──────────────────────────────────────────
+async function getCustomNotes(journalId) {
+  const { data, error } = await db.from('custom_notes')
+    .select('*').eq('journal_id', journalId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+ 
+async function insertCustomNote(userId, journalId, note) {
+  const { data, error } = await db.from('custom_notes')
+    .insert({ user_id: userId, journal_id: journalId, ...note })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+ 
+async function updateCustomNote(id, updates) {
+  const { error } = await db.from('custom_notes')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+ 
+async function deleteCustomNote(id) {
+  const { error } = await db.from('custom_notes').delete().eq('id', id);
+  if (error) throw error;
+}
+ 
+// ── Pre-Session ───────────────────────────────────────────
+async function getPresession(journalId, date) {
+  const { data, error } = await db.from('presessions')
+    .select('*')
+    .eq('journal_id', journalId)
+    .eq('session_date', date)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+ 
+async function upsertPresession(userId, journalId, date, updates) {
+  const { error } = await db.from('presessions').upsert({
+    user_id: userId,
+    journal_id: journalId,
+    session_date: date,
+    ...updates,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'journal_id,session_date' });
+  if (error) throw error;
+}
