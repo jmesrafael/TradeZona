@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risk Calculator | TradeZona</title>
+<meta name="description" content="Free trading risk calculator. Calculate your exact position size, risk amount, and R:R ratio for Crypto and Forex trades in seconds.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070a08;--panel:#0d1410;--panel2:#111e17;
+  --accent:#00ff88;--accent2:#19c37d;
+  --accent-dim:rgba(0,255,136,.08);--accent-glow:rgba(0,255,136,.18);
+  --border:rgba(0,255,136,.12);--border2:rgba(255,255,255,.07);
+  --text:#e8f5ee;--text2:#b0c8bc;--muted:#6a8a7a;--red:#ff5f6d;--gold:#f5c518;
+  --amber:#f59e0b;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;line-height:1.5;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;z-index:0}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(7,10,8,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border2)}
+.nav-logo{font-family:'Outfit',sans-serif;font-size:19px;font-weight:700;letter-spacing:-.5px;color:var(--text);text-decoration:none}
+.nav-logo span{color:var(--accent)}
+.nav-back{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--accent)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-cta{background:var(--accent);color:#070a08;border:none;border-radius:8px;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+.nav-cta:hover{background:#00e67a;box-shadow:0 0 18px rgba(0,255,136,.35)}
+@media(max-width:560px){nav{padding:14px 20px}.nav-back span{display:none}}
+
+/* PAGE WRAP */
+.pw{max-width:900px;margin:0 auto;padding:48px 24px 80px;position:relative;z-index:1}
+
+/* HERO HEADER */
+.page-hero{text-align:center;margin-bottom:48px}
+.page-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.18);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--accent2);font-weight:600;margin-bottom:20px;letter-spacing:.4px;font-family:'Outfit',sans-serif}
+.page-hero h1{font-size:clamp(32px,5vw,56px);font-weight:700;letter-spacing:-1.5px;line-height:1.05;margin-bottom:14px}
+.page-hero h1 span{color:var(--accent)}
+.page-hero p{font-size:15px;color:var(--text2);max-width:500px;margin:0 auto;line-height:1.7}
+
+/* GLOW ORB */
+.glow-orb{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+
+/* ASSET TOGGLE */
+.asset-toggle{display:flex;gap:8px;margin-bottom:16px}
+.asset-btn{flex:1;padding:11px 8px;border:1px solid var(--border2);border-radius:10px;background:none;color:var(--muted);font-size:14px;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;display:flex;align-items:center;justify-content:center;gap:7px}
+.asset-btn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(25,195,125,.08)}
+.asset-btn:not(.active):hover{border-color:rgba(255,255,255,.15);color:var(--text2)}
+
+/* LAYOUT */
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:680px){.calc-layout{grid-template-columns:1fr}}
+
+/* PANEL */
+.cpanel{background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:22px}
+.cpanel-title{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.cpanel-title i{color:var(--accent2)}
+
+/* FIELDS */
+.field{margin-bottom:14px}
+.field-label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.06);color:var(--muted);font-size:9px;cursor:help;position:relative;flex-shrink:0}
+.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0d1410;color:var(--text2);font-size:10px;padding:6px 10px;border-radius:8px;z-index:99;min-width:180px;max-width:220px;text-align:center;line-height:1.5;pointer-events:none;border:1px solid var(--border2);white-space:normal}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-pre,.input-suf{position:absolute;font-size:12px;color:var(--muted);pointer-events:none;z-index:1}
+.input-pre{left:12px}.input-suf{right:12px}
+.ci{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.ci::-webkit-outer-spin-button,.ci::-webkit-inner-spin-button{-webkit-appearance:none}
+.ci:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(25,195,125,.07)}
+.ci.pre{padding-left:28px}.ci.suf{padding-right:28px}
+.csel{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer;-webkit-appearance:none;transition:border-color .2s}
+.csel:focus{border-color:var(--accent2)}
+.csel option{background:var(--panel)}
+.cdiv{border:none;border-top:1px solid var(--border2);margin:16px 0}
+.forex-only{display:none}
+.forex-only.show{display:block}
+
+/* RESULT GRID */
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:400px){.rg{grid-template-columns:1fr}}
+.rc{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:14px}
+.rc.hi{border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.04)}
+.rc.danger{border-color:rgba(255,95,109,.2);background:rgba(255,95,109,.04)}
+.rl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.rl i{font-size:9px}
+.rv{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1}
+.rv.pos{color:var(--accent)}.rv.neg{color:var(--red)}
+.rs{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* PNL SECTION */
+.pnl-sec{margin-top:16px;padding-top:16px;border-top:1px solid var(--border2)}
+.pnl-title{font-family:'Outfit',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.pnl-title i{color:var(--accent2)}
+.rr-wrap{height:6px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.rr-bar{height:100%;border-radius:4px;transition:width .4s,background .3s}
+.rr-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+
+/* FORMULA & DISCLAIMER */
+.formula-box{margin-top:16px;padding:12px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;font-size:11px;color:var(--muted);line-height:1.7}
+.formula-title{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.disclaimer{font-size:11px;color:var(--muted);line-height:1.5;padding:10px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;margin-top:12px;opacity:.7}
+.disclaimer i{color:var(--accent2);margin-right:5px}
+
+/* TIPS SECTION */
+.tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px}
+@media(max-width:640px){.tips-grid{grid-template-columns:1fr}}
+.tip-card{background:var(--panel);border:1px solid var(--border2);border-radius:14px;padding:20px}
+.tip-icon{width:36px;height:36px;background:rgba(0,255,136,.08);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:14px;margin-bottom:12px}
+.tip-card h4{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px}
+.tip-card p{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* CTA */
+.bottom-cta{margin-top:56px;background:linear-gradient(135deg,rgba(0,255,136,.06),rgba(0,255,136,.02));border:1px solid rgba(0,255,136,.18);border-radius:18px;padding:40px;text-align:center}
+.bottom-cta h2{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:700;letter-spacing:-.5px;margin-bottom:12px}
+.bottom-cta h2 span{color:var(--accent)}
+.bottom-cta p{font-size:14px;color:var(--text2);max-width:460px;margin:0 auto 24px;line-height:1.7}
+.btn-primary{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#070a08;border:none;border-radius:10px;padding:14px 28px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .25s;letter-spacing:.2px}
+.btn-primary:hover{background:#00e67a;box-shadow:0 0 28px rgba(0,255,136,.4);transform:translateY(-1px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:9px;background:none;border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:14px 24px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .25s;margin-left:12px}
+.btn-ghost:hover{border-color:rgba(0,255,136,.4);color:var(--accent)}
+@media(max-width:480px){.btn-ghost{margin-left:0;margin-top:10px}.bottom-cta-btns{display:flex;flex-direction:column;align-items:center;gap:8px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">Trade<span>Zona</span></a>
+  <div class="nav-right">
+    <a href="/" class="nav-back"><i class="fa-solid fa-chevron-left"></i> <span>Back to Home</span></a>
+    <a href="/auth" class="nav-cta">Start Free</a>
+  </div>
+</nav>
+
+<!-- GLOW ORBS -->
+<div class="glow-orb" style="width:500px;height:500px;background:rgba(0,255,136,.05);top:-100px;left:50%;transform:translateX(-50%)"></div>
+
+<div class="pw">
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="page-badge"><i class="fa-solid fa-calculator"></i> Free Tool, No Account Needed</div>
+    <h1>Trading <span>Risk Calculator</span></h1>
+    <p>Know your exact position size and risk amount before you enter. Works for Crypto and Forex. Updates in real-time.</p>
+  </div>
+
+  <!-- CALC LAYOUT -->
+  <div class="calc-layout">
+
+    <!-- LEFT: INPUTS -->
+    <div class="cpanel">
+      <div class="cpanel-title"><i class="fa-solid fa-sliders"></i> Trade Inputs</div>
+
+      <div class="field">
+        <div class="field-label">Asset Type</div>
+        <div class="asset-toggle">
+          <button class="asset-btn active" id="btnCrypto" onclick="setAsset('crypto')"><i class="fa-brands fa-bitcoin"></i> Crypto</button>
+          <button class="asset-btn" id="btnForex" onclick="setAsset('forex')"><i class="fa-solid fa-dollar-sign"></i> Forex</button>
+        </div>
+      </div>
+
+      <div class="field forex-only" id="forexPairField">
+        <div class="field-label">Currency Pair <span class="tip" data-tip="JPY pairs use ×100 pip. Gold/Indices use direct price.">?</span></div>
+        <select class="csel" id="forexPair" onchange="calc()">
+          <option value="EURUSD">EURUSD</option>
+          <option value="GBPUSD">GBPUSD</option>
+          <option value="AUDUSD">AUDUSD</option>
+          <option value="NZDUSD">NZDUSD</option>
+          <option value="USDCAD">USDCAD</option>
+          <option value="USDCHF">USDCHF</option>
+          <option value="USDJPY">USDJPY (JPY)</option>
+          <option value="EURJPY">EURJPY (JPY)</option>
+          <option value="GBPJPY">GBPJPY (JPY)</option>
+          <option value="XAUUSD">XAU/USD (Gold)</option>
+          <option value="US30">US30 / Dow Jones</option>
+          <option value="NAS100">NAS100 / Nasdaq</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Account Balance <span class="tip" data-tip="Your total trading account balance in USD">?</span></div>
+        <div class="input-wrap">
+          <span class="input-pre">$</span>
+          <input class="ci pre" type="number" id="balance" value="1000" min="0" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Risk Per Trade <span class="tip" data-tip="% of balance you're willing to lose. Most pros use 1–2%.">?</span></div>
+        <div class="input-wrap">
+          <input class="ci suf" type="number" id="riskPct" value="1" min="0.01" max="100" step="0.1" oninput="calc()">
+          <span class="input-suf">%</span>
+        </div>
+      </div>
+
+      <hr class="cdiv">
+
+      <div class="field">
+        <div class="field-label">Entry Price</div>
+        <input class="ci" type="number" id="entry" placeholder="e.g. 70116.10" step="any" oninput="calc()">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Stop Loss <span class="tip" data-tip="If price hits this level, you lose exactly your risk amount.">?</span></div>
+        <input class="ci" type="number" id="stopLoss" placeholder="e.g. 70007.10" step="any" oninput="calc()">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Take Profit <span style="font-size:10px;color:var(--muted)">(optional)</span></div>
+        <input class="ci" type="number" id="takeProfit" placeholder="e.g. 70420.00" step="any" oninput="calc()">
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div class="cpanel">
+      <div class="cpanel-title"><i class="fa-solid fa-chart-bar"></i> Live Results</div>
+
+      <div class="rg">
+        <div class="rc hi">
+          <div class="rl"><i class="fa-solid fa-shield-halved"></i> Risk Amount</div>
+          <div class="rv pos" id="rRiskAmt">—</div>
+          <div class="rs" id="rRiskPct">—% of balance</div>
+        </div>
+        <div class="rc hi">
+          <div class="rl"><i class="fa-solid fa-layer-group"></i> Position Size</div>
+          <div class="rv" id="rPositionSize">—</div>
+          <div class="rs" id="rPositionUnit">—</div>
+        </div>
+        <div class="rc">
+          <div class="rl"><i class="fa-solid fa-arrows-left-right"></i> SL Distance</div>
+          <div class="rv" id="rSLDist">—</div>
+          <div class="rs" id="rSLDistUnit">—</div>
+        </div>
+        <div class="rc danger">
+          <div class="rl"><i class="fa-solid fa-circle-xmark"></i> Max Loss</div>
+          <div class="rv neg" id="rMaxLoss">—</div>
+          <div class="rs">= risk amount</div>
+        </div>
+      </div>
+
+      <!-- PNL section (shown when TP is entered) -->
+      <div class="pnl-sec" id="pnlSec" style="display:none">
+        <div class="pnl-title"><i class="fa-solid fa-chart-line"></i> Profit / Loss Estimate</div>
+        <div class="rg">
+          <div class="rc danger">
+            <div class="rl"><i class="fa-solid fa-arrow-trend-down"></i> Max Loss</div>
+            <div class="rv neg" id="rLoss2">—</div>
+            <div class="rs">if SL hit</div>
+          </div>
+          <div class="rc">
+            <div class="rl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
+            <div class="rv pos" id="rProfit">—</div>
+            <div class="rs">if TP hit</div>
+          </div>
+        </div>
+        <div id="rrSec" style="display:none;margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:var(--muted)">Risk / Reward Ratio</span>
+            <span style="font-family:'Outfit',sans-serif;font-size:17px;font-weight:700" id="rRR">—</span>
+          </div>
+          <div class="rr-wrap"><div class="rr-bar" id="rrBar"></div></div>
+          <div class="rr-labels"><span>Poor (&lt;1R)</span><span>Good (2R+)</span><span>Great (3R+)</span></div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <div class="formula-title">Formula used</div>
+        <div id="formulaNote">Position Size = Risk Amount ÷ SL Distance</div>
+      </div>
+
+      <div class="disclaimer">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Educational use only. Always verify results with your broker before entering a trade.
+      </div>
+    </div>
+  </div>
+
+  <!-- TIPS SECTION -->
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-percent"></i></div>
+      <h4>Risk 1–2% per trade</h4>
+      <p>Professional traders rarely risk more than 1–2% of their account on a single trade. This keeps drawdowns manageable and lets you survive losing streaks.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <h4>Aim for 2R or better</h4>
+      <p>A minimum 2:1 reward-to-risk ratio means you only need a 34% win rate to break even. At 50% win rate with 2R, you grow consistently.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon"><i class="fa-solid fa-book-open"></i></div>
+      <h4>Track every trade</h4>
+      <p>Knowing your position size is only half the edge. The other half is logging every trade so you can see which setups actually work for you.</p>
+    </div>
+  </div>
+
+  <!-- BOTTOM CTA -->
+  <div class="bottom-cta">
+    <h2>Your edge is hiding<br>in your <span>trade history.</span></h2>
+    <p>Use this calculator before every trade, then log it in TradeZona to see which setups actually deliver consistent results over time.</p>
+    <div class="bottom-cta-btns">
+      <a href="/auth" class="btn-primary"><i class="fa-solid fa-rocket"></i> Start Journaling Free</a>
+    </div>
+  </div>
+
+</div><!-- .pw -->
+
+<script>
+let assetType = 'crypto';
+
+function setAsset(t) {
+  assetType = t;
+  document.getElementById('btnCrypto').classList.toggle('active', t === 'crypto');
+  document.getElementById('btnForex').classList.toggle('active', t === 'forex');
+  document.getElementById('forexPairField').classList.toggle('show', t === 'forex');
+  calc();
+}
+
+function fmt(n, d = 2) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtD(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function sv(id, v) {
+  const e = document.getElementById(id);
+  if (e) e.textContent = v;
+}
+
+function calc() {
+  const balance   = parseFloat(document.getElementById('balance').value);
+  const riskPct   = parseFloat(document.getElementById('riskPct').value);
+  const entry     = parseFloat(document.getElementById('entry').value);
+  const sl        = parseFloat(document.getElementById('stopLoss').value);
+  const tp        = parseFloat(document.getElementById('takeProfit').value);
+  const pair      = document.getElementById('forexPair').value;
+
+  const riskAmt = (!isNaN(balance) && !isNaN(riskPct) && balance > 0 && riskPct > 0)
+    ? balance * (riskPct / 100) : null;
+
+  sv('rRiskAmt', riskAmt !== null ? fmtD(riskAmt) : '—');
+  sv('rRiskPct', (!isNaN(riskPct) && riskPct > 0) ? riskPct.toFixed(1) + '% of balance' : '—% of balance');
+
+  if (riskAmt === null || isNaN(entry) || isNaN(sl) || entry === sl || entry <= 0 || sl <= 0) {
+    clearRes(); return;
+  }
+
+  const distance = Math.abs(entry - sl);
+  if (!distance) { clearRes(); return; }
+
+  const isJPY     = pair.includes('JPY');
+  const isSpecial = ['XAUUSD', 'US30', 'NAS100'].includes(pair);
+  let posSize, posUnit, slDistStr, slDistUnit, maxLoss, profit = null, rr = null, formulaStr;
+
+  if (assetType === 'crypto') {
+    posSize     = riskAmt / distance;
+    maxLoss     = posSize * distance;
+    posUnit     = 'units';
+    slDistStr   = fmt(distance, distance < 1 ? 6 : 2);
+    slDistUnit  = 'price difference';
+    formulaStr  = `${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize, 6)} units`;
+    if (!isNaN(tp) && tp > 0 && tp !== entry) {
+      const d = Math.abs(tp - entry);
+      profit = posSize * d;
+      rr = profit / riskAmt;
+    }
+  } else if (isSpecial) {
+    posSize    = riskAmt / distance;
+    maxLoss    = riskAmt;
+    posUnit    = pair === 'XAUUSD' ? 'oz' : 'contracts';
+    slDistStr  = fmt(distance, 2);
+    slDistUnit = 'price distance';
+    formulaStr = `${fmtD(riskAmt)} ÷ ${slDistStr} = ${fmt(posSize, 4)} ${posUnit}`;
+    if (!isNaN(tp) && tp > 0 && tp !== entry) {
+      const d = Math.abs(tp - entry);
+      profit = posSize * d;
+      rr = profit / riskAmt;
+    }
+  } else {
+    const mult = isJPY ? 100 : 10000;
+    const pips = distance * mult;
+    const pipVal = 10;
+    posSize    = riskAmt / (pips * pipVal);
+    maxLoss    = posSize * pips * pipVal;
+    posUnit    = 'standard lots';
+    slDistStr  = fmt(pips, 1);
+    slDistUnit = 'pips';
+    formulaStr = `${fmt(pips, 1)} pips × $${pipVal}/pip/lot → ${fmt(posSize, 4)} lots`;
+    if (!isNaN(tp) && tp > 0 && tp !== entry) {
+      const tpPips = Math.abs(tp - entry) * mult;
+      profit = posSize * tpPips * pipVal;
+      rr = profit / riskAmt;
+    }
+  }
+
+  sv('rPositionSize', fmt(posSize, posSize < 0.001 ? 6 : posSize < 1 ? 4 : 2));
+  sv('rPositionUnit', posUnit);
+  sv('rSLDist', slDistStr);
+  sv('rSLDistUnit', slDistUnit);
+  sv('rMaxLoss', fmtD(maxLoss));
+  sv('formulaNote', formulaStr);
+
+  const pnlSec = document.getElementById('pnlSec');
+  if (profit !== null) {
+    pnlSec.style.display = 'block';
+    sv('rLoss2', fmtD(riskAmt));
+    sv('rProfit', fmtD(profit));
+    const rrSec = document.getElementById('rrSec');
+    if (rr !== null) {
+      rrSec.style.display = 'block';
+      const col = rr >= 3 ? 'var(--accent)' : rr >= 2 ? 'var(--accent2)' : rr >= 1 ? 'var(--amber)' : 'var(--red)';
+      const rrEl = document.getElementById('rRR');
+      rrEl.textContent = '1 : ' + fmt(rr, 2);
+      rrEl.style.color = col;
+      const bar = document.getElementById('rrBar');
+      bar.style.width = Math.min((rr / 3) * 100, 100) + '%';
+      bar.style.background = col;
+    } else {
+      rrSec.style.display = 'none';
+    }
+  } else {
+    pnlSec.style.display = 'none';
+  }
+}
+
+function clearRes() {
+  ['rPositionSize', 'rPositionUnit', 'rSLDist', 'rSLDistUnit', 'rMaxLoss'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.textContent = '—';
+  });
+  document.getElementById('pnlSec').style.display = 'none';
+  document.getElementById('formulaNote').textContent = 'Position Size = Risk Amount ÷ SL Distance';
+}
+
+calc();
+</script>
+</body>
+</html>

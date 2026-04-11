@@ -343,6 +343,71 @@ iframe.ready{opacity:1}
 .btn-save-now:hover{opacity:.85}
 
 /* ══════════════════════════════════════════
+   BINANCE CSV IMPORT STYLES
+═══════════════════════════════════════════ */
+.bnb-import-wrap{}
+.bnb-subtitle{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.bnb-dropzone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;cursor:pointer;transition:all var(--transition-base);position:relative;margin-bottom:12px;background:rgba(255,255,255,.01)}
+.bnb-dropzone:hover,.bnb-dropzone.over{border-color:var(--accent2);background:rgba(var(--accent-rgb,25,195,125),.03)}
+.bnb-dropzone .dz-icon{font-size:26px;color:var(--muted);margin-bottom:8px;display:block}
+.bnb-dropzone .dz-label{font-size:13px;color:var(--muted)}
+.bnb-dropzone .dz-label strong{color:var(--accent2)}
+.bnb-dropzone .dz-hint{font-size:10px;color:var(--muted);margin-top:4px;opacity:.6}
+.bnb-dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.bnb-file-badge{background:var(--bg);border:1px solid rgba(var(--accent-rgb,25,195,125),.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:10px}
+.bnb-file-badge.show{display:flex}
+.bnb-file-badge .fn{font-size:13px;font-weight:500;color:var(--accent2);word-break:break-all;display:flex;align-items:center;gap:7px}
+.bnb-file-badge .clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 5px;border-radius:4px;transition:color var(--transition-fast);flex-shrink:0}
+.bnb-file-badge .clr:hover{color:#ff5f6d}
+.bnb-options{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.bnb-chk-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.bnb-chk-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent2);cursor:pointer;flex-shrink:0}
+.bnb-chk-lbl{font-size:12px;color:var(--text)}
+.bnb-chk-desc{font-size:10px;color:var(--muted);margin-left:22px;margin-top:2px;line-height:1.4}
+.bnb-error{display:none;padding:10px 13px;background:rgba(255,95,109,.08);border:1px solid rgba(255,95,109,.3);border-radius:var(--radius-md);font-size:12px;color:#ff5f6d;margin-bottom:12px;line-height:1.5}
+.bnb-error.show{display:flex;align-items:flex-start;gap:7px}
+.bnb-error i{flex-shrink:0;margin-top:1px}
+.bnb-preview{display:none;margin-bottom:14px}
+.bnb-preview.show{display:block}
+.bnb-preview-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;font-weight:600}
+.bnb-preview-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px}
+.bnb-preview-table{width:100%;border-collapse:collapse;min-width:420px}
+.bnb-preview-table th{padding:7px 10px;text-align:left;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+.bnb-preview-table td{padding:6px 10px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+.bnb-preview-table tr:last-child td{border-bottom:none}
+.bnb-preview-table tr:hover td{background:rgba(255,255,255,.02)}
+.bnb-status-ready{color:#19c37d;font-weight:600;font-size:11px}
+.bnb-status-dup{color:#f59e0b;font-weight:600;font-size:11px}
+.bnb-pnl-pos{color:#19c37d;font-family:var(--font-mono,'Space Grotesk',sans-serif)}
+.bnb-pnl-neg{color:#ff5f6d;font-family:var(--font-mono,'Space Grotesk',sans-serif)}
+.bnb-pnl-zero{color:var(--muted);font-family:var(--font-mono,'Space Grotesk',sans-serif)}
+.bnb-preview-more{font-size:11px;color:var(--muted);margin-bottom:6px}
+.bnb-summary{font-size:12px;color:var(--muted);padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);line-height:1.7}
+.bnb-summary strong{color:var(--text)}
+.bnb-actions{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.bnb-import-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:9px 18px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--transition-base);display:flex;align-items:center;gap:6px}
+.bnb-import-btn:hover:not(:disabled){opacity:.85}
+.bnb-import-btn:disabled{opacity:.35;cursor:not-allowed}
+.bnb-reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);padding:8px 14px;font-size:12px;cursor:pointer;font-family:var(--font-body,'Inter',sans-serif);transition:all var(--transition-fast)}
+.bnb-reset-btn:hover{border-color:var(--muted);color:var(--text)}
+.bnb-progress{display:none;margin-top:14px}
+.bnb-progress.show{display:block}
+.bnb-prog-label{font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
+.bnb-prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.bnb-prog-bar{height:100%;background:var(--accent2);border-radius:3px;transition:width .3s;width:0}
+.bnb-prog-sub{font-size:11px;color:var(--muted)}
+.bnb-result{display:none;margin-top:14px;padding:14px;background:rgba(var(--accent-rgb,25,195,125),.06);border:1px solid rgba(var(--accent-rgb,25,195,125),.2);border-radius:var(--radius-lg)}
+.bnb-result.show{display:block}
+.bnb-result.has-errors{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2)}
+.bnb-result-title{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.bnb-result-title i{color:var(--accent2)}
+.bnb-result.has-errors .bnb-result-title i{color:#f59e0b}
+.bnb-result-body{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:12px}
+.bnb-result-body strong{color:var(--text)}
+.bnb-done-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:var(--radius-md);padding:8px 16px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:600;cursor:pointer;transition:opacity var(--transition-fast)}
+.bnb-done-btn:hover{opacity:.85}
+
+/* ══════════════════════════════════════════
    FLOATING CALCULATOR FAB + DRAGGABLE MODAL
 ═══════════════════════════════════════════ */
 #calcFab{position:fixed;bottom:22px;right:22px;z-index:8900;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#0b0f0c;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 0 rgba(var(--accent-rgb,0,255,136),.4);transition:transform .2s,box-shadow .2s,background .2s,color .2s,border .2s}
@@ -708,6 +773,95 @@ iframe.ready{opacity:1}
             </div>
           </div>
 
+          <!-- ══════════ BINANCE FUTURES CSV IMPORT SECTION ══════════ -->
+          <div class="ssec full" id="bnbImportSection">
+            <div class="ssec-title"><i class="fa-brands fa-bitcoin"></i>Import Trade History</div>
+            <div class="bnb-import-wrap">
+              <p class="bnb-subtitle">Import your closed positions from Binance Futures. Only <strong style="color:var(--text)">Realized PNL</strong> rows are used. Commission and funding fees are ignored.</p>
+
+              <!-- Drop zone -->
+              <div class="bnb-dropzone" id="bnbDropzone"
+                ondragover="bnbDzOver(event)"
+                ondragleave="bnbDzLeave()"
+                ondrop="bnbDzDrop(event)">
+                <span class="dz-icon"><i class="fa-solid fa-file-csv"></i></span>
+                <div class="dz-label">Drop Binance Futures CSV here or <strong>click to browse</strong></div>
+                <div class="dz-hint">Transaction History CSV · .csv files only</div>
+                <input type="file" id="bnbFileInput" accept=".csv" onchange="bnbOnFileSelect(event)">
+              </div>
+
+              <!-- File badge -->
+              <div class="bnb-file-badge" id="bnbFileBadge">
+                <div class="fn"><i class="fa-solid fa-file-csv"></i><span id="bnbFileName">—</span></div>
+                <button class="clr" onclick="bnbClearFile()" title="Clear file"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+
+              <!-- Options -->
+              <div class="bnb-options">
+                <div>
+                  <label class="bnb-chk-row">
+                    <input type="checkbox" id="bnbMergePartial" checked>
+                    <span class="bnb-chk-lbl">Merge partial fills</span>
+                  </label>
+                  <div class="bnb-chk-desc">Combine REALIZED_PNL rows with same symbol &amp; minute into one trade</div>
+                </div>
+                <div>
+                  <label class="bnb-chk-row">
+                    <input type="checkbox" id="bnbSkipDupes" checked>
+                    <span class="bnb-chk-lbl">Skip duplicates</span>
+                  </label>
+                  <div class="bnb-chk-desc">Skip rows already in your log (matched by date, time &amp; pair)</div>
+                </div>
+              </div>
+
+              <!-- Error -->
+              <div class="bnb-error" id="bnbError">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="bnbErrorMsg"></span>
+              </div>
+
+              <!-- Preview -->
+              <div class="bnb-preview" id="bnbPreview">
+                <div class="bnb-preview-title">Preview <span id="bnbPreviewCount" style="color:var(--accent2)"></span></div>
+                <div class="bnb-preview-table-wrap">
+                  <table class="bnb-preview-table">
+                    <thead><tr>
+                      <th>Date</th><th>Time</th><th>Pair</th><th>PNL</th><th>Status</th>
+                    </tr></thead>
+                    <tbody id="bnbPreviewBody"></tbody>
+                  </table>
+                </div>
+                <div class="bnb-preview-more" id="bnbPreviewMore"></div>
+                <div class="bnb-summary" id="bnbSummary"></div>
+              </div>
+
+              <!-- Actions -->
+              <div class="bnb-actions" id="bnbActions" style="display:none">
+                <button class="bnb-import-btn" id="bnbImportBtn" onclick="bnbRunImport()" disabled>
+                  <i class="fa-solid fa-file-import"></i> <span id="bnbImportBtnLabel">Import</span>
+                </button>
+                <button class="bnb-reset-btn" onclick="bnbClearFile()">
+                  <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+              </div>
+
+              <!-- Progress -->
+              <div class="bnb-progress" id="bnbProgress">
+                <div class="bnb-prog-label" id="bnbProgLabel">Importing…</div>
+                <div class="bnb-prog-track"><div class="bnb-prog-bar" id="bnbProgBar"></div></div>
+                <div class="bnb-prog-sub" id="bnbProgSub"></div>
+              </div>
+
+              <!-- Result -->
+              <div class="bnb-result" id="bnbResult">
+                <div class="bnb-result-title"><i class="fa-solid fa-circle-check" id="bnbResultIcon"></i><span id="bnbResultTitle">Import Complete</span></div>
+                <div class="bnb-result-body" id="bnbResultBody"></div>
+                <button class="bnb-done-btn" onclick="bnbClearFile()">Done</button>
+              </div>
+            </div>
+          </div>
+          <!-- ══════════ END BINANCE IMPORT ══════════ -->
+
           <div class="ssec full"><div class="ssec-title"><i class="fa-solid fa-database"></i>Export &amp; Import</div><div id="exportImportContent"></div></div>
 
           <div class="ssec full" style="padding:14px 18px">
@@ -1050,6 +1204,11 @@ let journalObj=null, settings=null, currentUser=null, userIsPro=false, isDirty=f
 let exportScope='full', importMode='replace', importPayload=null;
 let _lastRemovedTag=null, _lastRemovedKey=null, _undoTimer=null;
 
+// ─── Binance CSV Import state ────────────────────────────────────────────────
+let _bnbParsedRows = []; // all parsed REALIZED_PNL rows after merge
+let _bnbReadyRows = [];  // rows ready to import (not duplicates)
+let _bnbDupCount = 0;
+
 (async()=>{
   currentUser=await requireAuth();if(!currentUser)return;
   if(!journalId){location.href='/dashboard';return;}
@@ -1135,7 +1294,6 @@ function switchTab(name){
   if(activeTab==='settings'&&isDirty&&name!=='settings'){showToast('Save or discard changes first.','fa-solid fa-triangle-exclamation','red');return;}
   TABS.forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('active',t===name);
-    // update sidebar nav items
     const btn = document.querySelector(`[data-tab="${t}"]`);
     if(btn) btn.classList.toggle('active', t===name);
   });
@@ -1149,7 +1307,6 @@ function switchTab(name){
   if(fm[name]){const{id,src}=fm[name];const f=document.getElementById(id);if(f){if(!f.src||f.src==='about:blank'){showTabLoader(name);f.classList.remove('ready');f.src=src+'?t='+Date.now();}else if(!f.classList.contains('ready'))showTabLoader(name);}}
   if(name==='settings')populateSettings();
   document.getElementById('unsavedBar').classList.remove('show');
-  // On mobile, collapse sidebar after navigation
   if(window.innerWidth <= 520) collapseSidebar();
 }
 
@@ -1412,6 +1569,381 @@ document.addEventListener('keydown',e=>{
   if(a.id==='moodInput')addMoodTag();
 });
 window.addEventListener('beforeunload',e=>{if(activeTab==='settings'&&isDirty){e.preventDefault();e.returnValue='';}});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  BINANCE FUTURES CSV IMPORT ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+
+function bnbDzOver(e){e.preventDefault();document.getElementById('bnbDropzone').classList.add('over');}
+function bnbDzLeave(){document.getElementById('bnbDropzone').classList.remove('over');}
+function bnbDzDrop(e){
+  e.preventDefault();bnbDzLeave();
+  const f=e.dataTransfer.files[0];
+  if(!f)return;
+  if(!f.name.toLowerCase().endsWith('.csv')){bnbShowError('Only .csv files are accepted. Please upload a Binance Futures Transaction History CSV.');return;}
+  bnbLoadFile(f);
+}
+function bnbOnFileSelect(e){
+  const f=e.target.files[0];if(!f)return;
+  if(!f.name.toLowerCase().endsWith('.csv')){bnbShowError('Only .csv files are accepted. Please upload a Binance Futures Transaction History CSV.');e.target.value='';return;}
+  bnbLoadFile(f);
+}
+
+function bnbLoadFile(file){
+  bnbHideError();
+  document.getElementById('bnbFileName').textContent=file.name;
+  document.getElementById('bnbFileBadge').classList.add('show');
+  document.getElementById('bnbDropzone').style.display='none';
+  document.getElementById('bnbResult').classList.remove('show');
+  document.getElementById('bnbProgress').classList.remove('show');
+  const r=new FileReader();
+  r.onload=async(ev)=>{
+    await bnbParseAndPreview(ev.target.result);
+  };
+  r.readAsText(file,'utf-8');
+}
+
+function bnbClearFile(){
+  _bnbParsedRows=[];_bnbReadyRows=[];_bnbDupCount=0;
+  document.getElementById('bnbFileBadge').classList.remove('show');
+  document.getElementById('bnbDropzone').style.display='';
+  document.getElementById('bnbFileInput').value='';
+  document.getElementById('bnbFileName').textContent='—';
+  document.getElementById('bnbPreview').classList.remove('show');
+  document.getElementById('bnbActions').style.display='none';
+  document.getElementById('bnbProgress').classList.remove('show');
+  document.getElementById('bnbResult').classList.remove('show');
+  document.getElementById('bnbProgBar').style.width='0';
+  bnbHideError();
+}
+
+function bnbShowError(msg){
+  const el=document.getElementById('bnbError');
+  document.getElementById('bnbErrorMsg').textContent=msg;
+  el.classList.add('show');
+  document.getElementById('bnbPreview').classList.remove('show');
+  document.getElementById('bnbActions').style.display='none';
+}
+function bnbHideError(){document.getElementById('bnbError').classList.remove('show');}
+
+// Parse the CSV text — no external libraries
+function bnbParseCSV(text){
+  // Normalize line endings
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  if(lines.length<2)return[];
+  // Header row (row 0): Time,Type,Amount,Asset,Symbol,Transaction ID
+  const header=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').trim());
+  const idxTime=header.findIndex(h=>h.toLowerCase()==='time');
+  const idxType=header.findIndex(h=>h.toLowerCase()==='type');
+  const idxAmount=header.findIndex(h=>h.toLowerCase()==='amount');
+  const idxSymbol=header.findIndex(h=>h.toLowerCase()==='symbol');
+  if(idxTime===-1||idxType===-1||idxAmount===-1||idxSymbol===-1){
+    return null; // invalid format
+  }
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i].trim();
+    if(!line)continue;
+    const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,'').trim());
+    const type=(cols[idxType]||'').trim();
+    if(type!=='REALIZED_PNL')continue;
+    const symbol=(cols[idxSymbol]||'').trim();
+    if(!symbol)continue;
+    const timeRaw=(cols[idxTime]||'').trim();
+    const amountRaw=cols[idxAmount]||'';
+    const amount=parseFloat(amountRaw);
+    if(isNaN(amount))continue;
+    // Parse time: YY-MM-DD HH:MM:SS → date: 20YY-MM-DD, time: HH:MM
+    // Example: 26-04-10 22:15:59
+    const tMatch=timeRaw.match(/^(\d{2})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::\d{2})?/);
+    if(!tMatch)continue;
+    const year='20'+tMatch[1];
+    const month=tMatch[2];
+    const day=tMatch[3];
+    const hh=tMatch[4];
+    const mm=tMatch[5];
+    const date=`${year}-${month}-${day}`;
+    const time=`${hh}:${mm}`;
+    rows.push({date,time,symbol,amount,_rawTime:timeRaw});
+  }
+  return{rows,isValidFormat:true};
+}
+
+async function bnbParseAndPreview(csvText){
+  bnbHideError();
+  // Re-check options each time (they may have changed)
+  const mergePartial=document.getElementById('bnbMergePartial').checked;
+  const skipDupes=document.getElementById('bnbSkipDupes').checked;
+
+  const result=bnbParseCSV(csvText);
+  if(result===null){
+    bnbShowError('This does not look like a Binance Futures Transaction History CSV. Please make sure you exported the correct file with columns: Time, Type, Amount, Asset, Symbol, Transaction ID.');
+    return;
+  }
+  const{rows}=result;
+  if(!rows||rows.length===0){
+    bnbShowError('No Realized PNL rows found. Make sure you exported Transaction History that includes Realized PNL type rows.');
+    return;
+  }
+
+  // Merge partial fills if needed
+  let finalRows;
+  if(mergePartial){
+    // Group by symbol + HH:MM key
+    const groups=new Map();
+    rows.forEach(r=>{
+      const key=`${r.symbol}||${r.date}||${r.time}`;
+      if(!groups.has(key)){groups.set(key,{...r,_count:1});}
+      else{const g=groups.get(key);g.amount+=r.amount;g._count++;}
+    });
+    finalRows=[...groups.values()];
+  }else{
+    finalRows=rows.map(r=>({...r,_count:1}));
+  }
+
+  // Duplicate detection against existing trades
+  let existingTrades=[];
+  try{
+    const raw=await getTrades(journalId);
+    existingTrades=raw.map(dbToTrade);
+  }catch(e){
+    console.warn('[bnb] could not load existing trades for dup check',e);
+  }
+
+  // Build trade objects and check duplicates
+  _bnbParsedRows=finalRows.map(r=>{
+    const trade={
+      date:r.date,
+      time:r.time,
+      pair:r.symbol,
+      pnl:r.amount,
+      position:'Long',
+      strategy:[],
+      timeframe:[],
+      mood:[],
+      confidence:0,
+      r:'',
+      notes:'Binance Import'
+    };
+    let isDup=false;
+    if(skipDupes){
+      isDup=existingTrades.some(t=>
+        t.date===trade.date &&
+        t.time===trade.time &&
+        (t.pair||'').toUpperCase()===(trade.pair||'').toUpperCase()
+      );
+    }
+    return{trade,isDup};
+  });
+
+  _bnbReadyRows=_bnbParsedRows.filter(r=>!r.isDup);
+  _bnbDupCount=_bnbParsedRows.length-_bnbReadyRows.length;
+
+  // Edge case: no rows at all
+  if(_bnbParsedRows.length===0){
+    bnbShowError('No valid trades found in this file.');
+    return;
+  }
+  // Edge case: all duplicates
+  if(_bnbReadyRows.length===0&&_bnbDupCount>0){
+    bnbShowError(`All ${_bnbDupCount} trade${_bnbDupCount!==1?'s':''} already exist in your log. Nothing to import.`);
+    document.getElementById('bnbActions').style.display='none';
+    document.getElementById('bnbPreview').classList.remove('show');
+    return;
+  }
+
+  // Render preview (up to 5 rows)
+  bnbRenderPreview();
+
+  // Update import button
+  document.getElementById('bnbImportBtnLabel').textContent=`Import ${_bnbReadyRows.length} Trade${_bnbReadyRows.length!==1?'s':''}`;
+  document.getElementById('bnbImportBtn').disabled=_bnbReadyRows.length===0;
+  document.getElementById('bnbActions').style.display='flex';
+}
+
+function bnbRenderPreview(){
+  const PREVIEW_LIMIT=5;
+  const preview=document.getElementById('bnbPreview');
+  const tbody=document.getElementById('bnbPreviewBody');
+  const moreEl=document.getElementById('bnbPreviewMore');
+  const summaryEl=document.getElementById('bnbSummary');
+  const cntEl=document.getElementById('bnbPreviewCount');
+
+  cntEl.textContent=`(${_bnbParsedRows.length} total)`;
+
+  const displayRows=_bnbParsedRows.slice(0,PREVIEW_LIMIT);
+  tbody.innerHTML=displayRows.map(({trade,isDup})=>{
+    const pnl=parseFloat(trade.pnl)||0;
+    const pnlCls=pnl>0?'bnb-pnl-pos':pnl<0?'bnb-pnl-neg':'bnb-pnl-zero';
+    const pnlStr=(pnl>=0?'+':'')+pnl.toFixed(5);
+    const statusCls=isDup?'bnb-status-dup':'bnb-status-ready';
+    const statusLabel=isDup?'⚠ Duplicate':'✓ Ready';
+    return`<tr>
+      <td>${trade.date}</td>
+      <td>${trade.time}</td>
+      <td style="font-weight:600">${esc(trade.pair)}</td>
+      <td class="${pnlCls}">${pnlStr}</td>
+      <td class="${statusCls}">${statusLabel}</td>
+    </tr>`;
+  }).join('');
+
+  const remaining=_bnbParsedRows.length-PREVIEW_LIMIT;
+  moreEl.textContent=remaining>0?`…and ${remaining} more row${remaining!==1?'s':''}. Only first 5 shown above.`:'';
+
+  const readyCnt=_bnbReadyRows.length;
+  const dupCnt=_bnbDupCount;
+  summaryEl.innerHTML=
+    `<strong>${readyCnt}</strong> trade${readyCnt!==1?'s':''} ready to import`+
+    (dupCnt>0?`, <strong>${dupCnt}</strong> duplicate${dupCnt!==1?'s':''} will be skipped.`:'.');
+
+  preview.classList.add('show');
+}
+
+async function bnbRunImport(){
+  if(!_bnbReadyRows||_bnbReadyRows.length===0)return;
+  const total=_bnbReadyRows.length;
+  const btn=document.getElementById('bnbImportBtn');
+  btn.disabled=true;
+  document.getElementById('bnbActions').style.display='none';
+
+  const progEl=document.getElementById('bnbProgress');
+  const progBar=document.getElementById('bnbProgBar');
+  const progLabel=document.getElementById('bnbProgLabel');
+  const progSub=document.getElementById('bnbProgSub');
+  progEl.classList.add('show');
+  progBar.style.width='0';
+  progLabel.textContent='Importing trades…';
+  progSub.textContent='';
+
+  let imported=0,errors=0;
+  // Get the logs iframe to update it live
+  const lf=document.getElementById('logsFrame');
+
+  for(let i=0;i<total;i++){
+    const{trade}=_bnbReadyRows[i];
+    progLabel.textContent=`Importing trade ${i+1} of ${total}…`;
+    progSub.textContent=`${trade.pair} · ${trade.date} ${trade.time}`;
+    progBar.style.width=Math.round(((i)/total)*100)+'%';
+    try{
+      const row=await createTrade(currentUser.id,journalId,trade);
+      if(row){
+        imported++;
+        // Notify logs frame to refresh (lightweight)
+        try{if(lf?.contentWindow)lf.contentWindow.postMessage({type:'tz_trade_added'},'*');}catch(ex){}
+      }
+    }catch(e){
+      errors++;
+      console.error('[bnb import] error on row',i,e);
+    }
+    // Small delay to avoid hammering Supabase
+    await new Promise(res=>setTimeout(res,50));
+  }
+
+  progBar.style.width='100%';
+  progLabel.textContent='Done!';
+  progSub.textContent='';
+  await new Promise(res=>setTimeout(res,400));
+  progEl.classList.remove('show');
+
+  // Show result
+  const resultEl=document.getElementById('bnbResult');
+  const resultIcon=document.getElementById('bnbResultIcon');
+  const resultTitle=document.getElementById('bnbResultTitle');
+  const resultBody=document.getElementById('bnbResultBody');
+  const hasErrors=errors>0;
+  resultEl.classList.toggle('has-errors',hasErrors);
+  resultIcon.className=hasErrors?'fa-solid fa-triangle-exclamation':'fa-solid fa-circle-check';
+  resultTitle.textContent=hasErrors?'Import Completed with Errors':'Import Complete';
+  let bodyParts=[];
+  bodyParts.push(`<strong>${imported}</strong> trade${imported!==1?'s':''} imported`);
+  if(_bnbDupCount>0)bodyParts.push(`<strong>${_bnbDupCount}</strong> skipped (duplicates)`);
+  if(errors>0)bodyParts.push(`<strong>${errors}</strong> error${errors!==1?'s':''}`);
+  resultBody.innerHTML=bodyParts.join(' · ')+'.<br><span style="font-size:11px;color:var(--muted)">Switch to the Logs tab to see your imported trades.</span>';
+  resultEl.classList.add('show');
+
+  // Refresh the logs iframe
+  try{
+    if(lf?.contentWindow){
+      // Give it a full reload to pick up all new trades
+      lf.src='/logs/index.html?t='+Date.now();
+    }
+  }catch(ex){}
+
+  if(imported>0){
+    showToast(`${imported} trade${imported!==1?'s':''} imported from Binance CSV!`,'fa-solid fa-circle-check','green');
+  }
+}
+
+// Reparse when checkboxes change (only if a file is already loaded)
+document.getElementById('bnbMergePartial').addEventListener('change',_bnbRecheckIfNeeded);
+document.getElementById('bnbSkipDupes').addEventListener('change',_bnbRecheckIfNeeded);
+function _bnbRecheckIfNeeded(){
+  // Only rerun if a file badge is shown (meaning a file was already loaded)
+  if(document.getElementById('bnbFileBadge').classList.contains('show')){
+    // We can't re-read the file, but we can re-apply dupe logic to already-parsed rows
+    // So we need to re-store raw parsed rows separately
+    // Actually we already have _bnbParsedRows with trade objects but not the raw CSV
+    // The safest approach: just clear and ask user to re-upload
+    // But that's bad UX. Instead we'll re-evaluate duplicates on the existing _bnbParsedRows
+    // (which already went through the merge step once). Re-parse isn't needed for skipDupes.
+    // For mergePartial we'd need the raw CSV. We store it.
+    const hasCsvCache=!!_bnbLastCsvText;
+    if(hasCsvCache){
+      bnbParseAndPreview(_bnbLastCsvText);
+    }else{
+      // just re-evaluate duplicates without re-merging (merge is already done)
+      _bnbReEvalDupes();
+    }
+  }
+}
+let _bnbLastCsvText='';
+// Override bnbLoadFile to store the text
+const _origBnbLoadFile=bnbLoadFile;
+// We'll patch via the reader:
+function bnbLoadFile(file){
+  bnbHideError();
+  document.getElementById('bnbFileName').textContent=file.name;
+  document.getElementById('bnbFileBadge').classList.add('show');
+  document.getElementById('bnbDropzone').style.display='none';
+  document.getElementById('bnbResult').classList.remove('show');
+  document.getElementById('bnbProgress').classList.remove('show');
+  const r=new FileReader();
+  r.onload=async(ev)=>{
+    _bnbLastCsvText=ev.target.result;
+    await bnbParseAndPreview(_bnbLastCsvText);
+  };
+  r.readAsText(file,'utf-8');
+}
+
+async function _bnbReEvalDupes(){
+  if(!_bnbParsedRows||_bnbParsedRows.length===0)return;
+  const skipDupes=document.getElementById('bnbSkipDupes').checked;
+  let existingTrades=[];
+  try{const raw=await getTrades(journalId);existingTrades=raw.map(dbToTrade);}catch(e){}
+  _bnbParsedRows=_bnbParsedRows.map(({trade})=>{
+    let isDup=false;
+    if(skipDupes){
+      isDup=existingTrades.some(t=>
+        t.date===trade.date&&t.time===trade.time&&
+        (t.pair||'').toUpperCase()===(trade.pair||'').toUpperCase()
+      );
+    }
+    return{trade,isDup};
+  });
+  _bnbReadyRows=_bnbParsedRows.filter(r=>!r.isDup);
+  _bnbDupCount=_bnbParsedRows.length-_bnbReadyRows.length;
+  if(_bnbReadyRows.length===0&&_bnbDupCount>0){
+    bnbShowError(`All ${_bnbDupCount} trade${_bnbDupCount!==1?'s':''} already exist in your log. Nothing to import.`);
+    document.getElementById('bnbActions').style.display='none';
+    document.getElementById('bnbPreview').classList.remove('show');
+    return;
+  }
+  bnbHideError();
+  bnbRenderPreview();
+  document.getElementById('bnbImportBtnLabel').textContent=`Import ${_bnbReadyRows.length} Trade${_bnbReadyRows.length!==1?'s':''}`;
+  document.getElementById('bnbImportBtn').disabled=_bnbReadyRows.length===0;
+  document.getElementById('bnbActions').style.display='flex';
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 //  CALCULATOR ENGINE
