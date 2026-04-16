@@ -31,13 +31,13 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .skel-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .dow-hdr-skel{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border);height:36px}
 .grid-skel{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cell-skel{height:68px;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
+.cell-skel{aspect-ratio:1;background:linear-gradient(90deg,var(--panel) 25%,rgba(255,255,255,.04) 50%,var(--panel) 75%);background-size:600px 100%;animation:shimmer 1.4s infinite}
 /* Calendar */
 .cal-wrap{display:none;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .dow-hdr{display:grid;grid-template-columns:repeat(7,1fr);background:var(--panel);border-bottom:1px solid var(--border)}
 .dow-cell{padding:7px 8px;text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
-.cal-day{background:var(--panel);padding:5px 5px 4px;cursor:pointer;transition:background var(--transition-fast);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:68px}
+.cal-day{background:var(--panel);padding:5px 5px 4px;cursor:pointer;transition:background var(--transition-fast);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;aspect-ratio:1}
 .cal-day:hover{background:rgba(255,255,255,.04)}
 .cal-day.other-month{opacity:.25}
 .cal-day.today .dn{color:var(--accent);font-weight:700}
@@ -106,7 +106,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .pm-chevron{color:var(--muted);font-size:10px;margin-left:4px;flex-shrink:0}
 @media(max-width:600px){
   body{padding:10px}
-  .cal-day{min-height:54px}
   .day-pnl{font-size:10px}
   .day-cnt{font-size:9px}
   .sum-val{font-size:13px}
@@ -115,7 +114,7 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
   .pm-stat{min-width:42px}
 }
 @media(max-width:400px){
-  .cal-day{min-height:44px;padding:3px 2px}
+  .cal-day{padding:3px 2px}
   .dn{font-size:10px}
   .day-pnl{font-size:9px}
   .day-cnt{display:none}
