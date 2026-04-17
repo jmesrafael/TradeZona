@@ -26,7 +26,8 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .sc:hover{background:rgba(25,195,125,.05);border-color:rgba(25,195,125,.3)}
 .sc .sl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;line-height:1.2}
 .sc .sv{font-family:var(--font-mono,'Space Grotesk',sans-serif);font-size:18px;font-weight:700;line-height:1.1}
-.sc::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(11,15,12,.95);color:var(--text);font-size:10px;padding:8px 12px;border-radius:var(--radius-md);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;border:1px solid var(--border);margin-bottom:8px;font-weight:500;width:max-content;max-width:180px;white-space:normal;line-height:1.3;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.sr{overflow:visible!important}
+.sc::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(11,15,12,.95);color:var(--text);font-size:10px;padding:8px 12px;border-radius:var(--radius-md);opacity:0;pointer-events:none;transition:opacity .2s;z-index:10000;border:1px solid var(--border);margin-bottom:8px;font-weight:500;width:max-content;max-width:200px;white-space:normal;line-height:1.3;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .sc:hover::after{opacity:1}
 /* Hardcoded green/red — not theme-dependent */
 .green{color:#19c37d!important}
@@ -148,13 +149,14 @@ Chart.register({
     const{x:cx,y:cy}=chart.getDatasetMeta(0).data[0]||{x:chartArea.left+chartArea.width/2,y:chartArea.top+chartArea.height/2};
     const textColor=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#e6f2ec';
     const mutedColor=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()||'#8fa39a';
+    const bodyFont=getComputedStyle(document.documentElement).getPropertyValue('--font-body').trim()||'Inter, sans-serif';
     ctx.save();
-    ctx.font='bold 24px Space Grotesk, sans-serif';
+    ctx.font=`bold 24px ${bodyFont}`;
     ctx.fillStyle=chart._centerColor||textColor;
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillText(chart._centerText,cx,cy-6);
-    ctx.font='11px Space Grotesk, sans-serif';
+    ctx.font=`11px ${bodyFont}`;
     ctx.fillStyle=mutedColor;
     ctx.fillText('Win Rate',cx,cy+12);
     ctx.restore();
@@ -282,13 +284,13 @@ Chart.register({
   const streaksHtml=`
     <div class="sc" data-tooltip="Longest consecutive wins and losses" style="grid-column:span 2">
       <div class="sl">Streaks</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;margin-top:4px;font-size:16px;font-weight:700">
-        <div style="text-align:center;padding:4px 6px;border-right:1px solid var(--border)"><span class="green">${mxW}</span></div>
-        <div style="text-align:center;padding:4px 6px"><span class="red">${mxL}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;font-size:9px;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;margin-bottom:2px;font-weight:600">
+        <div style="text-align:center;padding:2px 6px;color:#19c37d;border-right:1px solid var(--border)">W</div>
+        <div style="text-align:center;padding:2px 6px;color:#ff5f6d">L</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px">
-        <div style="text-align:center;padding-top:3px;border-right:1px solid var(--border)">W</div>
-        <div style="text-align:center;padding-top:3px">L</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;width:100%;font-size:16px;font-weight:700">
+        <div style="text-align:center;padding:2px 6px;border-right:1px solid var(--border)"><span class="green">${mxW}</span></div>
+        <div style="text-align:center;padding:2px 6px"><span class="red">${mxL}</span></div>
       </div>
     </div>`;
 
