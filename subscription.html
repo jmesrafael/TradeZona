@@ -403,8 +403,6 @@ hr.pdiv{border:none;border-top:1px solid var(--border);margin:18px 0}
     <h1>Trade smarter.<br><span class="hl">Win more.</span></h1>
     <p>Serious traders don't guess. They journal, analyze, and improve. Pro gives you every tool to do exactly that.</p>
     <div class="social-proof">
-      <div class="sp-item"><i class="fa-solid fa-shield-halved"></i> Cancel anytime</div>
-      <span class="sp-sep">·</span>
       <div class="sp-item"><i class="fa-solid fa-lock"></i> Secure checkout</div>
       <span class="sp-sep">·</span>
       <div class="sp-item"><i class="fa-solid fa-database"></i> Your data, always</div>
@@ -531,7 +529,7 @@ hr.pdiv{border:none;border-top:1px solid var(--border);margin:18px 0}
         <span id="proBtnText">Upgrade to Pro — $15/mo</span>
       </button>
       <div class="cta-nudge">
-        <i class="fa-solid fa-shield-halved"></i> Secure payment via Stripe · Cancel anytime
+        <i class="fa-solid fa-shield-halved"></i> Secure payment via Stripe
       </div>
     </div>
 
@@ -606,8 +604,6 @@ hr.pdiv{border:none;border-top:1px solid var(--border);margin:18px 0}
   </div>
 
   <div class="footer-note">
-    <span><i class="fa-solid fa-shield-halved" style="color:var(--accent2);margin-right:5px"></i>Cancel anytime</span>
-    <span class="footer-sep">·</span>
     <span>Your data is always yours</span>
     <span class="footer-sep">·</span>
     <span>No hidden fees</span>
@@ -689,16 +685,47 @@ async function openBillingPortal() {
   try {
     const { data: { session } } = await db.auth.getSession();
     if (!session) throw new Error('Not authenticated');
+
+    // Call the billing portal edge function
     const res = await fetch(SUPABASE_URL + '/functions/v1/billing-portal', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ return_url: window.location.href }),
+      headers: {
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        return_url: window.location.origin + '/subscription',
+        customer_id: session.user?.id
+      }),
     });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      const errMsg = errData.error || `HTTP ${res.status}`;
+      throw new Error(errMsg);
+    }
+
     const data = await res.json();
-    if (data.url) window.location.href = data.url;
-    else throw new Error(data.error || 'Could not open billing portal.');
+
+    // Handle referral Pro users (no Stripe customer)
+    if (data.message) {
+      showToast(data.message, 'fa-solid fa-gift', 'green');
+      if (data.url && data.url.includes('#')) {
+        // Redirect to dashboard section
+        setTimeout(() => { window.location.href = data.url; }, 1500);
+      }
+      return;
+    }
+
+    if (!data.url) {
+      throw new Error(data.error || 'No billing portal URL returned');
+    }
+
+    // Redirect to Stripe billing portal
+    window.location.href = data.url;
   } catch (err) {
-    showToast('Billing portal error: ' + err.message, 'fa-solid fa-circle-exclamation', 'r');
+    console.error('Billing portal error:', err);
+    showToast('Error: ' + err.message, 'fa-solid fa-circle-exclamation', 'r');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-gear"></i> Manage Billing';

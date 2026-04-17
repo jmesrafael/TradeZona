@@ -24,16 +24,51 @@ Deno.serve(async (req) => {
       { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
     )
 
-    const userClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      console.error('[billing-portal] Missing env vars')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Extract token from Authorization header
+    const token = authHeader.replace('Bearer ', '').trim()
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authorization header' }),
+        { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Verify token using the public key (anon key)
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+
     const { data: { user }, error: authErr } = await userClient.auth.getUser()
-    if (authErr || !user) return new Response(
-      JSON.stringify({ error: 'Invalid or expired token' }),
-      { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
-    )
+
+    if (authErr) {
+      console.error('[billing-portal] Auth error:', authErr.message)
+      return new Response(
+        JSON.stringify({ error: 'Token validation failed: ' + authErr.message }),
+        { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!user?.id) {
+      console.error('[billing-portal] No user found in token')
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('[billing-portal] Auth successful for user:', user.id)
 
     // 2. Look up the Stripe customer ID from the profile
     const admin = createClient(
@@ -42,18 +77,39 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    const { data: profile } = await admin
+    const { data: profile, error: profileErr } = await admin
       .from('profiles')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id,plan')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.stripe_customer_id) return new Response(
-      JSON.stringify({ error: 'No billing account found. Please subscribe first.' }),
+    console.log(`[billing-portal] User: ${user.id}, Profile:`, profile, 'Error:', profileErr)
+
+    if (profileErr) return new Response(
+      JSON.stringify({ error: 'Failed to load profile: ' + profileErr.message }),
       { status: 400, headers: { ...CORS, 'Content-Type': 'application/json' } }
     )
 
-    // 3. Create billing portal session
+    if (!profile) return new Response(
+      JSON.stringify({ error: 'Profile not found' }),
+      { status: 404, headers: { ...CORS, 'Content-Type': 'application/json' } }
+    )
+
+    if (!profile?.stripe_customer_id) {
+      // User is Pro via referral reward (no Stripe customer)
+      // Redirect them to manage referrals instead
+      const appUrl = Deno.env.get('APP_URL') ?? 'https://tradezona.vercel.app'
+      console.log('[billing-portal] User has no Stripe customer - likely Pro via referral')
+      return new Response(
+        JSON.stringify({
+          url: `${appUrl}/dashboard#referral`,
+          message: 'Your Pro access is from referral rewards. Visit your dashboard to manage referrals.'
+        }),
+        { status: 200, headers: { ...CORS, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 3. Create billing portal session (for Stripe-paid Pro users)
     const appUrl = Deno.env.get('APP_URL') ?? 'https://tradezona.vercel.app'
     let returnUrl: string
     try { returnUrl = (await req.json()).return_url ?? `${appUrl}/subscription` }

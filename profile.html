@@ -49,7 +49,9 @@ main{padding:32px;max-width:880px;margin:0 auto}
 .hero-email{font-size:13px;color:var(--muted);margin-bottom:8px}
 .hero-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .plan-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
-.badge-pro{background:rgba(var(--accent-rgb,0,255,136),.15);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)}
+.badge-pro{background:linear-gradient(105deg,#7a5a00 0%,#c9973a 18%,#f5c842 35%,#ffe17a 50%,#f5c842 65%,#c9973a 82%,#7a5a00 100%);background-size:200% auto;color:#3a2800;border:1px solid #c9973a;text-shadow:0 1px 0 rgba(255,230,100,.5);box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 1px rgba(255,220,80,.15) inset,0 1px 0 rgba(255,255,180,.3) inset;animation:goldShimmer 3.5s linear infinite;position:relative;overflow:hidden}
+.badge-pro::after{content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.55) 50%,transparent 80%);transform:skewX(-15deg);animation:goldGlare 3.5s ease-in-out infinite;pointer-events:none}
+.badge-free{background:rgba(128,128,128,.12);color:var(--muted);border:1px solid var(--border)}
 .badge-referral{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);display:flex;align-items:center;gap:5px}
 
 /* ── Section Cards ── */
@@ -105,6 +107,23 @@ input.plain.no-icon{padding-left:13px}
 .expiry-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
 .expiry-bar-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
 .expiry-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ── Golden Pro Badge (from dashboard) ── */
+@keyframes goldShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+@keyframes goldGlare{0%{left:-80%;opacity:0}10%{opacity:1}50%{left:110%;opacity:1}51%{opacity:0}100%{left:110%;opacity:0}}
+.badge-pro-golden{background:linear-gradient(105deg,#7a5a00 0%,#c9973a 18%,#f5c842 35%,#ffe17a 50%,#f5c842 65%,#c9973a 82%,#7a5a00 100%);background-size:200% auto;color:#3a2800;border:1px solid #c9973a !important;text-shadow:0 1px 0 rgba(255,230,100,.5);box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 1px rgba(255,220,80,.15) inset,0 1px 0 rgba(255,255,180,.3) inset;animation:goldShimmer 3.5s linear infinite;position:relative;overflow:hidden}
+.badge-pro-golden::after{content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.55) 50%,transparent 80%);transform:skewX(-15deg);animation:goldGlare 3.5s ease-in-out infinite;pointer-events:none}
+
+/* ── Password section toggle ── */
+.password-section{display:none}
+.password-section.show{display:block}
+.btn-change-pass{background:rgba(var(--accent-rgb,0,255,136),.1);border:1px solid rgba(var(--accent-rgb,0,255,136),.25);color:var(--accent2);border-radius:9px;padding:11px 20px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-change-pass:hover{opacity:.85}
+.btn-cancel-pass{background:none;border:1px solid var(--border);color:var(--muted);border-radius:9px;padding:11px 20px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-cancel-pass:hover{border-color:var(--accent2);color:var(--text)}
+
+/* ── Save button hidden state ── */
+.btn-save.hidden{display:none}
 
 .upgrade-btn{background:var(--accent);color:#0b0f0c;border:none;border-radius:8px;padding:8px 16px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;display:inline-flex;align-items:center;gap:6px}
 .upgrade-btn:hover{opacity:.85}
@@ -214,35 +233,43 @@ input.plain.no-icon{padding-left:13px}
           <label>Email Address</label>
           <div class="input-wrap">
             <i class="fa-solid fa-envelope ico"></i>
-            <input type="email" class="plain" id="fieldEmail" placeholder="you@example.com" autocomplete="email">
+            <input type="email" class="plain" id="fieldEmail" placeholder="you@example.com" autocomplete="email" disabled>
           </div>
         </div>
         <div class="save-row">
-          <button class="btn-save btn-sm" id="saveEmailBtn" onclick="saveEmail()"><i class="fa-solid fa-check"></i> Save Email</button>
+          <button class="btn-save btn-sm hidden" id="saveEmailBtn" onclick="saveEmail()"><i class="fa-solid fa-check"></i> Save Email</button>
           <span class="save-msg" id="saveEmailMsg"></span>
         </div>
 
         <div style="height:1px;background:var(--border);margin:20px 0"></div>
 
-        <div class="field">
-          <label>New Password</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-lock ico"></i>
-            <input type="password" class="plain" id="fieldPass" placeholder="Minimum 8 characters" autocomplete="new-password">
-            <button class="eye-btn" type="button" onclick="toggleEye('fieldPass',this)"><i class="fa-solid fa-eye"></i></button>
-          </div>
+        <div class="save-row" style="margin-top:0">
+          <button class="btn-change-pass" id="changePassBtn" onclick="togglePasswordSection()"><i class="fa-solid fa-lock"></i> Change Password</button>
         </div>
-        <div class="field">
-          <label>Confirm Password</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-lock ico"></i>
-            <input type="password" class="plain" id="fieldPassConfirm" placeholder="Repeat new password" autocomplete="new-password">
-            <button class="eye-btn" type="button" onclick="toggleEye('fieldPassConfirm',this)"><i class="fa-solid fa-eye"></i></button>
+
+        <div class="password-section" id="passwordSection">
+          <div style="height:1px;background:var(--border);margin:20px 0"></div>
+          <div class="field">
+            <label>New Password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock ico"></i>
+              <input type="password" class="plain" id="fieldPass" placeholder="Minimum 8 characters" autocomplete="new-password">
+              <button class="eye-btn" type="button" onclick="toggleEye('fieldPass',this)"><i class="fa-solid fa-eye"></i></button>
+            </div>
           </div>
-        </div>
-        <div class="save-row">
-          <button class="btn-save btn-sm" id="savePassBtn" onclick="savePassword()"><i class="fa-solid fa-check"></i> Save Password</button>
-          <span class="save-msg" id="savePassMsg"></span>
+          <div class="field">
+            <label>Confirm Password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock ico"></i>
+              <input type="password" class="plain" id="fieldPassConfirm" placeholder="Repeat new password" autocomplete="new-password">
+              <button class="eye-btn" type="button" onclick="toggleEye('fieldPassConfirm',this)"><i class="fa-solid fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="save-row">
+            <button class="btn-save btn-sm" id="savePassBtn" onclick="savePassword()"><i class="fa-solid fa-check"></i> Save Password</button>
+            <button class="btn-cancel-pass btn-sm" onclick="cancelPasswordChange()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            <span class="save-msg" id="savePassMsg"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -404,6 +431,46 @@ input.plain.no-icon{padding-left:13px}
 let currentUser = null;
 let currentProfile = null;
 
+// ── Toggle password section ──────────────────────────────
+let _passwordShown = false;
+let _originalNameValue = '';
+let _originalEmailValue = '';
+
+function togglePasswordSection() {
+  _passwordShown = !_passwordShown;
+  const section = document.getElementById('passwordSection');
+  const btn = document.getElementById('changePassBtn');
+  section.classList.toggle('show', _passwordShown);
+  if (_passwordShown) {
+    btn.textContent = '';
+    btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Hide Password';
+    setTimeout(() => document.getElementById('fieldPass').focus(), 100);
+  } else {
+    btn.textContent = '';
+    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Change Password';
+  }
+}
+
+function cancelPasswordChange() {
+  _passwordShown = false;
+  document.getElementById('passwordSection').classList.remove('show');
+  document.getElementById('fieldPass').value = '';
+  document.getElementById('fieldPassConfirm').value = '';
+  document.getElementById('savePassMsg').classList.remove('show');
+  document.getElementById('changePassBtn').innerHTML = '<i class="fa-solid fa-lock"></i> Change Password';
+}
+
+// ── Save button visibility ───────────────────────────────
+function updateSaveButtons() {
+  const nameVal = document.getElementById('fieldName').value.trim();
+  const nameChanged = nameVal !== _originalNameValue;
+  document.getElementById('saveNameBtn').classList.toggle('hidden', !nameChanged);
+
+  const emailVal = document.getElementById('fieldEmail').value.trim();
+  const emailChanged = emailVal !== _originalEmailValue;
+  document.getElementById('saveEmailBtn').classList.toggle('hidden', !emailChanged);
+}
+
 // ── Boot ─────────────────────────────────────────────────
 (async () => {
   currentUser = await requireAuth();
@@ -434,15 +501,27 @@ let currentProfile = null;
 
   const heroBadges = document.getElementById('heroBadges');
   heroBadges.innerHTML = `
-    <span class="plan-badge ${isPro ? 'badge-pro' : 'badge-free'}">${isPro ? '⚡ Pro' : 'Free'}</span>
+    <span class="plan-badge ${isPro ? 'badge-pro' : 'badge-free'}">${isPro ? 'Pro' : 'Free'}</span>
     ${actualReferralCount > 0
       ? `<span class="badge-referral"><i class="fa-solid fa-gift"></i> ${actualReferralCount} referral${actualReferralCount > 1 ? 's' : ''}</span>`
       : ''}
   `;
 
   // ── Form fields
-  document.getElementById('fieldName').value  = currentProfile?.name || '';
-  document.getElementById('fieldEmail').value = currentUser.email || '';
+  const nameValue = currentProfile?.name || '';
+  const emailValue = currentUser.email || '';
+  document.getElementById('fieldName').value  = nameValue;
+  document.getElementById('fieldEmail').value = emailValue;
+
+  // Store original values for change detection
+  _originalNameValue = nameValue;
+  _originalEmailValue = emailValue;
+
+  // Add change listeners
+  document.getElementById('fieldName').addEventListener('input', updateSaveButtons);
+
+  // Initial button states
+  updateSaveButtons();
 
   // ── Subscription card
   populateSubscription(currentProfile, isPro);
@@ -599,6 +678,8 @@ async function saveName() {
     await db.auth.updateUser({ data: { name } });
     document.getElementById('heroName').textContent = name;
     document.getElementById('avatarEl').textContent = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    _originalNameValue = name;
+    updateSaveButtons();
     showSaveMsg('saveNameMsg', 'Saved!', 'ok');
     showToast('Name updated!', 'fa-solid fa-circle-check', 'green');
   } catch (e) {
@@ -638,6 +719,7 @@ async function savePassword() {
     document.getElementById('fieldPassConfirm').value = '';
     showSaveMsg('savePassMsg', 'Password updated!', 'ok');
     showToast('Password updated!', 'fa-solid fa-circle-check', 'green');
+    setTimeout(() => { cancelPasswordChange(); }, 1500);
   } catch (e) {
     showSaveMsg('savePassMsg', e.message || 'Error.', 'err');
   } finally { btn.disabled = false; }

@@ -27,6 +27,7 @@ let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
 let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null;
 let _ppCurrentId=null,_ppCurrentField=null;
 const _saveTimers={};
+const _valInputTimers={};
 const _pending=new Set();
 let sortDir='desc';
 let searchQuery='';
@@ -36,6 +37,7 @@ let selectMode=false;
 let selectedIds=new Set();
 const G='#19c37d',R='#ff5f6d';
 let _isEditing=false;
+let _tempIdCounter=0;
 
 function scheduleSave(id,immediate=false){_pending.add(id);clearTimeout(_saveTimers[id]);if(immediate)commitSave(id);else _saveTimers[id]=setTimeout(()=>commitSave(id),800);}
 async function commitSave(id){if(!_pending.has(id))return;if(id.startsWith('temp_'))return;const t=trades.find(x=>x.id===id);if(!t){_pending.delete(id);return;}clearTimeout(_saveTimers[id]);delete _saveTimers[id];try{await updateTrade(id,t);_pending.delete(id);}catch(e){showToast('Save error: '+e.message,'fa-solid fa-circle-exclamation','red');}}
@@ -309,9 +311,36 @@ function updateSelectUI(){const n=selectedIds.size;document.getElementById('selC
 function askDelSelected(){if(selectedIds.size===0)return;document.getElementById('mDelCount').textContent=selectedIds.size;document.getElementById('mDelOverlay').classList.add('open');}
 function closeMDel(){document.getElementById('mDelOverlay').classList.remove('open');}
 async function confirmMultiDelete(){
-  const ids=[...selectedIds];closeMDel();
-  try{await Promise.all(ids.map(id=>deleteTrade(id)));ids.forEach(id=>_pending.delete(id));trades=trades.filter(t=>!ids.includes(t.id));selectedIds.clear();exitSelectMode();updateAnalytics();showToast(`${ids.length} trade${ids.length!==1?'s':''} deleted.`,'fa-solid fa-circle-check','green');}
-  catch(e){showToast('Delete error: '+e.message,'fa-solid fa-circle-exclamation','red');}
+  const ids=[...selectedIds];
+  const progressEl=document.createElement('div');
+  progressEl.style.cssText='margin-top:12px;font-size:12px;color:var(--muted);';
+  progressEl.innerHTML='<div style="margin-bottom:6px;">Deleting trades...</div><div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden;"><div id="mDelBar" style="background:var(--accent);height:100%;width:0%;transition:width 0.3s;"></div></div><div id="mDelStatus" style="margin-top:6px;font-size:11px;">0 / '+ids.length+'</div>';
+  const msgEl=document.getElementById('mDelMsg');
+  if(msgEl)msgEl.parentNode.insertBefore(progressEl,msgEl.nextSibling);
+  document.getElementById('mDelCancel').disabled=true;
+  document.getElementById('mDelConfirm').disabled=true;
+
+  let deleted=0;
+  try{
+    for(const id of ids){
+      try{await deleteTrade(id);}catch(e){console.error('Failed to delete trade:',id,e);}
+      _pending.delete(id);
+      deleted++;
+      const barEl=document.getElementById('mDelBar');
+      const statusEl=document.getElementById('mDelStatus');
+      if(barEl){barEl.style.width=(deleted/ids.length*100)+'%';}
+      if(statusEl){statusEl.textContent=deleted+' / '+ids.length;}
+    }
+    trades=trades.filter(t=>!ids.includes(t.id));
+    selectedIds.clear();
+    closeMDel();
+    exitSelectMode();
+    updateAnalytics();
+    showToast(`${ids.length} trade${ids.length!==1?'s':''} deleted.`,'fa-solid fa-circle-check','green');
+  }catch(e){
+    showToast('Delete error: '+e.message,'fa-solid fa-circle-exclamation','red');
+    closeMDel();
+  }
 }
 
 function buildNotesBtnHTML(t){const hasNotes=t.notes&&t.notes.trim(),imgCount=t.images&&t.images.length>0?t.images.length:0,hasContent=hasNotes||imgCount>0,badgeHTML=imgCount>0?`<span class="notes-img-badge">${imgCount}</span>`:'',iconHTML=hasContent?`<i class="fa-solid fa-note-sticky"></i>`:`<i class="fa-regular fa-note-sticky"></i>`;return{cls:`notes-btn${hasContent?' hc':''}`,html:`${iconHTML}${badgeHTML}`};}
@@ -335,14 +364,40 @@ document.addEventListener('click',function(e){if(e.target.tagName==='INPUT'||e.t
 function localUpd(id,field,val,skipRender=false){const t=trades.find(x=>x.id===id);if(!t)return;t[field]=val;if(field==='pnl'||field==='r'){const el=document.getElementById((field==='pnl'?'pnl_':'r_')+id);if(el)el.style.color=pnlCol(val);}updateAnalytics();if(!skipRender)render();}
 function updPos(sel,id){const isLong=sel.value!=='Short';sel.className='csel '+(isLong?'long':'short');localUpd(id,'position',sel.value,true);scheduleSave(id,true);}
 function onPairInput(el,id){const t=trades.find(x=>x.id===id);if(t)t.pair=el.value.toUpperCase();_pending.add(id);const v=el.value.trim();if(v.length>0)showSug(el,id);else hideSugImmediate(id);}
-function onValInput(id,field,val){localUpd(id,field,val,true);_pending.add(id);}
+function onValInput(id,field,val){
+  localUpd(id,field,val,true);
+  _pending.add(id);
+  clearTimeout(_valInputTimers[id]);
+  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),400);
+}
 function vFocus(el){const n=parseFloat(el.value.replace(/[^0-9.\-]/g,''));el.value=isNaN(n)?'':n;el.style.color='var(--text)';el.select();}
-function vBlur(el,id,field){const raw=el.value.trim(),n=parseFloat(raw);if(!isNaN(n)&&raw!==''){el.value=fmtVal(n,field);el.style.color=pnlCol(n);}else{el.value='';el.style.color='var(--muted)';}localUpd(id,field,raw,true);scheduleSave(id,true);}
+function vBlur(el,id,field){
+  const raw=el.value.trim(),n=parseFloat(raw);
+  if(!isNaN(n)&&raw!==''){
+    el.value=fmtVal(n,field);
+    el.style.color=pnlCol(n);
+  }else{
+    el.value='';
+    el.style.color='var(--muted)';
+  }
+  localUpd(id,field,raw,true);
+
+  // Auto-fill ratio with -1 if PnL is negative and ratio is empty
+  if(field==='pnl'&&n<0){
+    const ratioEl=document.getElementById('r_'+id);
+    if(ratioEl&&!ratioEl.value.trim()){
+      ratioEl.value='-1';
+      localUpd(id,'r','-1',true);
+    }
+  }
+
+  scheduleSave(id,true);
+}
 function confirmPair(id,el){const v=el.value.trim().toUpperCase();el.value=v;if(v)localUpd(id,'pair',v,true);scheduleSave(id,true);}
 function setConf(id,n){localUpd(id,'confidence',n,true);document.querySelectorAll(`[data-id="${id}"] .star`).forEach((s,i)=>s.classList.toggle('on',i<n));scheduleSave(id,true);}
 
 async function addRow(){
-  const date=todayLocal(),time=nowTimeLocal(),tempId='temp_'+Date.now();
+  const date=todayLocal(),time=nowTimeLocal(),tempId='temp_'+(++_tempIdCounter)+'_'+Date.now();
   const intent=getActiveIntent();
   const initPos=intent?.direction||'Long';
   const initStrat=intent?.setup_name?[intent.setup_name]:[];
@@ -351,10 +406,33 @@ async function addRow(){
   setTimeout(()=>{const inp=document.querySelector(`tr[data-id="${tempId}"] .pw-cell input`);if(inp)inp.focus();const tr=document.querySelector(`tr[data-id="${tempId}"]`);if(tr){tr.classList.add('new-row');setTimeout(()=>tr.classList.remove('new-row'),3000);}},30);
   try{
     const row=await createTrade(currentUser.id,jid,{date,time,pair:'',position:initPos,strategy:initStrat,timeframe:[],pnl:'',r:'',confidence:0,mood:[],notes:''});
-    const idx=trades.findIndex(t=>t.id===tempId);if(idx>-1){trades[idx].id=row.id;if(activeNotesId===tempId)activeNotesId=row.id;_pending.delete(tempId);clearTimeout(_saveTimers[tempId]);delete _saveTimers[tempId];scheduleSave(row.id,true);}
-    const tr=document.querySelector(`tr[data-id="${tempId}"]`);if(tr){tr.dataset.id=row.id;tr.querySelectorAll('[id]').forEach(el=>{el.id=el.id.replace(tempId,row.id);});tr.querySelectorAll('[onclick]').forEach(el=>{el.setAttribute('onclick',el.getAttribute('onclick').replace(new RegExp(tempId,'g'),row.id));});}
-    if(intent?.id){try{await db.from('trade_intents').update({trade_id:row.id,status:'executed'}).eq('id',intent.id);}catch(e){}}
-  }catch(e){trades=trades.filter(t=>t.id!==tempId);updateAnalytics();render();showToast('Error saving trade: '+e.message,'fa-solid fa-circle-exclamation','red');}
+    const idx=trades.findIndex(t=>t.id===tempId);
+    if(idx>-1){
+      trades[idx].id=row.id;
+      if(activeNotesId===tempId)activeNotesId=row.id;
+      _pending.delete(tempId);
+      clearTimeout(_saveTimers[tempId]);
+      delete _saveTimers[tempId];
+      scheduleSave(row.id,true);
+      const tr=document.querySelector(`tr[data-id="${tempId}"]`);
+      if(tr){
+        tr.dataset.id=row.id;
+        tr.querySelectorAll('[id]').forEach(el=>{el.id=el.id.replace(tempId,row.id);});
+        tr.querySelectorAll('[onclick]').forEach(el=>{el.setAttribute('onclick',el.getAttribute('onclick').replace(new RegExp(tempId,'g'),row.id));});
+      }
+      if(intent?.id){try{await db.from('trade_intents').update({trade_id:row.id,status:'executed'}).eq('id',intent.id);}catch(e){}}
+    }else{
+      console.error('Trade not found after creation:',tempId);
+      showToast('⚠️ Trade created but not found in list. Refreshing...','fa-solid fa-circle-exclamation','orange');
+      await refreshTrades();
+    }
+  }catch(e){
+    console.error('Error creating trade:',e);
+    showToast('❌ Error saving trade: '+e.message,'fa-solid fa-circle-exclamation','red');
+    trades=trades.filter(t=>t.id!==tempId);
+    updateAnalytics();
+    render();
+  }
 }
 
 function askDel(id){pendingDelId=id;document.getElementById('cOverlay').classList.add('open');}
@@ -457,7 +535,58 @@ async function validateImageFull(file){
     reader.readAsDataURL(file);
   });
 }
-async function openNotes(id){const t=trades.find(x=>x.id===id);if(!t)return;activeNotesId=id;const rawImgs=await getTradeImages(id);imgBuffer=await Promise.all(rawImgs.map(async img=>{const url=await getImageUrl(img);return{...img,_previewUrl:url||img._previewUrl||''};}));document.getElementById('nmTitle').textContent=`${t.pair||'Trade'} — ${t.date||'—'}`;document.getElementById('nmText').value=t.notes||'';const atLimit=!userIsPro&&imgBuffer.length>=1;document.getElementById('uploadRow').style.display=atLimit?'none':'flex';document.getElementById('imgProLock').style.display=atLimit?'flex':'none';renderImgs();document.getElementById('nOverlay').classList.add('open');setTimeout(()=>document.getElementById('nmText').focus(),100);}
+
+// Compress image to reduce file size
+async function compressImage(file,quality=0.7){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        let width=img.width,height=img.height;
+        if(width>MAX_IMG_DIMENSION||height>MAX_IMG_DIMENSION){
+          const ratio=Math.min(MAX_IMG_DIMENSION/width,MAX_IMG_DIMENSION/height);
+          width=Math.round(width*ratio);
+          height=Math.round(height*ratio);
+        }
+        canvas.width=width;
+        canvas.height=height;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,width,height);
+        canvas.toBlob(blob=>{resolve(blob||file);},file.type||'image/jpeg',quality);
+      };
+      img.onerror=()=>resolve(file);
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function openNotes(id){
+  const t=trades.find(x=>x.id===id);
+  if(!t)return;
+  activeNotesId=id;
+  document.getElementById('nOverlay').classList.add('open');
+  document.getElementById('nmTitle').textContent=`${t.pair||'Trade'} — ${t.date||'—'}`;
+  document.getElementById('nmText').value=t.notes||'';
+  document.getElementById('nmUploadProgress').style.display='none';
+  const loadingEl=document.getElementById('nmLoadingState');
+  if(loadingEl)loadingEl.style.display='flex';
+
+  try{
+    const rawImgs=await getTradeImages(id);
+    imgBuffer=await Promise.all(rawImgs.map(async img=>{const url=await getImageUrl(img);return{...img,_previewUrl:url||img._previewUrl||''};}));
+  }catch(e){
+    console.error('Error loading images:',e);
+  }
+
+  const atLimit=!userIsPro&&imgBuffer.length>=1;
+  document.getElementById('uploadRow').style.display=atLimit?'none':'flex';
+  document.getElementById('imgProLock').style.display=atLimit?'flex':'none';
+  renderImgs();
+  if(loadingEl)loadingEl.style.display='none';
+  setTimeout(()=>document.getElementById('nmText').focus(),100);
+}
 function closeNotes(){document.getElementById('nOverlay').classList.remove('open');activeNotesId=null;imgBuffer=[];}
 async function saveNotes(){
   if(!activeNotesId)return;
@@ -535,23 +664,28 @@ function renderImgs(){
   }).join('');
 }
 function rmImg(i){imgBuffer.splice(i,1);renderImgs();}
-function handleUpload(e){
+async function handleUpload(e){
   const files=[...e.target.files];
   console.log(`[handleUpload] Processing ${files.length} file(s)`);
 
-  files.forEach(f=>{
+  for(const f of files){
     // Validate file
-    if(!validateImg(f))return;
+    if(!validateImg(f))continue;
 
     // Check plan limits
     if(!userIsPro&&imgBuffer.length>=1){
       showToast('📦 Free plan: 1 image per trade. 💡 Upgrade to Pro for more.','fa-solid fa-lock','red');
-      return;
+      continue;
     }
 
     const fileSizeMB=(f.size/(1024*1024)).toFixed(2);
     console.log(`[handleUpload] ✅ File validated: ${f.name} (${fileSizeMB}MB)`);
-    console.log(`[handleUpload] 📸 Will auto-optimize during upload`);
+    console.log(`[handleUpload] ⚙️ Compressing image...`);
+
+    // Compress image before adding to buffer
+    const compressed=await compressImage(f,0.75);
+    const compressedMB=(compressed.size/(1024*1024)).toFixed(2);
+    console.log(`[handleUpload] ✅ Compressed: ${fileSizeMB}MB → ${compressedMB}MB`);
 
     const r=new FileReader();
     r.onload=ev=>{
@@ -561,8 +695,8 @@ function handleUpload(e){
     r.onerror=()=>{
       showToast('❌ Error reading file','fa-solid fa-exclamation','red');
     };
-    r.readAsDataURL(f);
-  });
+    r.readAsDataURL(compressed);
+  }
 
   e.target.value='';
 }

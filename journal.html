@@ -43,8 +43,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:11p
 .huser-info{display:flex;align-items:center;gap:7px;padding:5px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--radius-md);cursor:pointer;transition:border-color var(--transition-base)}
 .huser-info:hover{border-color:var(--accent2)}
 .huser-name{font-size:12px;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes goldShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+@keyframes goldGlare{0%{left:-80%;opacity:0}10%{opacity:1}50%{left:110%;opacity:1}51%{opacity:0}100%{left:110%;opacity:0}}
 .plan-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--radius-pill);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;position:relative;overflow:hidden}
-.badge-pro{background:rgba(var(--accent-rgb,0,255,136),.15);color:var(--accent2);border:1px solid rgba(var(--accent-rgb,0,255,136),.3)}
+.badge-pro{background:linear-gradient(105deg,#7a5a00 0%,#c9973a 18%,#f5c842 35%,#ffe17a 50%,#f5c842 65%,#c9973a 82%,#7a5a00 100%);background-size:200% auto;color:#3a2800;border:1px solid #c9973a;text-shadow:0 1px 0 rgba(255,230,100,.5);box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 1px rgba(255,220,80,.15) inset,0 1px 0 rgba(255,255,180,.3) inset;animation:goldShimmer 3.5s linear infinite}
+.badge-pro::after{content:'';position:absolute;top:0;left:-80%;width:45%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.55) 50%,transparent 80%);transform:skewX(-15deg);animation:goldGlare 3.5s ease-in-out infinite;pointer-events:none}
 .badge-free{background:rgba(143,163,154,.1);color:var(--muted);border:1px solid var(--border)}
 
 /* ══════════════════════════════════════════
@@ -101,7 +104,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:11p
   border-bottom:1px solid var(--border);
   flex-shrink:0;
   min-height:44px;
-  gap:10px;
   overflow:hidden;
 }
 .sidebar.collapsed .sidebar-header{
@@ -173,16 +175,17 @@ header{display:flex;align-items:center;justify-content:space-between;padding:11p
   flex-shrink:0;
 }
 .nav-item-label{
+  margin-left: 10px;
   opacity:1;
   transition:opacity .15s;
   overflow:hidden;
   white-space:nowrap;
   font-size:13px;
-  margin-left: 10px;
 }
 .sidebar.collapsed .nav-item-label{
   opacity:0;
   width:0;
+  margin-left:0;
   pointer-events:none;
 }
 .sidebar.collapsed .nav-item{
@@ -644,7 +647,6 @@ iframe.ready{opacity:1}
   </div>
   <div class="hright">
     <div class="huser-info" onclick="location.href='/subscription'" title="View subscription">
-      <i class="fa-solid fa-circle-user" style="color:var(--muted);font-size:13px"></i>
       <span class="huser-name" id="hUserName">—</span>
       <span class="plan-badge badge-free" id="hPlanBadge">Free</span>
     </div>
