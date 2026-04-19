@@ -1,20 +1,18 @@
-<!-- HERO + CALCULATOR LAYOUT -->
-<div class="hero-calc-layout">
-  <!-- HERO -->
-  <div class="page-hero-side">
-    <h1>Crypto Position <span>Size Calculator</span></h1>
-    <p>Calculate exact position size, leverage, and risk-to-reward ratio for crypto trades. Real-time results, no signup required.</p>
-    <div class="hero-sub">
-      <span><i class="fa-solid fa-bolt"></i> Real-time results</span>
-      <span><i class="fa-solid fa-lock-open"></i> No signup required</span>
-      <span><i class="fa-brands fa-bitcoin"></i> For Crypto Traders</span>
-    </div>
+<!-- HERO -->
+<div class="page-hero">
+  <h1>Crypto Position <span>Size Calculator</span></h1>
+  <p>Calculate exact position size, leverage, and risk-to-reward ratio for crypto trades. Real-time results, no signup required.</p>
+  <div class="hero-sub">
+    <span><i class="fa-solid fa-bolt"></i> Real-time results</span>
+    <span><i class="fa-solid fa-lock-open"></i> No signup required</span>
+    <span><i class="fa-brands fa-bitcoin"></i> For Crypto Traders</span>
   </div>
+</div>
 
-  <!-- CALCULATOR COLUMN -->
-  <div class="calc-column">
-    <!-- INPUTS -->
-    <div class="ccol">
+<!-- CALCULATOR -->
+<div class="calc-cols">
+  <!-- ── LEFT: INPUTS ── -->
+  <div class="ccol">
     <div class="ccol-title"><i class="fa-solid fa-sliders"></i> Inputs</div>
 
     <div class="cfield">
@@ -78,34 +76,35 @@
         At <span id="cLevNoteX">1×</span>: control <span id="cLevNotePos">—</span> with <span id="cLevNoteMargin">—</span> margin.
       </div>
     </div>
+  </div>
 
-    <!-- RESULTS SECTION -->
-    <div class="calc-results">
-      <div class="calc-results-title"><i class="fa-solid fa-chart-bar"></i> Results</div>
-      <div class="results-row">
-        <div class="crc loss">
-          <div class="crl"><i class="fa-solid fa-circle-xmark"></i> Risk (Max Loss)</div>
-          <div class="crv neg" id="cOutRisk">0</div>
-          <div class="crs" id="cOutRiskSub">if stop loss is hit</div>
-        </div>
-        <div class="crc gain" id="cProfitCard" style="opacity:.35">
-          <div class="crl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
-          <div class="crv pos" id="cOutProfit">0</div>
-          <div class="crs" id="cOutProfitSub">set a take profit to calculate</div>
-        </div>
-        <div class="margin-card">
-          <div class="margin-card-label"><i class="fa-solid fa-wallet" style="color:var(--accent2);font-size:8px"></i> Capital Required (Margin)</div>
-          <div class="margin-card-val" id="cOutMargin">0</div>
-          <div class="margin-card-sub" id="cOutMarginSub">enter trade details to calculate</div>
-        </div>
-      </div>
+  <!-- ── RIGHT: OUTPUTS ── -->
+  <div class="ccol">
+    <div class="ccol-title"><i class="fa-solid fa-chart-bar"></i> Results</div>
 
-      <!-- R:R section -->
-      <div class="rr-section" id="cRrSection" style="display:none;margin-top:20px">
-        <div class="rr-header"><span class="rr-label">Risk / Reward</span><span class="rr-val" id="cRrVal">0</span></div>
-        <div class="rr-track"><div class="rr-fill" id="cRrFill"></div></div>
-        <div class="rr-ticks"><span>Poor</span><span>Average</span><span>Good</span><span>Great 3R+</span></div>
+    <div class="result-stack">
+      <div class="crc loss">
+        <div class="crl"><i class="fa-solid fa-circle-xmark"></i> Risk (Max Loss)</div>
+        <div class="crv neg" id="cOutRisk">—</div>
+        <div class="crs" id="cOutRiskSub">if stop loss is hit</div>
       </div>
+      <div class="crc gain" id="cProfitCard" style="opacity:.35">
+        <div class="crl"><i class="fa-solid fa-arrow-trend-up"></i> Target Profit</div>
+        <div class="crv pos" id="cOutProfit">—</div>
+        <div class="crs" id="cOutProfitSub">set a take profit to calculate</div>
+      </div>
+    </div>
+    <div class="margin-card">
+      <div class="margin-card-label"><i class="fa-solid fa-wallet" style="color:var(--accent2);font-size:8px"></i> Capital Required (Margin)</div>
+      <div class="margin-card-val" id="cOutMargin">—</div>
+      <div class="margin-card-sub" id="cOutMarginSub">enter trade details to calculate</div>
+    </div>
+
+    <!-- R:R section -->
+    <div class="rr-section" id="cRrSection" style="display:none">
+      <div class="rr-header"><span class="rr-label">Risk / Reward</span><span class="rr-val" id="cRrVal">—</span></div>
+      <div class="rr-track"><div class="rr-fill" id="cRrFill"></div></div>
+      <div class="rr-ticks"><span>Poor</span><span>Average</span><span>Good</span><span>Great 3R+</span></div>
     </div>
   </div>
 </div>
