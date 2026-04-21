@@ -432,22 +432,12 @@ async function deleteTrade(tradeId) {
 
 // ── Trade image helpers ───────────────────────────────────
 
-async function addTradeImage(userId, tradeId, dataUrl) {
+async function addTradeImage(userId, tradeId, input) {
   try {
     console.log('%c🎬 IMAGE UPLOAD STARTED', 'color: #00ff88; font-weight: bold; font-size: 14px');
 
-    // 1. Compress image before uploading (with optimization)
-    console.log('[addTradeImage] 📦 Optimizing image for upload...');
-    const compressed = await compressImage(dataUrl, {
-      maxWidth: IMAGE_CONFIG.MAX_WIDTH,
-      maxHeight: IMAGE_CONFIG.MAX_HEIGHT,
-      targetQuality: IMAGE_CONFIG.QUALITY_MEDIUM
-    });
-
-    // Convert data URL to Blob directly (fetch() on a data URL fails in some
-    // environments and produces a text/plain blob instead of the image type)
-    function _dataUrlToBlob(url) {
-      const [header, b64] = url.split(',');
+    function _dataUrlToBlob(dataUrl) {
+      const [header, b64] = dataUrl.split(',');
       const mime = header.match(/:(.*?);/)[1];
       const binary = atob(b64);
       const bytes = new Uint8Array(binary.length);
@@ -455,40 +445,42 @@ async function addTradeImage(userId, tradeId, dataUrl) {
       return new Blob([bytes], { type: mime });
     }
 
-    const blob = _dataUrlToBlob(compressed);
-    const ext  = blob.type.includes('png') ? 'png' : 'jpg';
-    const fileName   = `trade_${Date.now()}.${ext}`;
-    const sizeKB     = Math.round(blob.size / 1024);
-    const sizeMB     = (blob.size / (1024 * 1024)).toFixed(2);
+    console.log('[addTradeImage] 📦 Optimizing image for upload...');
+    // input can be a Blob, File, or data URL string — compressImage handles all
+    const compressed = await compressImage(input, {
+      maxWidth: IMAGE_CONFIG.MAX_WIDTH,
+      maxHeight: IMAGE_CONFIG.MAX_HEIGHT,
+      targetKB: IMAGE_CONFIG.TARGET_SIZE_KB
+    });
+
+    // compressed is always a data URL string at this point
+    const blob     = _dataUrlToBlob(compressed);
+    const ext      = blob.type.includes('png') ? 'png' : 'jpg';
+    const fileName = `trade_${Date.now()}.${ext}`;
+    const sizeKB   = Math.round(blob.size / 1024);
+    const sizeMB   = (blob.size / (1024 * 1024)).toFixed(2);
 
     console.log('[addTradeImage] ✅ Image optimized');
     console.log('[addTradeImage] File name:', fileName);
     console.log('[addTradeImage] File type:', blob.type);
     console.log('[addTradeImage] File size:', sizeKB, 'KB (' + sizeMB + 'MB)');
 
-    // Check final size
     if (blob.size > IMAGE_CONFIG.MAX_FILE_SIZE_BYTES) {
-      console.warn('[addTradeImage] ⚠️ Compressed image still exceeds limit');
       throw new Error(`Image too large: ${sizeMB}MB (max 5MB)`);
     }
 
-    // 2. Try R2 first
     console.log('[addTradeImage] %c🚀 ATTEMPTING R2 UPLOAD', 'color: #19c37d; font-weight: bold');
     const r2Result = await tryR2Upload(userId, tradeId, blob, fileName);
     if (r2Result.success) {
       console.log('%c✅ IMAGE SAVED TO R2', 'color: #19c37d; font-weight: bold; font-size: 14px');
-      console.log('[addTradeImage] R2 URL:', r2Result.data.storage_url);
       return r2Result.data;
     }
 
     console.warn('%c⚠️ R2 FAILED - FALLING BACK TO SUPABASE', 'color: #ff9500; font-weight: bold');
     console.log('[addTradeImage] R2 error:', r2Result.error);
 
-    // 3. Fallback to Supabase Storage
-    console.log('[addTradeImage] %c🔄 ATTEMPTING SUPABASE STORAGE FALLBACK', 'color: #ff9500; font-weight: bold');
     const supabaseResult = await uploadToSupabaseStorage(userId, tradeId, blob, fileName);
     console.log('%c✅ IMAGE SAVED TO SUPABASE (FALLBACK)', 'color: #ff9500; font-weight: bold; font-size: 14px');
-    console.log('[addTradeImage] Supabase URL:', supabaseResult.storage_url);
     return supabaseResult;
 
   } catch (error) {
@@ -766,8 +758,8 @@ const IMAGE_CONFIG = {
   QUALITY_LOW: 0.60,
 };
 
-async function compressImage(dataUrl, options = {}) {
-  return new Promise(resolve => {
+async function compressImage(input, options = {}) {
+  return new Promise((resolve, reject) => {
     const {
       maxWidth = IMAGE_CONFIG.MAX_WIDTH,
       maxHeight = IMAGE_CONFIG.MAX_HEIGHT,
@@ -775,14 +767,16 @@ async function compressImage(dataUrl, options = {}) {
     } = options;
 
     const img = new Image();
+
     img.onload = () => {
+      // Revoke object URL if we created one
+      if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
+
       try {
-        // Calculate optimal dimensions
         let width = img.width;
         let height = img.height;
         const aspectRatio = width / height;
 
-        // Constrain to max dimensions
         if (width > maxWidth) {
           width = maxWidth;
           height = Math.round(width / aspectRatio);
@@ -794,18 +788,14 @@ async function compressImage(dataUrl, options = {}) {
 
         console.log(`[compress] Original: ${img.width}x${img.height} → Optimized: ${width}x${height}`);
 
-        // Create canvas and draw
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-
-        // Anti-alias for better quality
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Binary search for optimal quality to hit target size
         let minQuality = 0.3;
         let maxQuality = 0.95;
         let bestDataUrl = canvas.toDataURL('image/jpeg', 0.75);
@@ -816,30 +806,38 @@ async function compressImage(dataUrl, options = {}) {
           const midQuality = (minQuality + maxQuality) / 2;
           const testDataUrl = canvas.toDataURL('image/jpeg', midQuality);
           const testSizeKB = (testDataUrl.length * 0.75) / 1024;
-
           if (testSizeKB > targetKB) {
-            maxQuality = midQuality; // Too large, reduce quality
+            maxQuality = midQuality;
           } else {
-            minQuality = midQuality; // Under target, can use higher quality
-            bestDataUrl = testDataUrl; // Keep this as best so far
+            minQuality = midQuality;
+            bestDataUrl = testDataUrl;
           }
         }
 
         const finalSizeKB = (bestDataUrl.length * 0.75) / 1024;
-        const finalQuality = Math.round(minQuality * 100);
-        console.log(`[compress] ✅ Final: Quality ${finalQuality}% → ${Math.round(finalSizeKB)} KB (target: ${targetKB} KB)`);
-
+        console.log(`[compress] ✅ Final: ${Math.round(finalSizeKB)} KB (target: ${targetKB} KB)`);
         resolve(bestDataUrl);
       } catch (error) {
         console.error('[compress] Error during compression:', error);
-        resolve(dataUrl); // Fall back to original
+        reject(error);
       }
     };
+
     img.onerror = () => {
-      console.error('[compress] Image load failed');
-      resolve(dataUrl);
+      if (img._objectUrl) URL.revokeObjectURL(img._objectUrl);
+      reject(new Error('Failed to load image for compression'));
     };
-    img.src = dataUrl;
+
+    // Accept Blob, File, or data URL string
+    if (typeof input === 'string') {
+      img.src = input;
+    } else if (input instanceof Blob || input instanceof File) {
+      const objectUrl = URL.createObjectURL(input);
+      img._objectUrl = objectUrl;
+      img.src = objectUrl;
+    } else {
+      reject(new Error('compressImage: unsupported input type'));
+    }
   });
 }
 
