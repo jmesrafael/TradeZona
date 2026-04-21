@@ -444,9 +444,19 @@ async function addTradeImage(userId, tradeId, dataUrl) {
       targetQuality: IMAGE_CONFIG.QUALITY_MEDIUM
     });
 
-    const res        = await fetch(compressed);
-    const blob       = await res.blob();
-    const ext        = blob.type.includes('png') ? 'png' : 'jpg';
+    // Convert data URL to Blob directly (fetch() on a data URL fails in some
+    // environments and produces a text/plain blob instead of the image type)
+    function _dataUrlToBlob(url) {
+      const [header, b64] = url.split(',');
+      const mime = header.match(/:(.*?);/)[1];
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    }
+
+    const blob = _dataUrlToBlob(compressed);
+    const ext  = blob.type.includes('png') ? 'png' : 'jpg';
     const fileName   = `trade_${Date.now()}.${ext}`;
     const sizeKB     = Math.round(blob.size / 1024);
     const sizeMB     = (blob.size / (1024 * 1024)).toFixed(2);
