@@ -305,3 +305,8 @@ td:nth-child(1){width:30px}td:nth-child(2){width:105px}td:nth-child(3){width:110
 tr.saving{opacity:.6}
 .row-saving-indicator{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:10px;color:var(--accent);display:flex;align-items:center;gap:4px;padding-right:8px}
 .row-saving-indicator i{animation:spin 1s linear infinite}
+.draft-row{border-left:3px solid #f5a623!important}
+.field-required{border-color:#ff5f6d!important;box-shadow:0 0 0 2px rgba(255,95,109,.25)!important}
+.save-log-btn{background:#19c37d;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:all var(--transition-fast)}
+.save-log-btn:hover{background:#14a368;opacity:.9}
+.save-log-btn i{font-size:12px}

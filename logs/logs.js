@@ -29,6 +29,7 @@ let _ppCurrentId=null,_ppCurrentField=null;
 const _saveTimers={};
 const _valInputTimers={};
 const _pending=new Set();
+const _newDraftIds=new Set();
 let sortDir='desc';
 let searchQuery='';
 let PAGE_SIZE=localStorage.getItem('logsPageSize')?parseInt(localStorage.getItem('logsPageSize')):10;
@@ -48,7 +49,7 @@ function restoreFromLocalCache(id){try{const cached=localStorage.getItem(getLoca
 function clearLocalCache(id){try{localStorage.removeItem(getLocalCacheKey(id));}catch(e){console.warn('Failed to clear local cache:',e);}}
 function showLoadingIndicator(el,show=true){if(!el)return;if(show){el.disabled=true;el.innerHTML=`<i class="fa-solid fa-spinner" style="animation:spin 1s linear infinite;margin-right:6px"></i>${el.dataset.originalText||'Loading...'}`;}else{el.disabled=false;el.innerHTML=el.dataset.originalText||el.innerHTML;}}
 async function preSaveRow(id){if(id.startsWith('temp_'))return true;if(!_pending.has(id))return true;const row=document.querySelector(`tr[data-id="${id}"]`);if(!row)return true;_isSaving=true;try{await commitSave(id);return true;}catch(e){console.error('Pre-save failed:',e);showToast('Failed to save inputs. Please try again.','fa-solid fa-circle-exclamation','red');_isSaving=false;return false;}}
-function scheduleSave(id,immediate=false){_pending.add(id);clearTimeout(_saveTimers[id]);if(immediate)commitSave(id);else _saveTimers[id]=setTimeout(()=>commitSave(id),800);}
+function scheduleSave(id,immediate=false){_pending.add(id);clearTimeout(_saveTimers[id]);clearTimeout(_saveTimers[id+'_c']);if(immediate){commitSave(id).then(()=>{_saveTimers[id+'_c']=setTimeout(()=>{if(_pending.has(id))commitSave(id);},2000);});}else{_saveTimers[id]=setTimeout(()=>{commitSave(id).then(()=>{_saveTimers[id+'_c']=setTimeout(()=>{if(_pending.has(id))commitSave(id);},2000);});},2000);}}
 async function commitSave(id){
   if(!_pending.has(id))return;
   if(id.startsWith('temp_'))return;
@@ -407,7 +408,7 @@ function onValInput(id,field,val){
   _pending.add(id);
   saveToLocalCache(id);
   clearTimeout(_valInputTimers[id]);
-  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),400);
+  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),2000);
 }
 function vFocus(el){const n=parseFloat(el.value.replace(/[^0-9.\-]/g,''));el.value=isNaN(n)?'':n;el.style.color='var(--text)';el.select();}
 function vBlur(el,id,field){
@@ -441,9 +442,56 @@ function vBlur(el,id,field){
 function confirmPair(id,el){const v=el.value.trim().toUpperCase();el.value=v;if(v)localUpd(id,'pair',v,true);saveToLocalCache(id);scheduleSave(id,true);}
 function setConf(id,n){localUpd(id,'confidence',n,true);document.querySelectorAll(`[data-id="${id}"] .star`).forEach((s,i)=>s.classList.toggle('on',i<n));saveToLocalCache(id);scheduleSave(id,true);}
 
+function highlightEmpty(id){
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  if(!tr)return;
+  const t=trades.find(x=>x.id===id);
+  if(!t)return;
+  const pairInput=tr.querySelector('.pw-cell input');
+  const pnlInput=document.getElementById('pnl_'+id);
+  if(pairInput)pairInput.classList.toggle('field-required',!t.pair?.trim());
+  if(pnlInput)pnlInput.classList.toggle('field-required',!t.pnl&&t.pnl!==0);
+}
+
+function saveLog(id){
+  const t=trades.find(x=>x.id===id);
+  if(!t)return;
+  const missing=[];
+  if(!t.pair||!t.pair.trim())missing.push('Pair');
+  if(!t.pnl&&t.pnl!==0)missing.push('PnL');
+  if(missing.length){
+    showToast('Please fill: '+missing.join(', '),'fa-solid fa-circle-exclamation','red');
+    if(!t.pair||!t.pair.trim()){
+      const pairInput=document.querySelector(`tr[data-id="${id}"] .pw-cell input`);
+      if(pairInput){pairInput.focus();highlightEmpty(id);}
+    }else{
+      const pnlEl=document.getElementById('pnl_'+id);
+      if(pnlEl){pnlEl.focus();highlightEmpty(id);}
+    }
+    return;
+  }
+  _newDraftIds.delete(id);
+  const tr=document.querySelector(`tr[data-id="${id}"]`);
+  if(tr){
+    tr.classList.remove('draft-row');
+    const saveBtn=tr.querySelector('.save-log-btn');
+    if(saveBtn)saveBtn.outerHTML=`<button class="del-btn" onclick="askDel('${id}')"><i class="fa-solid fa-xmark"></i></button>`;
+  }
+  scheduleSave(id,true);
+  showToast('Trade saved!','fa-solid fa-circle-check','green');
+}
+
 function syncActiveInputs(){document.querySelectorAll('#mainTable input, #mainTable select').forEach(el=>{const tr=el.closest('tr');if(!tr)return;const id=tr.dataset.id;if(!id)return;const match=el.id.match(/^([a-z]+)_/);if(!match)return;const field=match[1];if(field==='pnl'||field==='r'){localUpd(id,field,el.value.trim(),true);}else if(field==='pair'){localUpd(id,'pair',el.value.toUpperCase().trim(),true);}else if(field==='dinp'){localUpd(id,'date',el.value,true);}else if(field==='tinp'){localUpd(id,'time',el.value,true);}else if(field==='pos'){localUpd(id,'position',el.value,true);}});}
 
 async function addRow(){
+  if(_newDraftIds.size>0){
+    showToast('Please save the current trade first.','fa-solid fa-circle-exclamation','red');
+    const draftId=[..._newDraftIds][0];
+    const tr=document.querySelector(`tr[data-id="${draftId}"]`);
+    if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'});
+    highlightEmpty(draftId);
+    return;
+  }
   const btn=document.getElementById('btnAddTrade');
   if(btn){btn.dataset.originalText=btn.innerHTML;showLoadingIndicator(btn,true);}
   const date=todayLocal(),time=nowTimeLocal(),tempId='temp_'+Date.now();
@@ -471,7 +519,11 @@ async function addRow(){
         tr.dataset.id=row.id;
         tr.querySelectorAll('[id]').forEach(el=>{el.id=el.id.replace(tempId,row.id);});
         tr.querySelectorAll('[onclick]').forEach(el=>{el.setAttribute('onclick',el.getAttribute('onclick').replace(new RegExp(tempId,'g'),row.id));});
+        tr.classList.add('draft-row');
+        const delBtn=tr.querySelector('.del-btn');
+        if(delBtn)delBtn.outerHTML=`<button class="save-log-btn" onclick="saveLog('${row.id}')"><i class="fa-solid fa-floppy-disk"></i> Save Log</button>`;
       }
+      _newDraftIds.add(row.id);
       if(btn)showLoadingIndicator(btn,false);
       if(intent?.id){try{await db.from('trade_intents').update({trade_id:row.id,status:'executed'}).eq('id',intent.id);}catch(e){}}
     }else{
@@ -759,22 +811,26 @@ async function handleUpload(e){
 
     const fileSizeMB=(f.size/(1024*1024)).toFixed(2);
     console.log(`[handleUpload] ✅ File validated: ${f.name} (${fileSizeMB}MB)`);
+    console.log(`[handleUpload] ⚙️ Reading file as data URL...`);
+
+    // Step 1: Convert file to data URL
+    const fileDataUrl=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=(e)=>resolve(e.target.result);
+      reader.onerror=()=>reject(new Error('Failed to read file'));
+      reader.readAsDataURL(f);
+    });
+
+    console.log(`[handleUpload] ✅ File read as data URL`);
     console.log(`[handleUpload] ⚙️ Compressing image...`);
 
-    // Compress image before adding to buffer
-    const compressed=await compressImage(f,0.75);
-    const compressedMB=(compressed.size/(1024*1024)).toFixed(2);
-    console.log(`[handleUpload] ✅ Compressed: ${fileSizeMB}MB → ${compressedMB}MB`);
+    // Step 2: Compress the data URL
+    const compressedDataUrl=await compressImage(fileDataUrl);
+    console.log(`[handleUpload] ✅ Compressed successfully`);
 
-    const r=new FileReader();
-    r.onload=ev=>{
-      imgBuffer.push({_previewUrl:ev.target.result});
-      renderImgs();
-    };
-    r.onerror=()=>{
-      showToast('❌ Error reading file','fa-solid fa-exclamation','red');
-    };
-    r.readAsDataURL(compressed);
+    // Step 3: Add compressed data URL to buffer
+    imgBuffer.push({_previewUrl:compressedDataUrl});
+    renderImgs();
   }
 
   e.target.value='';
