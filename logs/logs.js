@@ -835,7 +835,32 @@ async function handleUpload(e){
 
   e.target.value='';
 }
-document.addEventListener('paste',e=>{if(!document.getElementById('nOverlay').classList.contains('open'))return;[...e.clipboardData.items].forEach(item=>{if(item.type.startsWith('image/')){const file=item.getAsFile();if(!file)return;if(!validateImg(file))return;if(!userIsPro&&imgBuffer.length>=1){showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');return;}const r=new FileReader();r.onload=ev=>{imgBuffer.push({_previewUrl:ev.target.result});renderImgs();};r.readAsDataURL(file);}});});
+document.addEventListener('paste',async e=>{
+  if(!document.getElementById('nOverlay').classList.contains('open'))return;
+  for(const item of e.clipboardData.items){
+    if(!item.type.startsWith('image/'))continue;
+    const file=item.getAsFile();
+    if(!file)continue;
+    if(!validateImg(file))continue;
+    if(!userIsPro&&imgBuffer.length>=1){
+      showToast('Free plan: 1 image per trade.','fa-solid fa-lock','red');
+      continue;
+    }
+    try{
+      const dataUrl=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=(e)=>resolve(e.target.result);
+        reader.onerror=()=>reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+      imgBuffer.push({_previewUrl:dataUrl});
+      renderImgs();
+    }catch(err){
+      console.error('[paste] Error reading file:',err);
+      showToast('Error reading file: '+err.message,'fa-solid fa-exclamation','red');
+    }
+  }
+});
 
 let lbImages=[],lbIndex=0,lbScale=1,lbPanX=0,lbPanY=0,lbDragging=false,lbLastX=0,lbLastY=0;
 function openLb(i){lbImages=[...imgBuffer];lbIndex=i;lbScale=1;lbPanX=0;lbPanY=0;_lbRender();document.getElementById('lb').classList.add('open');}
