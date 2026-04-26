@@ -10,26 +10,48 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 
 // ══════════════════════════════════════════════════════════
-//  IN-MEMORY CACHE
+//  SESSION STORAGE CACHE
 //  Eliminates redundant DB round-trips for stable data
-//  (profile, journal settings) across page lifetime.
+//  across page navigations within a browser session.
 // ══════════════════════════════════════════════════════════
-const _cache = {};
 
 function _cacheSet(key, val, ttlMs = 30000) {
-  _cache[key] = { val, exp: Date.now() + ttlMs };
+  try {
+    const cached = { val, exp: Date.now() + ttlMs };
+    sessionStorage.setItem('_tz_cache_' + key, JSON.stringify(cached));
+  } catch (e) {
+    console.warn('[cache] sessionStorage setItem failed:', e);
+  }
 }
 
 function _cacheGet(key) {
-  const c = _cache[key];
-  if (!c || Date.now() > c.exp) return null;
-  return c.val;
+  try {
+    const item = sessionStorage.getItem('_tz_cache_' + key);
+    if (!item) return null;
+    const c = JSON.parse(item);
+    if (Date.now() > c.exp) {
+      sessionStorage.removeItem('_tz_cache_' + key);
+      return null;
+    }
+    return c.val;
+  } catch (e) {
+    console.warn('[cache] sessionStorage getItem failed:', e);
+    return null;
+  }
 }
 
 function _cacheInvalidate(prefix) {
-  Object.keys(_cache).forEach(k => {
-    if (k.startsWith(prefix)) delete _cache[k];
-  });
+  try {
+    const fullPrefix = '_tz_cache_' + prefix;
+    const keysToDelete = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k.startsWith(fullPrefix)) keysToDelete.push(k);
+    }
+    keysToDelete.forEach(k => sessionStorage.removeItem(k));
+  } catch (e) {
+    console.warn('[cache] sessionStorage invalidate failed:', e);
+  }
 }
 
 

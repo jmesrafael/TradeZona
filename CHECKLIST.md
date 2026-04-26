@@ -54,10 +54,10 @@ Living tracker for the egress-reduction and performance work. Each item referenc
   Files: [theme.js:309-320](theme.js#L309-L320), [journal.html:16-17](journal.html#L16-L17), [logs/index.html:16-17](logs/index.html#L16-L17), [index.html:18-19](index.html#L18-L19), [calculatorpage.html:48-49](calculatorpage.html#L48-L49), `pages/calculator.html`, `pages/crypto-calculator.html`, [notes.html](notes.html), [logs/logs.js:696](logs/logs.js#L696)
   Effect: ~150 KB cut from cold first paint per visitor (one fewer CSS request, one fewer woff2 font fetch).
 
-- [ ] **#8 — Promote `_cache` from in-memory to `sessionStorage`**
-  Today every page navigation re-fetches `getProfile`. With `sessionStorage`-backed cache (TTL preserved), profile only round-trips once per browser session.
-  Files to touch: [supabase.js:17-33](supabase.js#L17-L33)
-  Estimate: 1 round-trip saved per page navigation × every navigation per session.
+- [x] **#8 — Promote `_cache` from in-memory to `sessionStorage`**
+  Replaced in-memory object with sessionStorage-backed cache while preserving TTL logic. Prefixes all keys with `_tz_cache_` to avoid collisions. Updated _cacheGet, _cacheSet, _cacheInvalidate with try/catch for graceful sessionStorage failure fallback.
+  Files: [supabase.js:13-40](supabase.js#L13-L40)
+  Effect: Profile persists across page navigations within the same session — 1 round-trip per session instead of per navigation.
 
 ---
 
@@ -100,3 +100,54 @@ Living tracker for the egress-reduction and performance work. Each item referenc
 - The `tz_trades_changed` postMessage path in calendar still triggers a `getTradesLight` refresh on every save (in addition to the realtime delta). Consider gating it the same way analytics is gated.
 - Several pages still load Font Awesome from cdnjs at runtime. Long-term, consider self-hosting the subset under our own origin so cache headers are under our control and there's no third-party DNS hop.
 - The signed-URL cache (`_urlCache`) is in-memory only — same `sessionStorage` promotion as `_cache` could keep it warm across navigations and skip the `createSignedUrl` round-trip on second visits to a notes page.
+
+Progress Report
+✅ Tier 2 — Font Awesome subset done
+File	Change
+5 page heads	Dropped regular.min.css (where present) and brands.min.css (where present). journal.html:16-17, logs/index.html:16-17, index.html:18-19, calculatorpage.html:48-49
+5 fa-regular call sites	Swapped for fa-solid equivalents (with opacity tweak for the empty-vs-filled note-sticky distinction in logs/logs.js:696)
+9 fa-brands fa-bitcoin call sites	Replaced with <span class="ico-btc">₿</span> across index.html, calculatorpage.html, journal.html, pages/calculator.html, pages/crypto-calculator.html
+theme.js	Added the small .ico-btc style (theme.js:309-320) so the Bitcoin glyph renders consistently across themes
+Effect
+Per cold first-visit, every page that used to load all four Font Awesome stylesheets now skips:
+
+regular.min.css + the fa-regular-400.woff2 font file (~30 KB)
+brands.min.css + the fa-brands-400.woff2 font file (~120 KB)
+That's roughly ~150 KB cut from the cold first paint per visitor on journal, logs, index, and calculatorpage. Cached visitors save the same on cache miss / version bump. The remaining fontawesome.min.css + solid.min.css cover every icon still in the UI.
+
+Note: this is browser-side bandwidth (CDN → user), not Supabase egress. The first-paint speed-up is the user-facing win.
+
+✅ Cleanup
+Removed 5 stale doc files that only referenced each other and weren't linked from any code: CODE_CHANGES.md, IMPROVEMENTS_SUMMARY.md, QUICK_START.md, README_UPDATES.md, VISUAL_GUIDE.md.
+Kept all 3 SQL migrations — each is required for a fresh DB. Migrations are append-only.
+Kept DEPLOYMENT_RUNBOOK.md (you flagged it as source of truth), TRADZONA_OVERVIEW.txt, and the entire deployment-phases/ system.
+✅ CHECKLIST.md
+New file at the repo root: CHECKLIST.md. It tracks every optimization across all three tiers with file references, status checkboxes, and a record of what's already done. Future sessions (or you) can update it as items get crossed off.
+
+Test plan (cold-cache, this round)
+Open the site in a private/incognito window → DevTools > Network → reload.
+Confirm only fontawesome.min.css and solid.min.css load from cdnjs (no regular.min.css, no brands.min.css, no fa-regular-400.woff2, no fa-brands-400.woff2).
+Visual smoke test:
+Logs notes column: empty trades show a faded note-sticky, filled trades show a bright one.
+Notes filter chip: "No Image" still has its image icon (now slightly faded).
+Calculator page hero: Bitcoin glyph "₿" renders in the badges.
+Index page nav dropdown: Bitcoin glyph in the Crypto Calculator entry.
+Journal import section: Bitcoin glyph next to "Import Trade History".
+What we should do next
+From CHECKLIST.md, the remaining items in priority order:
+
+🥇 Tier 2 — finish first-paint cleanup
+#8 Promote _cache to sessionStorage — currently every page navigation re-fetches the user profile from Supabase even though it almost never changes. Persisting the existing in-memory cache to sessionStorage (TTL preserved) means one round-trip per browser session instead of per page. ~10-line change in supabase.js:17-33. Low risk, real win for navigation feel.
+
+🥈 Tier 3 — bigger structural moves
+#11 Pagination on getTrades — necessary before you have users with multi-year history. Default 365 days + "Show all" toggle.
+
+#12 Vite build pipeline — the foundation that unlocks tree-shaking, asset hashing, and Cache-Control: immutable. Largest single change but compounds with everything else.
+
+#6 Backfill old Supabase Storage images → R2 then drop the data column entirely.
+
+🥉 Long tail
+#13 Subscribe analytics directly to realtime (eliminate the last location.reload).
+#14 Audit realtime payload size for notes text.
+
+I'd recommend #8 (_cache → sessionStorage) next — it's contained, low risk, and noticeably improves cross-page navigation feel. Want me to do it?
