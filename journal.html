@@ -15,8 +15,6 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%}
@@ -785,7 +783,7 @@ iframe.ready{opacity:1}
 
           <!-- ══════════ BINANCE FUTURES CSV IMPORT SECTION ══════════ -->
           <div class="ssec full" id="bnbImportSection">
-            <div class="ssec-title"><i class="fa-brands fa-bitcoin"></i>Import Trade History</div>
+            <div class="ssec-title"><span class="ico-btc">₿</span>Import Trade History</div>
             <div class="bnb-import-wrap">
               <p class="bnb-subtitle">Import your closed positions from Binance Futures. Only <strong style="color:var(--text)">Realized PNL</strong> rows are used. Commission and funding fees are ignored.</p>
 
@@ -922,7 +920,7 @@ iframe.ready{opacity:1}
         <!-- Asset toggle -->
         <div class="ctoggle">
           <button class="ctbtn active" id="cBtnCrypto" onclick="cSetAsset('crypto')">
-            <i class="fa-brands fa-bitcoin" style="margin-right:3px"></i>Crypto
+            <span class="ico-btc" style="margin-right:3px">₿</span>Crypto
           </button>
           <button class="ctbtn" id="cBtnForex" onclick="cSetAsset('forex')">
             <i class="fa-solid fa-dollar-sign" style="margin-right:3px"></i>Forex
@@ -1145,7 +1143,7 @@ iframe.ready{opacity:1}
       <p class="sub">Choose what to include in your export.</p>
       <div class="scope-grid">
         <div class="scope-opt active" id="scopeFull" onclick="setScope('full')"><div class="sco-icon"><i class="fa-solid fa-database"></i></div><div><div class="sco-title">Full Backup</div><div class="sco-desc">Trades + settings, tags, moods, capital + images (base64)</div></div><div class="sco-chk"><i class="fa-solid fa-circle-check"></i></div></div>
-        <div class="scope-opt" id="scopeTrades" onclick="setScope('trades')"><div class="sco-icon"><i class="fa-solid fa-table-list"></i></div><div><div class="sco-title">Trades Only</div><div class="sco-desc">Trade data + images, no settings</div></div><div class="sco-chk"><i class="fa-regular fa-circle"></i></div></div>
+        <div class="scope-opt" id="scopeTrades" onclick="setScope('trades')"><div class="sco-icon"><i class="fa-solid fa-table-list"></i></div><div><div class="sco-title">Trades Only</div><div class="sco-desc">Trade data + images, no settings</div></div><div class="sco-chk"><i class="fa-solid fa-circle-dot"></i></div></div>
       </div>
       <div class="exp-sum" id="exportSummary"><div class="es-row"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div></div>
       <div class="img-backup-note"><i class="fa-solid fa-circle-info"></i><span>Images are embedded as base64 in the JSON backup. This makes the file larger but fully portable — restoring it will recover all your trade screenshots.</span></div>
@@ -1287,15 +1285,22 @@ function navigateSafely(dest){
 window.addEventListener('message',e=>{
   if(e.data?.type==='tz_flushed'&&_flushTarget){clearTimeout(_flushTimer);const d=_flushTarget;_flushTarget=null;location.href=d;}
   if(e.data?.type==='tz_analytics_state'){const sw=document.getElementById('analyticsToggleSwitch');if(sw)sw.classList.toggle('on',!!e.data.on);}
+  // Logs broadcasts this whenever a trade saves; relay to every other iframe
+  // (calendar, analytics, notes, presession) so they reflect the change live.
+  if(e.data?.type==='tz_trades_changed'){bcast(e.data);}
   if(e.data?.type==='tz_presession_summary'){
-    const dot=document.getElementById('psTabDot');if(!dot)return;
-    const today=new Date();const todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    if(e.data.date!==todayStr){dot.style.display='none';return;}
-    const score=e.data.checklist_score||0;
-    dot.style.background=score>=85?'#22c55e':score>=70?'#f59e0b':score>0?'#ff5f6d':'#555';
-    dot.style.display='inline-block';
+    const dot=document.getElementById('psTabDot');
+    if(dot){
+      if(!e.data.set_id||!e.data.total){dot.style.display='none';}
+      else{
+        const score=e.data.score||0;
+        dot.style.background=score>=85?'#22c55e':score>=70?'#f59e0b':score>0?'#ff5f6d':'#555';
+        dot.style.display='inline-block';
+      }
+    }
     ['logsFrame'].forEach(fid=>{try{const f=document.getElementById(fid);if(f?.contentWindow)f.contentWindow.postMessage(e.data,'*');}catch(ex){}});
   }
+  if(e.data?.type==='tz_open_tab'&&e.data.tab){try{switchTab(e.data.tab);}catch(ex){}}
 });
 
 function goBack(){if(activeTab==='settings'&&isDirty){showToast('Save or discard settings first.','fa-solid fa-triangle-exclamation','red');return;}navigateSafely('/dashboard');}
@@ -1318,6 +1323,10 @@ function switchTab(name){
   if(name==='settings')populateSettings();
   document.getElementById('unsavedBar').classList.remove('show');
   if(window.innerWidth <= 520) collapseSidebar();
+  // Tell every iframe which tab is now active so they can defer expensive
+  // refreshes (e.g. analytics' full-page reload) until the user is actually
+  // looking at them.
+  bcast({type:'tz_tab_changed',tab:name});
 }
 
 function showTabLoader(n){const l=document.getElementById('loader-'+n);if(l){l.style.display='';l.classList.remove('hidden');}}
@@ -1327,6 +1336,9 @@ function frameReady(n){
   const t=localStorage.getItem('tl_theme')||'dark',ft=localStorage.getItem('tl_font')||'default';
   try{if(f?.contentWindow){f.contentWindow.postMessage({type:'tz_theme',theme:t},'*');f.contentWindow.postMessage({type:'tz_font',font:ft},'*');}}catch(e){}
   try{if(f?.contentWindow)f.contentWindow.postMessage({type:'tz_plan',isPro:userIsPro},'*');}catch(e){}
+  // Tell the freshly-loaded iframe which tab is active so it can gate
+  // expensive refreshes on whether the user is actually viewing it.
+  try{if(f?.contentWindow)f.contentWindow.postMessage({type:'tz_tab_changed',tab:activeTab},'*');}catch(e){}
   if(f){f.classList.add('ready');const l=document.getElementById('loader-'+n);if(l){l.classList.add('hidden');setTimeout(()=>{if(l.classList.contains('hidden'))l.style.display='none';},350);}}
 }
 function bcast(msg){['logsFrame','presessionFrame','calFrame','notesFrame','analyticsFrame'].forEach(id=>{const f=document.getElementById(id);try{if(f?.contentWindow)f.contentWindow.postMessage(msg,'*');}catch(e){}});}
@@ -1426,7 +1438,7 @@ function setScope(s){
   ['full','trades'].forEach(k=>{
     const o=document.getElementById('scope'+(k==='full'?'Full':'Trades'));
     const a=k===s;o.classList.toggle('active',a);
-    o.querySelector('.sco-chk').innerHTML=a?'<i class="fa-solid fa-circle-check"></i>':'<i class="fa-regular fa-circle"></i>';
+    o.querySelector('.sco-chk').innerHTML=a?'<i class="fa-solid fa-circle-check"></i>':'<i class="fa-solid fa-circle-dot"></i>';
   });
   refreshExpSummary();
 }

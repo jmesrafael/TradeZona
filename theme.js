@@ -306,6 +306,15 @@ TZ.applyFont();
       border-top-color: var(--accent); border-radius: 50%;
       animation: tz-spin .7s linear infinite;
     }
+    /* Bitcoin glyph — replaces Font Awesome brands subset (~120 KB font file) */
+    .ico-btc {
+      display: inline-block;
+      font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+      font-weight: 700;
+      font-size: 1.05em;
+      line-height: 1;
+      vertical-align: -1px;
+    }
   `;
   document.head.appendChild(s);
 })();

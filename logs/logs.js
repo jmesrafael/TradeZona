@@ -5,19 +5,49 @@ window.addEventListener('message',e=>{
   if(e.data?.type==='tz_analytics_toggle'){analyticsOn=!!e.data.on;localStorage.setItem('tl_analytics_on',analyticsOn);applyAnalyticsState();updateAnalytics();}
   if(e.data?.type==='tz_presession_summary'){sessionStorage.setItem('tz_ps_summary',JSON.stringify(e.data));checkPresessionNudge();}
 });
-function getActiveIntent(){
-  try{const s=JSON.parse(sessionStorage.getItem('tz_ps_summary')||'{}');if(s.date!==todayLocal())return null;return(s.active_intents||[])[0]||null;}catch(e){return null;}
+function getActiveIntent(){return null;} // legacy hook — pre-session intents removed in checklist refactor
+// One-time-per-reset-cycle nudge: shows when the user lands on Logs after the
+// active checklist set has reset and they haven't been prompted yet for that
+// cycle. Detection is based on last_reset_at vs last_prompted_at supplied by
+// the presession iframe; persistent flag is written back to Supabase so the
+// prompt doesn't reappear on the same cycle in another tab.
+function _psCycleStart(resetTimeStr){
+  const [h,m]=String(resetTimeStr||'00:00').split(':').map(n=>parseInt(n,10)||0);
+  const now=new Date();
+  const c=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m,0,0);
+  if(c.getTime()>now.getTime())c.setDate(c.getDate()-1);
+  return c.getTime();
 }
 function checkPresessionNudge(){
   const bar=document.getElementById('psNudgeBar');const msg=document.getElementById('psNudgeMsg');if(!bar||!msg)return;
+  let s={};try{s=JSON.parse(sessionStorage.getItem('tz_ps_summary')||'{}');}catch(e){bar.style.display='none';return;}
+  if(!s||!s.set_id){bar.style.display='none';return;}
+  const cycleStart=s.reset_enabled?_psCycleStart(s.reset_time):0;
+  const lastPrompted=s.last_prompted_at?new Date(s.last_prompted_at).getTime():0;
+  const dismissedKey='tz_ps_dismiss_'+s.set_id;
+  const localDismissed=parseInt(sessionStorage.getItem(dismissedKey)||'0',10);
+  const alreadyPromptedThisCycle=lastPrompted>=cycleStart||localDismissed>=cycleStart;
+  if(alreadyPromptedThisCycle){bar.style.display='none';return;}
+  // Only nudge if the checklist actually still has unchecked items.
+  if(!s.total||s.checked>=s.total){bar.style.display='none';return;}
+  const remaining=s.total-s.checked;
+  bar.style.display='flex';
+  msg.textContent=`Pre-session reset — review your "${s.set_name||'checklist'}" before trading (${remaining} item${remaining===1?'':'s'} unchecked).`;
+  // Persist the prompt so it doesn't fire again this cycle.
+  sessionStorage.setItem(dismissedKey,Date.now().toString());
   try{
-    const s=JSON.parse(sessionStorage.getItem('tz_ps_summary')||'{}');
-    const missing=s.date!==todayLocal();
-    const poor=!missing&&(s.checklist_score||0)===0;
-    if(!missing&&!poor){bar.style.display='none';return;}
-    bar.style.display='flex';
-    msg.textContent=missing?'No pre-session filled for today — complete it before trading.':'Pre-session checklist score is 0% — review it before trading.';
-  }catch(e){bar.style.display='none';}
+    if(typeof currentUser!=='undefined'&&currentUser?.id&&typeof upsertPresessionSetState==='function'){
+      upsertPresessionSetState(currentUser.id,s.set_id,{last_prompted_at:new Date().toISOString()}).catch(()=>{});
+    }
+  }catch(e){}
+}
+function dismissPresessionNudge(){
+  const bar=document.getElementById('psNudgeBar');if(bar)bar.style.display='none';
+  try{const s=JSON.parse(sessionStorage.getItem('tz_ps_summary')||'{}');if(s?.set_id)sessionStorage.setItem('tz_ps_dismiss_'+s.set_id,Date.now().toString());}catch(e){}
+}
+function openPresessionFromNudge(){
+  dismissPresessionNudge();
+  try{parent.postMessage({type:'tz_open_tab',tab:'presession'},'*');}catch(e){}
 }
 
 const jid=sessionStorage.getItem('tz_current_journal')||localStorage.getItem('tz_current_journal')||(()=>{try{return parent?.sessionStorage?.getItem('tz_current_journal')||parent?.localStorage?.getItem('tz_current_journal');}catch(e){return null;}})();
@@ -25,6 +55,9 @@ const jid=sessionStorage.getItem('tz_current_journal')||localStorage.getItem('tz
 let currentUser=null,currentProfile=null,trades=[],settings=null,userIsPro=false;
 let analyticsOn=localStorage.getItem('tl_analytics_on')!=='false';
 let pendingDelId=null,activeNotesId=null,imgBuffer=[],activePill=null;
+// Set true when a realtime delta arrives during a user edit. Once edits
+// settle, refreshTrades() reconciles by doing one full re-fetch.
+let _staleFromRealtime=false;
 let _ppCurrentId=null,_ppCurrentField=null;
 const _saveTimers={};
 const _valInputTimers={};
@@ -101,17 +134,85 @@ function saveToLocalCache(id){
 function restoreFromLocalCache(id){try{const cached=localStorage.getItem(getLocalCacheKey(id));if(!cached)return null;return JSON.parse(cached);}catch(e){console.warn('Failed to restore from local cache:',e);return null;}}
 function clearLocalCache(id){try{localStorage.removeItem(getLocalCacheKey(id));}catch(e){console.warn('Failed to clear local cache:',e);}}
 
+// One-time sweep for cache poisoned by the pre-fix captureActiveInputs bug —
+// any tz_draft_* entry whose pnl or r is a formatted string (like "+$100.00")
+// is wiped, otherwise it would re-overwrite the trade's real value on every
+// reload. Safe to run repeatedly: only deletes entries that contain values
+// parseFloat can't read.
+function sweepMalformedCache(){
+  try{
+    const toDelete=[];
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(!key||!key.startsWith('tz_draft_'))continue;
+      try{
+        const data=JSON.parse(localStorage.getItem(key)||'{}');
+        const bad=v=>v!==''&&v!=null&&isNaN(parseFloat(v));
+        if(bad(data.pnl)||bad(data.r))toDelete.push(key);
+      }catch(_){toDelete.push(key);}
+    }
+    toDelete.forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+    if(toDelete.length)console.info(`[logs] cleaned ${toDelete.length} malformed cache entr${toDelete.length===1?'y':'ies'}`);
+  }catch(e){console.warn('[logs] sweepMalformedCache failed:',e);}
+}
+
+// On init, walk every trade we just fetched and overlay any localStorage cache
+// for that id. The cache only exists for trades the user typed into recently
+// — usually because they refreshed during the autosave debounce window. We
+// then re-schedule a save so the server gets the missed update.
+//
+// Defensive sanitisation: cache entries written by older builds may contain
+// formatted display strings (`+$100.00`) for pnl/r — we strip those back to
+// raw numbers before applying, otherwise we'd re-poison t.pnl with a NaN-
+// producing value and the field would render gray + drop out of analytics.
+function mergeLocalCacheIntoTrades(){
+  trades.forEach(t=>{
+    const cached=restoreFromLocalCache(t.id);
+    if(!cached)return;
+    let differs=false;
+    const numericKeys={pnl:1,r:1};
+    const keys=['pair','position','pnl','r','date','time','confidence'];
+    for(const k of keys){
+      let cv=cached[k];
+      if(cv==null||cv==='')continue;
+      if(numericKeys[k]){
+        cv=_stripNumeric(cv);
+        if(cv===''||isNaN(parseFloat(cv)))continue;
+      }
+      if(t[k]!==cv){t[k]=cv;differs=true;}
+    }
+    for(const k of ['strategy','timeframe','mood']){
+      const cv=cached[k];
+      if(!Array.isArray(cv)||!cv.length)continue;
+      const sv=Array.isArray(t[k])?t[k]:[];
+      if(JSON.stringify(sv)!==JSON.stringify(cv)){t[k]=cv;differs=true;}
+    }
+    if(differs){_pending.add(t.id);scheduleSave(t.id,true);}
+  });
+}
+
 function showLoadingIndicator(el,show=true){if(!el)return;if(show){el.disabled=true;el.innerHTML=`<i class="fa-solid fa-spinner" style="animation:spin 1s linear infinite;margin-right:6px"></i>${el.dataset.originalText||'Loading...'}`;}else{el.disabled=false;el.innerHTML=el.dataset.originalText||el.innerHTML;}}
 
 async function preSaveRow(id){if(id.startsWith('temp_'))return true;if(!_pending.has(id))return true;const row=document.querySelector(`tr[data-id="${id}"]`);if(!row)return true;_isSaving=true;try{await commitSave(id);return true;}catch(e){console.error('Pre-save failed:',e);showToast('Failed to save inputs. Please try again.','fa-solid fa-circle-exclamation','red');_isSaving=false;return false;}}
 
-function scheduleSave(id,immediate=false){_pending.add(id);clearTimeout(_saveTimers[id]);clearTimeout(_saveTimers[id+'_c']);if(immediate){commitSave(id).then(()=>{_saveTimers[id+'_c']=setTimeout(()=>{if(_pending.has(id))commitSave(id);},2000);});}else{_saveTimers[id]=setTimeout(()=>{commitSave(id).then(()=>{_saveTimers[id+'_c']=setTimeout(()=>{if(_pending.has(id))commitSave(id);},2000);});},2000);}}
+// Aggressive autosave: 400ms debounce after the last keystroke. The localStorage
+// cache is written synchronously on every keystroke (saveToLocalCache), so even
+// if the page is refreshed before the network save fires, no data is lost — the
+// init path merges the cache back into the trades array.
+const SAVE_DEBOUNCE_MS=400;
+function scheduleSave(id,immediate=false){
+  _pending.add(id);
+  clearTimeout(_saveTimers[id]);
+  clearTimeout(_saveTimers[id+'_c']);
+  if(immediate){commitSave(id);return;}
+  _saveTimers[id]=setTimeout(()=>commitSave(id),SAVE_DEBOUNCE_MS);
+}
 
 async function commitSave(id){
   if(!_pending.has(id))return;
   if(id.startsWith('temp_'))return;
   const t=trades.find(x=>x.id===id);
-  if(!t){_pending.delete(id);return;}
+  if(!t){_pending.delete(id);_maybeReconcileStale();return;}
   clearTimeout(_saveTimers[id]);
   delete _saveTimers[id];
   const tr=document.querySelector(`tr[data-id="${id}"]`);
@@ -122,6 +223,10 @@ async function commitSave(id){
     clearLocalCache(id);
     _isSaving=false;
     if(tr)tr.classList.remove('saving');
+    // Tell parent (journal.html) — which then broadcasts to calendar / analytics
+    // / notes iframes so they re-render with the latest pnl/r/etc. immediately.
+    try{parent.postMessage({type:'tz_trades_changed',journalId:jid,tradeId:id},'*');}catch(_){}
+    _maybeReconcileStale();
   }catch(e){
     _isSaving=false;
     if(tr)tr.classList.remove('saving');
@@ -129,7 +234,50 @@ async function commitSave(id){
   }
 }
 
+// If realtime deltas were dropped during a user edit, re-fetch once when
+// the edit settles so the table converges with the server.
+function _maybeReconcileStale(){
+  if(!_staleFromRealtime)return;
+  if(_pending.size>0||_newDraftIds.size>0||_isUserEditingTable())return;
+  _staleFromRealtime=false;
+  refreshTrades();
+}
+// Safety net — checks every 5s in case all the per-edit hooks miss it
+// (e.g. the user idled with focus in a cell but typed nothing).
+setInterval(_maybeReconcileStale,5000);
+
 async function flushAll(){const ids=[..._pending];if(!ids.length){try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}return;}try{await Promise.all(ids.map(id=>commitSave(id)));}finally{try{parent.postMessage({type:'tz_flushed'},'*');}catch(e){}}}
+
+// Exposed diagnostic helpers. Reachable from this iframe's console as
+// `tzDebug.*` and from the parent (journal.html) console as
+// `logsFrame.contentWindow.tzDebug.*` — works regardless of where DevTools
+// is attached. `missing()` lists trades whose pnl/r are empty/null in the DB
+// (often because of the pre-fix corruption); `clearCache()` nukes the local
+// draft cache for this journal.
+window.tzDebug={
+  missing(){
+    const rows=trades.filter(t=>t.pnl===''||t.pnl==null||isNaN(parseFloat(t.pnl)))
+      .map(t=>({id:t.id,date:t.date,pair:t.pair,pnl:t.pnl,r:t.r}));
+    console.table(rows);
+    return rows;
+  },
+  missingR(){
+    const rows=trades.filter(t=>t.r===''||t.r==null||isNaN(parseFloat(t.r)))
+      .map(t=>({id:t.id,date:t.date,pair:t.pair,pnl:t.pnl,r:t.r}));
+    console.table(rows);
+    return rows;
+  },
+  clearCache(){
+    let n=0;
+    for(let i=localStorage.length-1;i>=0;i--){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith('tz_draft_')){localStorage.removeItem(k);n++;}
+    }
+    console.info(`Cleared ${n} draft cache entr${n===1?'y':'ies'}.`);
+    return n;
+  },
+  trades(){return trades;},
+};
 
 function todayLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function nowTimeLocal(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -144,6 +292,15 @@ function fmt12(timeStr){if(!timeStr)return'';const[h,m]=timeStr.split(':').map(N
   settings=await getJournalSettings(jid);
   const[raw,imgCounts]=await Promise.all([getTrades(jid),getImageCountsForJournal(currentUser.id)]);
   trades=raw.map(t=>{const dt=dbToTrade(t);return{...dt,images:Array(imgCounts[dt.id]||0).fill({})};});
+  // First wipe any cache entries poisoned by the old captureActiveInputs bug,
+  // then merge what's left. Without this, a stale "+$100.00" string in cache
+  // would re-overwrite the trade's correct value and turn the cell gray again.
+  sweepMalformedCache();
+  // Recovery from immediate refresh: if the user typed something within the
+  // 400ms autosave window and reloaded before the network update fired, the
+  // server doesn't have it but localStorage does. Merge those values back into
+  // trades[] AND re-schedule the save so the server eventually catches up.
+  mergeLocalCacheIntoTrades();
   document.getElementById('skelTable').style.display='none';
   document.getElementById('tableWrap').style.display='block';
   applyAnalyticsState();
@@ -151,11 +308,30 @@ function fmt12(timeStr){if(!timeStr)return'';const[h,m]=timeStr.split(':').map(N
   render();
   document.body.style.visibility='visible';
   if(!userIsPro){document.getElementById('logsUpgradeNudge').style.display='flex';}
-  let _refreshDebounce=null;
-  subscribeTrades(jid,()=>{
-    if(_pending.size>0||_newDraftIds.size>0||_isUserEditingTable())return;
-    clearTimeout(_refreshDebounce);
-    _refreshDebounce=setTimeout(refreshTrades,800);
+  // Realtime: apply inline deltas instead of refetching the entire trade list
+  // on every event. If the user is mid-edit we drop the delta and mark the
+  // view stale; the next idle tick reconciles via a single full refresh.
+  subscribeTrades(jid,(payload)=>{
+    if(_pending.size>0||_newDraftIds.size>0||_isUserEditingTable()){
+      _staleFromRealtime=true;
+      return;
+    }
+    if(!payload||!payload.eventType){
+      // No payload (defensive) → fall back to full refresh.
+      refreshTrades();
+      return;
+    }
+    // Skip if this delta describes a row that's locally pending — our own
+    // optimistic update is the source of truth until the save settles.
+    const id=payload.new?.id||payload.old?.id;
+    if(id&&_pending.has(id))return;
+    trades=applyTradeDelta(trades,payload,(existing,incoming)=>({
+      ...existing,...incoming,
+      // Preserve image-count placeholders attached at load time; image
+      // additions/removals come through their own realtime path.
+      images:existing.images,
+    }));
+    updateAnalytics();render();
   });
   try{parent.postMessage({type:'tz_analytics_state',on:analyticsOn},'*');}catch(e){}
   checkPresessionNudge();
@@ -181,6 +357,10 @@ async function refreshTrades(){
     const ex=existing.get(dt.id);
     return{...dt,images:Array(ex?.images?.length||0).fill({})};
   });
+  // Re-apply any localStorage cache that survived: if a save was in flight
+  // when refresh started, the freshly-fetched server data may be missing the
+  // last few keystrokes. Cache wins, then save catches up.
+  mergeLocalCacheIntoTrades();
   updateAnalytics();render();
 }
 
@@ -188,7 +368,17 @@ function moodStyle(m){const c=(settings?.mood_colors||{})[m];if(!c)return'';cons
 function getTags(field){const k={strategy:'strategies',timeframe:'timeframes',mood:'moods',pair:'pairs'}[field];return settings?.[k]||[];}
 function getPairSuggestions(){return[...new Set([...(settings?.pairs||[]),...trades.map(t=>(t.pair||'').toUpperCase()).filter(Boolean)])].sort();}
 function fmtVal(v,type){const n=parseFloat(v);if(isNaN(n)||v==null||v==='')return'';return type==='pnl'?(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2):(n>=0?'+':'')+n.toFixed(2)+'R';}
-function pnlCol(v){const n=parseFloat(v);return n>0?G:n<0?R:'var(--muted)';}
+// Color rules:
+//   empty / not-a-number → muted gray (placeholder state)
+//   positive             → green
+//   negative             → red
+//   zero (breakeven)     → normal text color (NOT muted — a real value was entered)
+function pnlCol(v){
+  if(v===''||v==null)return'var(--muted)';
+  const n=parseFloat(v);
+  if(isNaN(n))return'var(--muted)';
+  return n>0?G:n<0?R:'var(--text)';
+}
 function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
 // ─── FILTER MODAL ─────────────────────────────────────────────────────────────
@@ -378,7 +568,49 @@ function getFilteredTrades(){
   return items;
 }
 
-function restoreCachedValues(){pageItems.forEach(t=>{const cached=restoreFromLocalCache(t.id);if(!cached)return;const tr=document.querySelector(`tr[data-id="${t.id}"]`);if(!tr)return;const pnlEl=document.getElementById('pnl_'+t.id),rEl=document.getElementById('r_'+t.id),posEl=document.getElementById('pos_'+t.id),dateEl=document.getElementById('dinp_'+t.id),timeEl=document.getElementById('tinp_'+t.id);const pairEl=tr.querySelector('.pw-cell input');if(pairEl&&cached.pair)pairEl.value=cached.pair.toUpperCase();if(pnlEl&&cached.pnl)pnlEl.value=cached.pnl;if(rEl&&cached.r)rEl.value=cached.r;if(posEl&&cached.position)posEl.value=cached.position;if(dateEl&&cached.date)dateEl.value=cached.date;if(timeEl&&cached.time)timeEl.value=cached.time;});}
+// After every render we re-overlay any localStorage cache on top of the just-
+// rendered DOM. This handles the case where a render happened while a save was
+// still in flight and the in-memory trade had stale values.
+//
+// The previous implementation only set `.value` on the inputs — it did NOT
+// update the inline color, so a freshly-rendered "muted" PnL/R input kept its
+// gray color even after the cached value was restored. It also didn't write
+// the cached values back into trades[], so the next render again saw t.pnl=''
+// and re-painted the field gray, requiring the user to click into the cell.
+function restoreCachedValues(){
+  pageItems.forEach(t=>{
+    const cached=restoreFromLocalCache(t.id);
+    if(!cached)return;
+    const tr=document.querySelector(`tr[data-id="${t.id}"]`);
+    if(!tr)return;
+    const pnlEl=document.getElementById('pnl_'+t.id),
+          rEl=document.getElementById('r_'+t.id),
+          posEl=document.getElementById('pos_'+t.id),
+          dateEl=document.getElementById('dinp_'+t.id),
+          timeEl=document.getElementById('tinp_'+t.id);
+    const pairEl=tr.querySelector('.pw-cell input');
+    if(pairEl&&cached.pair){pairEl.value=cached.pair.toUpperCase();t.pair=cached.pair.toUpperCase();}
+    if(pnlEl&&cached.pnl!==undefined&&cached.pnl!==''){
+      const cleanPnl=_stripNumeric(cached.pnl);
+      if(cleanPnl!==''&&!isNaN(parseFloat(cleanPnl))){
+        pnlEl.value=fmtVal(cleanPnl,'pnl');
+        pnlEl.style.color=pnlCol(cleanPnl);
+        t.pnl=cleanPnl;
+      }
+    }
+    if(rEl&&cached.r!==undefined&&cached.r!==''){
+      const cleanR=_stripNumeric(cached.r);
+      if(cleanR!==''&&!isNaN(parseFloat(cleanR))){
+        rEl.value=fmtVal(cleanR,'r');
+        rEl.style.color=pnlCol(cleanR);
+        t.r=cleanR;
+      }
+    }
+    if(posEl&&cached.position){posEl.value=cached.position;t.position=cached.position;}
+    if(dateEl&&cached.date){dateEl.value=cached.date;t.date=cached.date;}
+    if(timeEl&&cached.time){timeEl.value=cached.time;t.time=cached.time;}
+  });
+}
 
 let _renderQueued=false;
 function render(){
@@ -461,7 +693,7 @@ async function confirmMultiDelete(){
   }
 }
 
-function buildNotesBtnHTML(t){const hasNotes=t.notes&&t.notes.trim(),imgCount=t.images&&t.images.length>0?t.images.length:0,hasContent=hasNotes||imgCount>0,badgeHTML=imgCount>0?`<span class="notes-img-badge">${imgCount}</span>`:'',iconHTML=hasContent?`<i class="fa-solid fa-note-sticky"></i>`:`<i class="fa-regular fa-note-sticky"></i>`;return{cls:`notes-btn${hasContent?' hc':''}`,html:`${iconHTML}${badgeHTML}`};}
+function buildNotesBtnHTML(t){const hasNotes=t.notes&&t.notes.trim(),imgCount=t.images&&t.images.length>0?t.images.length:0,hasContent=hasNotes||imgCount>0,badgeHTML=imgCount>0?`<span class="notes-img-badge">${imgCount}</span>`:'',iconHTML=hasContent?`<i class="fa-solid fa-note-sticky"></i>`:`<i class="fa-solid fa-note-sticky" style="opacity:.4"></i>`;return{cls:`notes-btn${hasContent?' hc':''}`,html:`${iconHTML}${badgeHTML}`};}
 function buildRow(t,num){
   const tr=document.createElement('tr');tr.dataset.id=t.id;
   const nb=buildNotesBtnHTML(t),isLong=t.position!=='Short';
@@ -481,13 +713,35 @@ document.addEventListener('click',function(e){if(e.target.tagName==='INPUT'||e.t
 
 function localUpd(id,field,val,skipRender=false){const t=trades.find(x=>x.id===id);if(!t)return;t[field]=val;if(field==='pnl'||field==='r'){const el=document.getElementById((field==='pnl'?'pnl_':'r_')+id);if(el)el.style.color=pnlCol(val);}updateAnalytics();if(!skipRender)render();}
 function updPos(sel,id){const isLong=sel.value!=='Short';sel.className='csel '+(isLong?'long':'short');localUpd(id,'position',sel.value,true);saveToLocalCache(id);scheduleSave(id,true);}
-function onPairInput(el,id){const t=trades.find(x=>x.id===id);if(t)t.pair=el.value.toUpperCase();_pending.add(id);const v=el.value.trim();if(v.length>0)showSug(el,id);else hideSugImmediate(id);saveToLocalCache(id);}
+function onPairInput(el,id){
+  const t=trades.find(x=>x.id===id);if(t)t.pair=el.value.toUpperCase();
+  _pending.add(id);
+  const v=el.value.trim();if(v.length>0)showSug(el,id);else hideSugImmediate(id);
+  saveToLocalCache(id);
+  // Same debounce as PnL/R — autosave per keystroke instead of waiting for blur.
+  clearTimeout(_valInputTimers[id]);
+  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),SAVE_DEBOUNCE_MS);
+}
 function onValInput(id,field,val){
-  localUpd(id,field,val,true);
+  // Strip any pasted formatting (`+$100.00`, `+2R`) before storing. Without
+  // this, a paste would write the display string straight into t.pnl, which
+  // parseFloat reads as NaN — the field then renders gray and is dropped from
+  // analytics. Paste is now safe.
+  const clean=_stripNumeric(val);
+  const el=document.getElementById((field==='pnl'?'pnl_':'r_')+id);
+  // If the user pasted formatting, reflect the cleaned-up value in the input
+  // so what they see matches what's stored.
+  if(el&&val!==clean&&document.activeElement===el){
+    const cursor=el.selectionStart;
+    el.value=clean;
+    try{el.setSelectionRange(Math.min(cursor,clean.length),Math.min(cursor,clean.length));}catch(_){}
+  }
+  localUpd(id,field,clean,true);
   _pending.add(id);
   saveToLocalCache(id);
   clearTimeout(_valInputTimers[id]);
-  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),2000);
+  _valInputTimers[id]=setTimeout(()=>scheduleSave(id,true),SAVE_DEBOUNCE_MS);
+  if(el)el.style.color=pnlCol(clean);
 }
 function vFocus(el){const n=parseFloat(el.value.replace(/[^0-9.\-]/g,''));el.value=isNaN(n)?'':n;el.style.color='var(--text)';el.select();}
 function vBlur(el,id,field){
@@ -501,17 +755,27 @@ function vBlur(el,id,field){
   }
   localUpd(id,field,raw,true);
 
-  // Auto-fill ratio with -1 if PnL is negative and ratio is empty
-  if(field==='pnl'&&n<0){
+  // Force ratio = -1 whenever PnL is negative — regardless of any existing
+  // ratio value. Per request: "no matter what the Ratio is if the pnl is
+  // negative automatically make the ratio -1, even if we put a positive value
+  // first in the ratio and then in the pnl."
+  if(field==='pnl'&&!isNaN(n)&&n<0){
     const ratioEl=document.getElementById('r_'+id);
     if(ratioEl){
-      const currentRatio=ratioEl.value.trim();
-      if(!currentRatio||currentRatio===''){
-        ratioEl.value='-1';
-        localUpd(id,'r','-1',true);
-        ratioEl.style.color=pnlCol('-1');
-        saveToLocalCache(id);
-      }
+      ratioEl.value=fmtVal(-1,'r');
+      localUpd(id,'r','-1',true);
+      ratioEl.style.color=pnlCol('-1');
+    }
+  }
+  // Symmetric guard: if user enters ratio first, then pnl is already negative,
+  // and they try to set a positive ratio — snap it back to -1 immediately.
+  if(field==='r'){
+    const t=trades.find(x=>x.id===id);
+    const pnlNum=t?parseFloat(t.pnl):NaN;
+    if(!isNaN(pnlNum)&&pnlNum<0&&raw!==''&&parseFloat(raw)!==-1){
+      el.value=fmtVal(-1,'r');
+      localUpd(id,'r','-1',true);
+      el.style.color=pnlCol('-1');
     }
   }
 
@@ -532,59 +796,52 @@ function highlightEmpty(id){
   if(pnlInput)pnlInput.classList.toggle('field-required',!t.pnl&&t.pnl!==0);
 }
 
-// ─── CAPTURE ALL ACTIVE INPUTS BEFORE NAVIGATING AWAY ─────────────────────────
-// Detection is by element id/role, NOT by `type==='text'` (the pair input is also
-// type=text and was previously matched by the wrong branch — silently dropped).
+// ─── CAPTURE ACTIVE INPUT BEFORE NAVIGATING AWAY ──────────────────────────────
+// Only the currently-focused input can hold typing that hasn't been committed
+// to trades[] yet — every other handler (vBlur, confirmPair, commitDtEdit,
+// updPos, setConf, _ppToggle, etc.) writes back to t.* synchronously.
+//
+// Critically: blurred PnL/Ratio inputs display the FORMATTED value
+// (`+$100.00`, `+2R`) — `el.value.trim()` would return that string, and
+// blindly assigning it to t.pnl turned `"100"` into `"+$100.00"`. parseFloat
+// of which is NaN, which `pnlCol` paints gray and the analytics filter drops.
+// That's the "page 1 gray, page 2 normal" bug — captureActiveInputs only ever
+// touches the visible page's DOM inputs, so older pages were unaffected.
+//
+// We now only read from the focused element, and for numeric fields we strip
+// currency/sign formatting defensively so even a future caller can't poison
+// t.pnl / t.r with display text.
+function _stripNumeric(s){
+  if(s==null)return'';
+  // Keep digits, decimal point, and a single leading minus.
+  const cleaned=String(s).replace(/[^0-9.\-]/g,'');
+  // Collapse multiple minuses to one, only allow leading.
+  const sign=cleaned.startsWith('-')?'-':'';
+  return sign+cleaned.replace(/-/g,'');
+}
 function captureActiveInputs(){
-  document.querySelectorAll('#mainTable input, #mainTable select').forEach(el=>{
-    const tr=el.closest('tr');if(!tr)return;
-    const id=tr.dataset.id;if(!id)return;
-    const t=trades.find(x=>x.id===id);if(!t)return;
-    const elId=el.id||'';
-    let touched=false;
-    if(elId.startsWith('pnl_')){t.pnl=el.value.trim();touched=true;}
-    else if(elId.startsWith('r_')){t.r=el.value.trim();touched=true;}
-    else if(elId.startsWith('pos_')){t.position=el.value;touched=true;}
-    else if(elId.startsWith('dinp_')){if(el.value){t.date=el.value;touched=true;}}
-    else if(elId.startsWith('tinp_')){if(el.value){t.time=el.value;touched=true;}}
-    else if(el.classList.contains('ci')&&el.closest('.pw-cell')){
-      const v=el.value.trim().toUpperCase();
-      // Always assign — even an empty string is meaningful (user cleared the field)
-      t.pair=v;touched=true;
-    }
-    if(touched){_pending.add(id);saveToLocalCache(id);}
-  });
+  const ae=document.activeElement;
+  if(!ae||ae===document.body)return;
+  if(!ae.closest||!ae.closest('#mainTable'))return;
+  const tr=ae.closest('tr');if(!tr)return;
+  const id=tr.dataset.id;if(!id)return;
+  const t=trades.find(x=>x.id===id);if(!t)return;
+  const elId=ae.id||'';
+  let touched=false;
+  if(elId.startsWith('pnl_')){t.pnl=_stripNumeric(ae.value);touched=true;}
+  else if(elId.startsWith('r_')){t.r=_stripNumeric(ae.value);touched=true;}
+  else if(elId.startsWith('pos_')){t.position=ae.value;touched=true;}
+  else if(elId.startsWith('dinp_')){if(ae.value){t.date=ae.value;touched=true;}}
+  else if(elId.startsWith('tinp_')){if(ae.value){t.time=ae.value;touched=true;}}
+  else if(ae.classList.contains('ci')&&ae.closest('.pw-cell')){
+    t.pair=ae.value.trim().toUpperCase();touched=true;
+  }
+  if(touched){_pending.add(id);saveToLocalCache(id);}
 }
 
-function saveLog(id){
-  // Capture any live input values first
-  captureActiveInputs();
-  const t=trades.find(x=>x.id===id);
-  if(!t)return;
-  const missing=[];
-  if(!t.pair||!t.pair.trim())missing.push('Pair');
-  if(!t.pnl&&t.pnl!==0)missing.push('PnL');
-  if(missing.length){
-    showToast('Please fill: '+missing.join(', '),'fa-solid fa-circle-exclamation','red');
-    if(!t.pair||!t.pair.trim()){
-      const pairInput=document.querySelector(`tr[data-id="${id}"] .pw-cell input`);
-      if(pairInput){pairInput.focus();highlightEmpty(id);}
-    }else{
-      const pnlEl=document.getElementById('pnl_'+id);
-      if(pnlEl){pnlEl.focus();highlightEmpty(id);}
-    }
-    return;
-  }
-  _newDraftIds.delete(id);
-  const tr=document.querySelector(`tr[data-id="${id}"]`);
-  if(tr){
-    tr.classList.remove('draft-row');
-    const saveBtn=tr.querySelector('.save-log-btn');
-    if(saveBtn)saveBtn.outerHTML=`<button class="del-btn" onclick="askDel('${id}')"><i class="fa-solid fa-xmark"></i></button>`;
-  }
-  scheduleSave(id,true);
-  showToast('Trade saved!','fa-solid fa-circle-check','green');
-}
+// (saveLog removed — autosave handles everything now. Inputs persist on every
+// keystroke via saveToLocalCache + scheduleSave. There is no manual confirmation
+// step.)
 
 function syncActiveInputs(){document.querySelectorAll('#mainTable input, #mainTable select').forEach(el=>{const tr=el.closest('tr');if(!tr)return;const id=tr.dataset.id;if(!id)return;const match=el.id.match(/^([a-z]+)_/);if(!match)return;const field=match[1];if(field==='pnl'||field==='r'){localUpd(id,field,el.value.trim(),true);}else if(field==='pair'){localUpd(id,'pair',el.value.toUpperCase().trim(),true);}else if(field==='dinp'){localUpd(id,'date',el.value,true);}else if(field==='tinp'){localUpd(id,'time',el.value,true);}else if(field==='pos'){localUpd(id,'position',el.value,true);}});}
 
@@ -638,11 +895,12 @@ async function addRow(){
       if(tr){
         tr.dataset.id=row.id;
         rebindRowId(tr,tempId,row.id);
-        tr.classList.add('draft-row');
-        const delBtn=tr.querySelector('.del-btn');
-        if(delBtn)delBtn.outerHTML=`<button class="save-log-btn" onclick="saveLog('${row.id}')"><i class="fa-solid fa-floppy-disk"></i> Save Log</button>`;
+        // No more 'Save Log' button — every input auto-saves. The X delete
+        // button stays where it was. The brief 'new-row' highlight from
+        // addRow is sufficient visual feedback for "just added".
       }
-      _newDraftIds.add(row.id);
+      // Do NOT re-add to _newDraftIds: the trade exists in DB now, so any
+      // further input is a regular auto-saved edit, not a draft.
       if(btn)showLoadingIndicator(btn,false);
       if(intent?.id){try{await db.from('trade_intents').update({trade_id:row.id,status:'executed'}).eq('id',intent.id);}catch(e){}}
     }else{
@@ -684,11 +942,47 @@ async function confirmDelete(){
   }
 }
 
-function showSugOnFocus(el,id){const all=getPairSuggestions();const box=document.getElementById('sug_'+id);if(!box)return;const v=el.value.toUpperCase().trim();const m=v?all.filter(p=>p.includes(v)&&p!==v):all;if(!m.length){box.style.display='none';return;}box.innerHTML=m.slice(0,10).map(p=>`<div class="sug" onmousedown="pickPair('${id}','${p}')">${p}</div>`).join('');box.style.display='block';}
-function showSug(el,id){const v=el.value.toUpperCase().trim();const box=document.getElementById('sug_'+id),all=getPairSuggestions();if(!v){box.style.display='none';return;}const m=all.filter(p=>p.includes(v)&&p!==v);if(!m.length){box.style.display='none';return;}box.innerHTML=m.slice(0,12).map(p=>`<div class="sug" onmousedown="pickPair('${id}','${p}')">${p}</div>`).join('');box.style.display='block';}
-function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>s.style.display='none'),180);}
-function hideSugImmediate(id){const box=document.getElementById('sug_'+id);if(box)box.style.display='none';}
-function pickPair(id,p){localUpd(id,'pair',p,true);const inp=document.getElementById('sug_'+id)?.previousElementSibling;if(inp)inp.value=p;document.getElementById('sug_'+id).style.display='none';saveToLocalCache(id);scheduleSave(id,true);}
+// Only update the suggestion box if the visible list actually changed.
+// Re-running innerHTML on every keystroke caused a brief blank frame each time
+// (the "appears-and-vanishes-immediately" flicker the user reported).
+// `event.preventDefault()` on mousedown keeps focus on the input so the blur
+// handler doesn't commit a half-typed pair before pickPair sets the full value.
+function _renderSugBox(box,id,matches,limit){
+  if(!matches.length){box.style.display='none';box.dataset.lastKey='';return;}
+  const slice=matches.slice(0,limit);
+  const key=slice.join('|');
+  if(box.dataset.lastKey!==key){
+    box.dataset.lastKey=key;
+    box.innerHTML=slice.map(p=>`<div class="sug" onmousedown="event.preventDefault();pickPair('${id}','${esc(p)}')">${esc(p)}</div>`).join('');
+  }
+  box.style.display='block';
+}
+function showSugOnFocus(el,id){
+  const box=document.getElementById('sug_'+id);if(!box)return;
+  const all=getPairSuggestions();
+  const v=el.value.toUpperCase().trim();
+  const m=v?all.filter(p=>p.includes(v)&&p!==v):all;
+  _renderSugBox(box,id,m,10);
+}
+function showSug(el,id){
+  const box=document.getElementById('sug_'+id);if(!box)return;
+  const v=el.value.toUpperCase().trim();
+  if(!v){box.style.display='none';box.dataset.lastKey='';return;}
+  const all=getPairSuggestions();
+  const m=all.filter(p=>p.includes(v)&&p!==v);
+  _renderSugBox(box,id,m,12);
+}
+function hideSug(){setTimeout(()=>document.querySelectorAll('.sugs').forEach(s=>{s.style.display='none';s.dataset.lastKey='';}),180);}
+function hideSugImmediate(id){const box=document.getElementById('sug_'+id);if(box){box.style.display='none';box.dataset.lastKey='';}}
+function pickPair(id,p){
+  const inp=document.querySelector(`tr[data-id="${id}"] .pw-cell input`);
+  if(inp)inp.value=p;
+  localUpd(id,'pair',p,true);
+  const box=document.getElementById('sug_'+id);
+  if(box){box.style.display='none';box.dataset.lastKey='';}
+  saveToLocalCache(id);
+  scheduleSave(id,true);
+}
 
 function openPP(e,id,field){
   e.stopPropagation();if(_ppCurrentId===id&&_ppCurrentField===field&&document.getElementById('pp').style.display!=='none'){closePP();return;}
@@ -930,6 +1224,7 @@ function renderImgs(){
     const imgEl=document.createElement('img');
     imgEl.alt='';
     imgEl.loading='lazy';
+    imgEl.decoding='async';
     // Only set src if it's a valid data URL or http URL to avoid broken images
     if(src&&(src.startsWith('data:')||src.startsWith('http')||src.startsWith('blob:'))){
       imgEl.src=src;
@@ -1101,8 +1396,13 @@ document.getElementById('pageSizeSelect').value=PAGE_SIZE;
 
 document.addEventListener('input',e=>{const el=e.target;if(el.tagName==='TEXTAREA'||el.tagName==='INPUT'){if('defaultValue' in el)el.defaultValue=el.value;}},true);
 
-// Security
-document.addEventListener('contextmenu',e=>e.preventDefault());
+// Security — but never block context menu / selection on input fields, or
+// right-click paste stops working in PnL / Ratio / Pair / Notes textareas.
+document.addEventListener('contextmenu',e=>{
+  const tag=e.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
+  e.preventDefault();
+});
 document.addEventListener('keydown',e=>{const ctrl=e.ctrlKey||e.metaKey,shift=e.shiftKey;if(e.key==='F12'||(ctrl&&e.key.toLowerCase()==='u')||(ctrl&&shift&&['i','j','c'].includes(e.key.toLowerCase()))||(ctrl&&e.key.toLowerCase()==='s')||(ctrl&&e.key.toLowerCase()==='p')){e.preventDefault();e.stopPropagation();return false;}},true);
 document.addEventListener('selectstart',e=>{const tag=e.target.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;e.preventDefault();});
 document.addEventListener('dragstart',e=>e.preventDefault());

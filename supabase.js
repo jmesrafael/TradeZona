@@ -116,13 +116,32 @@ async function createJournal(userId, { name, capital, pin_hash }) {
   return data;
 }
 
+// Explicit column list — `select('*')` was the dominant Supabase egress
+// source because every realtime tick pulled `notes` (long text) + housekeeping
+// columns the UI never reads. Keep this in sync with `dbToTrade` below.
+const TRADES_COLUMNS = 'id, trade_date, trade_time, pair, position, strategy, timeframe, pnl, r_factor, confidence, mood, notes, pinned, created_at';
+
 async function getTrades(journalId) {
   const { data, error } = await db
     .from('trades')
-    .select('*')
+    .select(TRADES_COLUMNS)
     .eq('journal_id', journalId)
     .order('created_at', { ascending: false });
   if (error) console.error('[supabase] getTrades error:', error);
+  return data || [];
+}
+
+// Lightweight variant for views that only need PnL/date (calendar, dashboard
+// totals). Skips `notes`, `mood`, `strategy`, `timeframe`, `pair`, etc.
+const TRADES_LIGHT_COLUMNS = 'id, trade_date, pnl, r_factor';
+
+async function getTradesLight(journalId) {
+  const { data, error } = await db
+    .from('trades')
+    .select(TRADES_LIGHT_COLUMNS)
+    .eq('journal_id', journalId)
+    .order('created_at', { ascending: false });
+  if (error) console.error('[supabase] getTradesLight error:', error);
   return data || [];
 }
 
@@ -675,10 +694,23 @@ async function deleteTradeImage(imageId) {
 // ── Signed URL cache (55 min lifetime) ───────────────────
 const _urlCache = {};
 
+// Legacy `data` (base64) column is no longer fetched in bulk by
+// getTradeImages. For rows that lack a storage_url, fetch `data` on
+// demand (rare path — only matters for pre-R2 uploads).
+async function _fetchLegacyImageData(imageId) {
+  const { data, error } = await db
+    .from('trade_images')
+    .select('data')
+    .eq('id', imageId)
+    .maybeSingle();
+  if (error || !data) return '';
+  return data.data || '';
+}
+
 async function getImageUrl(img) {
   if (!img) return '';
 
-  if (img.storage_url && !img.data) {
+  if (img.storage_url) {
     const cacheKey = img.storage_url;
 
     // R2 URLs are already public, return them directly
@@ -701,6 +733,8 @@ async function getImageUrl(img) {
 
   if (img.data) return img.data;
   if (img.url)  return img.url;
+  // Legacy row: getTradeImages stripped `data` from the select; fetch it now.
+  if (img.id)   return await _fetchLegacyImageData(img.id);
   return '';
 }
 
@@ -713,11 +747,12 @@ async function getImageUrls(imgs) {
   const results = new Array(imgs.length).fill('');
   const toFetch = []; // only images that need a fresh signed URL
 
+  const legacyIds = []; // rows that need an on-demand `data` fetch
   imgs.forEach((img, i) => {
     if (!img)           return;
     if (img.data)       { results[i] = img.data; return; }
     if (img.url)        { results[i] = img.url;  return; }
-    if (img.storage_url && !img.data) {
+    if (img.storage_url) {
       // R2 URLs are already public, use them directly
       if (img.storage_url.startsWith('https://')) {
         results[i] = img.storage_url;
@@ -727,12 +762,16 @@ async function getImageUrls(imgs) {
       const cached = _urlCache[img.storage_url];
       if (cached && cached.expires > now) { results[i] = cached.url; return; }
       toFetch.push({ idx: i, path: img.storage_url });
+      return;
     }
+    // Legacy row: data column was stripped from getTradeImages; load it now.
+    if (img.id) legacyIds.push({ idx: i, id: img.id });
   });
 
   // All cache misses fetched in parallel — single round-trip per image
+  const tasks = [];
   if (toFetch.length) {
-    await Promise.all(toFetch.map(async ({ idx, path }) => {
+    tasks.push(Promise.all(toFetch.map(async ({ idx, path }) => {
       const { data, error } = await db.storage
         .from('trade-images')
         .createSignedUrl(path, 60 * 60);
@@ -740,8 +779,14 @@ async function getImageUrls(imgs) {
         _urlCache[path] = { url: data.signedUrl, expires: now + 55 * 60 * 1000 };
         results[idx] = data.signedUrl;
       }
-    }));
+    })));
   }
+  if (legacyIds.length) {
+    tasks.push(Promise.all(legacyIds.map(async ({ idx, id }) => {
+      results[idx] = await _fetchLegacyImageData(id);
+    })));
+  }
+  if (tasks.length) await Promise.all(tasks);
 
   return results;
 }
@@ -882,11 +927,16 @@ async function getImageCountsForJournal(userId) {
   return counts;
 }
 
-// Fetch all images for a single trade
+// Explicit column list — never ship the legacy `data` (base64) column to
+// the browser. R2/Storage URLs are already enough; if a row is still legacy
+// (storage_url null, data populated), getImageUrl() handles the fallback
+// path explicitly via the dedicated migration helper.
+const TRADE_IMAGES_COLUMNS = 'id, trade_id, storage_url, created_at';
+
 async function getTradeImages(tradeId) {
   const { data, error } = await db
     .from('trade_images')
-    .select('*')
+    .select(TRADE_IMAGES_COLUMNS)
     .eq('trade_id', tradeId)
     .order('created_at', { ascending: true });
   if (error) console.error('[supabase] getTradeImages error:', error);
@@ -929,6 +979,44 @@ function subscribeTrades(journalId, onChange) {
     .subscribe();
 }
 
+// Applies a Supabase realtime payload to an in-memory trades array
+// (already mapped through dbToTrade). Returns a new array (does not mutate).
+//
+// Why this matters: every realtime tick used to trigger a full
+// `getTrades()` refetch on every consumer (logs, notes, calendar). With
+// 100 trades and a steady stream of edits that's 100 rows × N events of
+// pure egress for nothing. This applies the inline diff instead.
+//
+// Caller-supplied `mergeFn(existing, incoming)` lets the page preserve
+// fields that aren't in the realtime row (e.g. attached image arrays).
+// If omitted, the default is `{ ...existing, ...incoming }`.
+function applyTradeDelta(trades, payload, mergeFn) {
+  if (!payload || !payload.eventType) return trades;
+  const event = payload.eventType;
+
+  if (event === 'INSERT' || event === 'UPDATE') {
+    const row = payload.new;
+    if (!row || !row.id) return trades;
+    const incoming = dbToTrade(row);
+    const idx = trades.findIndex(t => t.id === incoming.id);
+    if (idx >= 0) {
+      const next = trades.slice();
+      next[idx] = mergeFn ? mergeFn(trades[idx], incoming) : { ...trades[idx], ...incoming };
+      return next;
+    }
+    // Not in list yet → prepend (matches "newest first" sort everywhere).
+    return [incoming, ...trades];
+  }
+
+  if (event === 'DELETE') {
+    const id = payload.old?.id;
+    if (!id) return trades;
+    return trades.filter(t => t.id !== id);
+  }
+
+  return trades;
+}
+
 
 // ── PIN helper ────────────────────────────────────────────
 
@@ -967,28 +1055,256 @@ async function updateCustomNote(id, updates) {
 }
  
 async function deleteCustomNote(id) {
+  // Best-effort: remove any images first so storage doesn't leak.
+  const { data: row } = await db.from('custom_notes')
+    .select('images').eq('id', id).maybeSingle();
+  const paths = ((row?.images) || [])
+    .map(im => im?.storage_url || im?.path)
+    .filter(p => p && !String(p).startsWith('https://'));
+  if (paths.length) {
+    try { await db.storage.from('custom-note-images').remove(paths); } catch(e) {}
+  }
   const { error } = await db.from('custom_notes').delete().eq('id', id);
   if (error) throw error;
 }
- 
-// ── Pre-Session ───────────────────────────────────────────
-async function getPresession(journalId, date) {
-  const { data, error } = await db.from('presessions')
+
+// ── Custom Note Images ────────────────────────────────────
+// Custom notes store images as an `images` jsonb column on the row:
+//   [{ storage_url: '<bucket-path>', path: '<bucket-path>' }, ...]
+// We upload to the 'custom-note-images' bucket under <user_id>/<note_id>/<filename>.
+const _cnUrlCache = {};
+
+async function uploadCustomNoteImage(userId, noteId, input) {
+  function _dataUrlToBlob(dataUrl) {
+    const [header, b64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+  const compressed = await compressImage(input, {
+    maxWidth: IMAGE_CONFIG.MAX_WIDTH,
+    maxHeight: IMAGE_CONFIG.MAX_HEIGHT,
+    targetKB: IMAGE_CONFIG.TARGET_SIZE_KB
+  });
+  const blob = _dataUrlToBlob(compressed);
+  if (blob.size > IMAGE_CONFIG.MAX_FILE_SIZE_BYTES) {
+    throw new Error('Image too large (max 5MB)');
+  }
+  const ext  = blob.type.includes('png') ? 'png' : 'jpg';
+  const path = `${userId}/${noteId || 'staging'}/cn_${Date.now()}.${ext}`;
+  const { error } = await db.storage
+    .from('custom-note-images')
+    .upload(path, blob, { contentType: blob.type, upsert: false });
+  if (error) throw error;
+  return { storage_url: path, path };
+}
+
+async function getCustomNoteImageUrl(img) {
+  if (!img) return '';
+  const key = img.storage_url || img.path || '';
+  if (!key) return img.url || '';
+  if (key.startsWith('https://')) return key;
+  const cached = _cnUrlCache[key];
+  if (cached && cached.expires > Date.now()) return cached.url;
+  const { data, error } = await db.storage
+    .from('custom-note-images')
+    .createSignedUrl(key, 60 * 60);
+  if (!error && data?.signedUrl) {
+    _cnUrlCache[key] = { url: data.signedUrl, expires: Date.now() + 55 * 60 * 1000 };
+    return data.signedUrl;
+  }
+  return '';
+}
+
+async function deleteCustomNoteImageFile(path) {
+  if (!path || String(path).startsWith('https://')) return;
+  try { await db.storage.from('custom-note-images').remove([path]); } catch(e) {}
+}
+
+// ── Pre-Session checklist ─────────────────────────────────
+// Decoupled from session_date: each journal has one or more checklist
+// "sets" with their own items, reset cadence, and resettable runtime
+// state (is_checked per item, plus set-level mood / market_bias).
+//
+// A "reset cycle" is a window that starts at the configured reset_time
+// each day and advances forward 24h. State carries last_reset_at; if
+// the current cycle's start is later than that timestamp, the state is
+// considered stale and is reset (locally + persisted) before render.
+
+async function getPresessionSets(journalId) {
+  const { data, error } = await db.from('presession_checklist_sets')
     .select('*')
     .eq('journal_id', journalId)
-    .eq('session_date', date)
+    .order('position', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+async function getPresessionItems(setId) {
+  const { data, error } = await db.from('presession_checklist_items')
+    .select('*')
+    .eq('set_id', setId)
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+async function getPresessionState(setId) {
+  const { data, error } = await db.from('presession_checklist_state')
+    .select('*')
+    .eq('set_id', setId);
+  if (error) throw error;
+  return data || [];
+}
+
+async function getPresessionSetState(setId) {
+  const { data, error } = await db.from('presession_checklist_set_state')
+    .select('*')
+    .eq('set_id', setId)
     .maybeSingle();
   if (error) throw error;
   return data;
 }
- 
-async function upsertPresession(userId, journalId, date, updates) {
-  const { error } = await db.from('presessions').upsert({
-    user_id: userId,
-    journal_id: journalId,
-    session_date: date,
-    ...updates,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'journal_id,session_date' });
+
+const DEFAULT_PRESESSION_MOODS = ['😊 Calm', '🎯 Focused', '😤 Frustrated', '😰 Anxious', '🤑 Greedy', '😴 Tired', '💪 Confident'];
+
+async function createPresessionSet(userId, journalId, fields) {
+  const { data, error } = await db.from('presession_checklist_sets')
+    .insert({
+      user_id: userId,
+      journal_id: journalId,
+      name: fields.name || 'New Checklist',
+      description: fields.description || '',
+      reset_enabled: fields.reset_enabled ?? true,
+      reset_time: fields.reset_time || '00:00',
+      position: fields.position ?? 0,
+      mood_options: fields.mood_options || DEFAULT_PRESESSION_MOODS,
+    })
+    .select('*').single();
   if (error) throw error;
+  // Companion set-state row so realtime + reset bookkeeping have something to mutate.
+  await db.from('presession_checklist_set_state')
+    .insert({ set_id: data.id, user_id: userId });
+  return data;
+}
+
+async function updatePresessionSet(setId, updates) {
+  const { error } = await db.from('presession_checklist_sets')
+    .update(updates).eq('id', setId);
+  if (error) throw error;
+}
+
+async function deletePresessionSet(setId) {
+  const { error } = await db.from('presession_checklist_sets')
+    .delete().eq('id', setId);
+  if (error) throw error;
+}
+
+async function createPresessionItem(setId, fields) {
+  const { data, error } = await db.from('presession_checklist_items')
+    .insert({
+      set_id: setId,
+      label: fields.label,
+      order_index: fields.order_index ?? 0,
+    })
+    .select('*').single();
+  if (error) throw error;
+  return data;
+}
+
+async function updatePresessionItem(itemId, updates) {
+  const { error } = await db.from('presession_checklist_items')
+    .update(updates).eq('id', itemId);
+  if (error) throw error;
+}
+
+async function deletePresessionItem(itemId) {
+  const { error } = await db.from('presession_checklist_items')
+    .delete().eq('id', itemId);
+  if (error) throw error;
+}
+
+async function upsertPresessionItemState(userId, setId, itemId, isChecked) {
+  const { error } = await db.from('presession_checklist_state')
+    .upsert({
+      user_id: userId,
+      set_id: setId,
+      item_id: itemId,
+      is_checked: isChecked,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'item_id' });
+  if (error) throw error;
+}
+
+async function upsertPresessionSetState(userId, setId, updates) {
+  const { error } = await db.from('presession_checklist_set_state')
+    .upsert({
+      user_id: userId,
+      set_id: setId,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'set_id' });
+  if (error) throw error;
+}
+
+// Resets all per-item states for a set + the set-level mood/bias, stamping
+// last_reset_at to the cycle's start. Called on stale-cycle detection or
+// from a manual "Reset now" action.
+async function resetPresessionCycle(userId, setId, cycleStartIso) {
+  const stamp = cycleStartIso || new Date().toISOString();
+  const [r1, r2] = await Promise.all([
+    db.from('presession_checklist_state')
+      .update({ is_checked: false, last_reset_at: stamp, updated_at: stamp })
+      .eq('set_id', setId),
+    db.from('presession_checklist_set_state')
+      .upsert({
+        set_id: setId, user_id: userId,
+        session_mood: null, market_bias: null,
+        last_reset_at: stamp, updated_at: stamp,
+      }, { onConflict: 'set_id' }),
+  ]);
+  if (r1.error) throw r1.error;
+  if (r2.error) throw r2.error;
+}
+
+// Computes the most recent reset boundary (a Date object) for a given
+// reset_time string ("HH:MM" or "HH:MM:SS") in the user's local zone.
+// Cycles are 24h windows aligned to the wall-clock reset_time.
+function presessionCycleStart(resetTimeStr) {
+  const [h, m] = String(resetTimeStr || '00:00').split(':').map(n => parseInt(n, 10) || 0);
+  const now = new Date();
+  const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  if (candidate.getTime() > now.getTime()) {
+    candidate.setDate(candidate.getDate() - 1);
+  }
+  return candidate;
+}
+
+// True if the supplied last_reset_at is older than the current cycle's start.
+function presessionIsStale(lastResetAtIso, resetTimeStr) {
+  if (!lastResetAtIso) return true;
+  const cycleStart = presessionCycleStart(resetTimeStr).getTime();
+  const last = new Date(lastResetAtIso).getTime();
+  return last < cycleStart;
+}
+
+function subscribePresessionSet(setId, onChange) {
+  return db
+    .channel('presession_set:' + setId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'presession_checklist_sets',      filter: `id=eq.${setId}`     }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'presession_checklist_items',     filter: `set_id=eq.${setId}` }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'presession_checklist_state',     filter: `set_id=eq.${setId}` }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'presession_checklist_set_state', filter: `set_id=eq.${setId}` }, onChange)
+    .subscribe();
+}
+
+function subscribePresessionJournal(journalId, onChange) {
+  return db
+    .channel('presession_journal:' + journalId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'presession_checklist_sets', filter: `journal_id=eq.${journalId}` }, onChange)
+    .subscribe();
 }

@@ -47,7 +47,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -383,7 +382,7 @@ footer a:hover{color:var(--text2)}
     <div class="hero-sub">
       <span><i class="fa-solid fa-bolt"></i> Real-time results</span>
       <span><i class="fa-solid fa-lock-open"></i> No signup required</span>
-      <span><i class="fa-brands fa-bitcoin"></i> Crypto &amp; Forex</span>
+      <span><span class="ico-btc">₿</span> Crypto &amp; Forex</span>
     </div>
   </div>
 
@@ -399,7 +398,7 @@ footer a:hover{color:var(--text2)}
       <!-- Asset toggle -->
       <div class="ctoggle">
         <button class="ctbtn active" id="cBtnCrypto" onclick="cSetAsset('crypto')">
-          <i class="fa-brands fa-bitcoin" style="margin-right:3px"></i>Crypto
+          <span class="ico-btc" style="margin-right:3px">₿</span>Crypto
         </button>
         <button class="ctbtn" id="cBtnForex" onclick="cSetAsset('forex')">
           <i class="fa-solid fa-dollar-sign" style="margin-right:3px"></i>Forex

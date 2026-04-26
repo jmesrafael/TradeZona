@@ -15,8 +15,6 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 <link rel="stylesheet" href="/logs/logs.css">
 </head>
 <body>
@@ -84,8 +82,10 @@
 
 <!-- Pre-session nudge bar -->
 <div id="psNudgeBar" class="ps-nudge-bar" style="display:none">
-  <i class="fa-solid fa-triangle-exclamation"></i>
+  <i class="fa-solid fa-clipboard-list"></i>
   <span id="psNudgeMsg"></span>
+  <button class="ps-nudge-action" id="psNudgeBtn" onclick="openPresessionFromNudge()">Open</button>
+  <button class="ps-nudge-close" onclick="dismissPresessionNudge()" title="Dismiss"><i class="fa-solid fa-xmark"></i></button>
 </div>
 
 <!-- Filter backdrop + modal -->
@@ -285,7 +285,7 @@
           <div class="share-generating" id="shareGenerating"><i class="fa-solid fa-circle-notch spin-icon"></i> Generating…</div>
           <div class="share-actions-stack" id="shareActionsStack">
             <button class="btn-share-action btn-share-dl" onclick="doShareDownload()"><i class="fa-solid fa-download"></i> Download PNG</button>
-            <button class="btn-share-action btn-share-copy" onclick="doShareCopy()"><i class="fa-regular fa-copy"></i> Copy to Clipboard</button>
+            <button class="btn-share-action btn-share-copy" onclick="doShareCopy()"><i class="fa-solid fa-copy"></i> Copy to Clipboard</button>
             <button class="btn-share-action btn-share-native" id="btnShareNative" onclick="doShareNative()" style="display:none"><i class="fa-solid fa-share-nodes"></i> Share…</button>
           </div>
         </div>

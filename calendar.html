@@ -207,7 +207,31 @@ window.addEventListener('message', e => {
     document.getElementById('freeBanner').style.display = userIsPro ? 'none' : 'flex';
     updateNavButtons();
   }
+  // Logs broadcasts this every time a trade is saved; reload trades and redraw
+  // so the calendar always shows the latest PNL totals without manual refresh.
+  if (e.data?.type === 'tz_trades_changed') {
+    refreshCalendarTrades();
+  }
 });
+
+let _calRefreshing = false;
+async function refreshCalendarTrades(){
+  if(_calRefreshing||!jid)return;
+  _calRefreshing=true;
+  try{
+    const raw=await getTradesLight(jid);
+    allTrades=raw.map(dbToTrade);
+    renderMonth();
+  }catch(err){console.warn('[calendar] refresh failed:',err);}
+  finally{_calRefreshing=false;}
+}
+
+// Apply a single realtime payload in place — no Supabase round-trip.
+function applyCalendarDelta(payload){
+  if(!payload||!payload.eventType){refreshCalendarTrades();return;}
+  allTrades=applyTradeDelta(allTrades,payload);
+  renderMonth();
+}
 
 const jid = sessionStorage.getItem('tz_current_journal');
 let allTrades=[], curYear=new Date().getFullYear(), curMonth=new Date().getMonth(), userIsPro=false;
@@ -242,6 +266,12 @@ function isMonthLocked(y,m){if(userIsPro)return false;const lastDay=new Date(y,m
   document.getElementById('skelWrap').style.display='none';
   document.getElementById('calWrap').style.display='block';
   renderMonth();updateNavButtons();
+  // Backup live-sync path — covers cross-tab / cross-window scenarios where
+  // the postMessage from logs can't reach this frame. Apply inline deltas
+  // instead of re-fetching the whole trade list on every event.
+  try{
+    subscribeTrades(jid,(payload)=>applyCalendarDelta(payload));
+  }catch(e){console.warn('[calendar] subscribeTrades failed:',e);}
   if(!userIsPro){
     document.getElementById('calAdSlot').style.display='block';
     document.getElementById('calUpgradeNudge').style.display='flex';

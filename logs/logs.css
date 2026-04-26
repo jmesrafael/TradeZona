@@ -1,6 +1,11 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-.ps-nudge-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(0);display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(15,12,5,.92);border:1px solid rgba(245,158,11,.4);border-radius:var(--radius-lg,10px);font-size:12px;color:#f59e0b;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.5);z-index:9999;white-space:nowrap;max-width:calc(100% - 40px);animation:psNudgeIn .22s ease}
+.ps-nudge-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(0);display:flex;align-items:center;gap:10px;padding:10px 14px 10px 16px;background:rgba(15,12,5,.92);border:1px solid rgba(245,158,11,.4);border-radius:var(--radius-lg,10px);font-size:12px;color:#f59e0b;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.5);z-index:9999;max-width:calc(100% - 40px);animation:psNudgeIn .22s ease}
 .ps-nudge-bar i{flex-shrink:0;font-size:12px}
+.ps-nudge-bar #psNudgeMsg{flex:1;white-space:normal}
+.ps-nudge-action{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0;font-family:inherit}
+.ps-nudge-action:hover{background:rgba(245,158,11,.25)}
+.ps-nudge-close{background:none;border:none;color:#f59e0b;opacity:.65;cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:opacity .15s}
+.ps-nudge-close:hover{opacity:1}
 @keyframes psNudgeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 @keyframes spin{to{transform:rotate(360deg)}}

@@ -94,6 +94,45 @@ const jid = sessionStorage.getItem('tz_current_journal') || (()=>{
 
 const G='#19c37d', R='#ff5f6d';
 
+// Live-update path: when logs (or any tab) saves a trade, journal.html relays
+// `tz_trades_changed` to every frame. Analytics is built inside an IIFE with
+// const-scoped state, so the cheapest reliable refresh is to reload the iframe.
+//
+// We used to reload on every save (debounced 1 s). With heavy editing that
+// meant 50+ full HTML+chart-library refetches in a short burst, even when
+// the user wasn't looking at the analytics tab. Now we only reload when:
+//   1) the user is actually on the analytics tab (parent broadcasts that), AND
+//   2) the parent tab is visible.
+// While analytics isn't the active tab the page just queues the reload and
+// fires it once when the user switches over — turning N reloads into 1.
+let _anaQueuedReload = false;
+let _anaReloadTimer = null;
+let _anaTabActive = false;        // true when journal.html's active tab is "analytics"
+
+function _anaIsParentVisible(){
+  // In an iframe, document.visibilityState mirrors the parent tab's state.
+  return document.visibilityState !== 'hidden';
+}
+function _anaMaybeReload(){
+  if(!_anaQueuedReload)return;
+  if(!_anaTabActive)return;
+  if(!_anaIsParentVisible())return;
+  // Tiny coalesce so a burst of changes still results in one reload.
+  clearTimeout(_anaReloadTimer);
+  _anaReloadTimer=setTimeout(()=>location.reload(),300);
+}
+window.addEventListener('message', e => {
+  if (e.data?.type === 'tz_trades_changed') {
+    _anaQueuedReload=true;
+    _anaMaybeReload();
+  }
+  if (e.data?.type === 'tz_tab_changed') {
+    _anaTabActive=(e.data.tab==='analytics');
+    if(_anaTabActive)_anaMaybeReload();
+  }
+});
+document.addEventListener('visibilitychange',_anaMaybeReload);
+
 function fP(v){const n=parseFloat(v);if(isNaN(n))return'—';return(n>=0?'+':'-')+'$'+Math.abs(n).toFixed(2);}
 function fPct(v){return parseFloat(v).toFixed(1)+'%';}
 function grc(n){return n>0?'green':n<0?'red':'';}
