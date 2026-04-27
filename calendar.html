@@ -94,11 +94,17 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .cal-nudge-bar{background:rgba(var(--accent-rgb,0,255,136),.04);border:1px solid rgba(var(--accent-rgb,0,255,136),.15)}
 /* Previous months */
 .prev-months{margin-top:20px}
-.prev-months-hdr{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.prev-months-hdr{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.prev-months-hdr-left{display:flex;align-items:center;gap:7px}
 .prev-months-hdr i{color:var(--accent2);font-size:12px}
-.pm-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:6px;gap:10px;flex-wrap:wrap;cursor:pointer;transition:background var(--transition-fast)}
+.pm-toggle-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-md);padding:3px 10px;font-size:10px;font-weight:600;font-family:var(--font-heading,'Space Grotesk',sans-serif);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;text-transform:none;letter-spacing:normal}
+.pm-toggle-btn:hover{border-color:var(--accent2);color:var(--text)}
+.pm-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:6px;gap:10px;flex-wrap:wrap;cursor:pointer;transition:all var(--transition-fast)}
 .pm-row:hover{background:var(--panel2,rgba(255,255,255,.03));border-color:rgba(var(--accent-rgb,0,255,136),.2)}
-.pm-name{font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;min-width:115px;color:var(--text)}
+.pm-row.is-current{border-color:rgba(25,195,125,.4);background:rgba(25,195,125,.04)}
+.pm-row.is-current:hover{background:rgba(25,195,125,.08)}
+.pm-name{display:flex;align-items:center;gap:7px;font-family:var(--font-heading,'Space Grotesk',sans-serif);font-size:13px;font-weight:600;min-width:115px;color:var(--text)}
+.pm-current-badge{font-size:9px;background:rgba(25,195,125,.15);color:#19c37d;border-radius:4px;padding:1px 6px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;flex-shrink:0}
 .pm-stats{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .pm-stat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px}
 .pm-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
@@ -173,7 +179,13 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
   </div>
 
   <div class="prev-months" id="prevMonthsSection" style="display:none">
-    <div class="prev-months-hdr"><i class="fa-solid fa-chart-bar"></i>Previous Months</div>
+    <div class="prev-months-hdr">
+      <div class="prev-months-hdr-left"><i class="fa-solid fa-chart-bar"></i>Monthly Breakdown</div>
+      <button class="pm-toggle-btn" id="pmToggleBtn" onclick="togglePrevMonths()">
+        <i class="fa-solid fa-chevron-up" id="pmToggleIcon"></i>
+        <span id="pmToggleLbl">Hide</span>
+      </button>
+    </div>
     <div id="prevMonthsGrid"></div>
   </div>
 
@@ -235,6 +247,7 @@ function applyCalendarDelta(payload){
 
 const jid = sessionStorage.getItem('tz_current_journal');
 let allTrades=[], curYear=new Date().getFullYear(), curMonth=new Date().getMonth(), userIsPro=false;
+let _prevOpen=true;
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 let _proLocked=false;
@@ -387,18 +400,22 @@ function renderMonth(){
   renderPrevMonths();
 }
 
+function togglePrevMonths(){
+  _prevOpen=!_prevOpen;
+  renderPrevMonths();
+}
+
 function renderPrevMonths(){
   const section=document.getElementById('prevMonthsSection');
   const grid=document.getElementById('prevMonthsGrid');
   if(!section||!grid)return;
 
-  // Group all trades by year-month, excluding the currently viewed month
+  // Group ALL trades by year-month (including current month)
   const monthData={};
   allTrades.forEach(t=>{
     if(!t.date)return;
     const parts=t.date.split('-').map(Number);
     const y=parts[0],m=parts[1]-1;
-    if(y===curYear&&m===curMonth)return;
     const key=y+'-'+String(m).padStart(2,'0');
     if(!monthData[key])monthData[key]={y,m,trades:[]};
     monthData[key].trades.push(t);
@@ -407,11 +424,30 @@ function renderPrevMonths(){
   const keys=Object.keys(monthData).sort().reverse();
   if(keys.length===0){section.style.display='none';return;}
   section.style.display='block';
+
+  // Sync toggle button label & icon
+  const toggleIcon=document.getElementById('pmToggleIcon');
+  const toggleLbl=document.getElementById('pmToggleLbl');
+  if(toggleIcon)toggleIcon.className=`fa-solid ${_prevOpen?'fa-chevron-up':'fa-chevron-down'}`;
+  if(toggleLbl)toggleLbl.textContent=_prevOpen?'Hide':'Show';
+
+  // Show/hide grid without re-rendering when collapsed
+  if(!_prevOpen){grid.style.display='none';return;}
+  grid.style.display='block';
   grid.innerHTML='';
 
-  keys.slice(0,12).forEach(key=>{
-    const {y,m,trades}=monthData[key];
+  const mkStat=(lbl,val,color)=>{
+    const s=document.createElement('div');s.className='pm-stat';
+    const l=document.createElement('span');l.className='pm-stat-lbl';l.textContent=lbl;
+    const v=document.createElement('span');v.className='pm-stat-val';v.textContent=val;
+    if(color)v.style.color=color;
+    s.appendChild(l);s.appendChild(v);return s;
+  };
+
+  keys.slice(0,24).forEach(key=>{
+    const{y,m,trades}=monthData[key];
     if(isMonthLocked(y,m))return;
+    const isCurrent=y===curYear&&m===curMonth;
 
     const pnlT=trades.filter(t=>t.pnl!==''&&!isNaN(parseFloat(t.pnl)));
     const totalPnl=pnlT.reduce((s,t)=>s+parseFloat(t.pnl),0);
@@ -422,25 +458,24 @@ function renderPrevMonths(){
     const aR=rT.length>0?tR/rT.length:null;
 
     const row=document.createElement('div');
-    row.className='pm-row';
-    row.title='Click to view '+MONTHS[m]+' '+y;
+    row.className='pm-row'+(isCurrent?' is-current':'');
+    row.title=(isCurrent?'Currently viewing — ':'')+MONTHS[m]+' '+y;
     row.onclick=()=>{curYear=y;curMonth=m;renderMonth();updateNavButtons();window.scrollTo({top:0,behavior:'smooth'});};
 
     const nameEl=document.createElement('div');
     nameEl.className='pm-name';
-    nameEl.textContent=MONTHS[m].slice(0,3)+' '+y;
+    const nameText=document.createElement('span');
+    nameText.textContent=MONTHS[m].slice(0,3)+' '+y;
+    nameEl.appendChild(nameText);
+    if(isCurrent){
+      const badge=document.createElement('span');
+      badge.className='pm-current-badge';
+      badge.textContent='Current';
+      nameEl.appendChild(badge);
+    }
 
     const statsEl=document.createElement('div');
     statsEl.className='pm-stats';
-
-    const mkStat=(lbl,val,color)=>{
-      const s=document.createElement('div');s.className='pm-stat';
-      const l=document.createElement('span');l.className='pm-stat-lbl';l.textContent=lbl;
-      const v=document.createElement('span');v.className='pm-stat-val';v.textContent=val;
-      if(color)v.style.color=color;
-      s.appendChild(l);s.appendChild(v);return s;
-    };
-
     statsEl.appendChild(mkStat('Trades',trades.length,''));
     statsEl.appendChild(mkStat('Win Rate',wr!==null?wr.toFixed(0)+'%':'—',wr!==null?(wr>=50?G:R):''));
     statsEl.appendChild(mkStat('Avg R',aR!==null?(aR>=0?'+':'')+aR.toFixed(2)+'R':'—',aR!==null?(aR>0?G:aR<0?R:'var(--muted)'):''));
@@ -453,7 +488,6 @@ function renderPrevMonths(){
     grid.appendChild(row);
   });
 
-  // If all months were locked, hide section
   if(grid.children.length===0)section.style.display='none';
 }
 

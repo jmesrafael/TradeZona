@@ -67,9 +67,6 @@ body{visibility:hidden;background:var(--bg);color:var(--text);font-family:var(--
 .sec-tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0e1a0f;border:1px solid var(--border2,#253127);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text);white-space:normal;width:max-content;max-width:240px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.5);line-height:1.5;text-transform:none;letter-spacing:normal;font-weight:400;pointer-events:none;opacity:0;transition:opacity .15s}
 .sec-tip:hover::after{opacity:1}
 
-/* Dynamic equity btn */
-.dyn-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 9px;font-size:10px;font-weight:600;font-family:var(--font-heading,'Space Grotesk',sans-serif);cursor:pointer;transition:all .15s}
-.dyn-btn.active{background:rgba(25,195,125,.12);border-color:rgba(25,195,125,.4);color:#19c37d}
 
 /* Grids */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -229,26 +226,6 @@ Chart.register({
   }
 });
 Chart.register({
-  id:'dynamicColorGradient',
-  beforeRender(chart){
-    if(!chart._dynamicColor)return;
-    const{ctx,chartArea,scales}=chart;if(!chartArea)return;
-    const{top,bottom}=chartArea;
-    const zeroY=scales.y.getPixelForValue(0);
-    const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-    const zr=clamp((zeroY-top)/(bottom-top),0,1);
-    const a=Math.max(0,zr-.001),b=Math.min(1,zr+.001);
-    const bd=ctx.createLinearGradient(0,top,0,bottom);
-    bd.addColorStop(0,G);bd.addColorStop(a,G);bd.addColorStop(b,R);bd.addColorStop(1,R);
-    const bg=ctx.createLinearGradient(0,top,0,bottom);
-    bg.addColorStop(0,G+'30');bg.addColorStop(a,G+'08');bg.addColorStop(b,R+'08');bg.addColorStop(1,R+'30');
-    const ds=chart.data.datasets[0];
-    ds.borderColor=bd;ds.backgroundColor=bg;
-    ds.pointBackgroundColor=(ds.data||[]).map(v=>v>=0?G:R);
-    ds.pointHoverBackgroundColor=ds.pointBackgroundColor;
-  }
-});
-Chart.register({
   id:'doughnutCenterText',
   afterDatasetsDraw(chart){
     if(!chart._centerText)return;
@@ -359,7 +336,7 @@ function renderOverviewHtml(trades,stats){
   return`<div style="display:flex;flex-direction:column;gap:16px">
     <div class="g-eq">
       <div class="card">
-        ${secHdr('fa-chart-area','Equity Curve','Cumulative P&amp;L plotted over time — each point is the running total after that trade. A rising line means you are growing; a falling line means drawdown.','<button class="dyn-btn" id="eqDynBtn" onclick="window._toggleDynamic()">⚡ Dynamic</button>')}
+        ${secHdr('fa-chart-area','Equity Curve','Cumulative P&amp;L plotted over time — each point is the running total after that trade. A rising line means you are growing; a falling line means drawdown.')}
         <div style="height:260px;position:relative"><canvas id="eq"></canvas></div>
       </div>
       <div class="card">
@@ -399,19 +376,7 @@ function initOverviewCharts(trades,stats){
   const{wins,losses,be,wr,sorted,vld}=stats;
 
   // Equity
-  window._eqChart=_makeEquityChart('eq',sorted);
-  window._toggleDynamic=function(){
-    if(!window._eqChart)return;
-    window._eqChart._dynamicColor=!window._eqChart._dynamicColor;
-    const btn=document.getElementById('eqDynBtn');
-    if(btn)btn.classList.toggle('active',window._eqChart._dynamicColor);
-    if(!window._eqChart._dynamicColor){
-      window._eqChart.data.datasets[0].borderColor=G;
-      window._eqChart.data.datasets[0].backgroundColor=G+'14';
-      window._eqChart.data.datasets[0].pointBackgroundColor=G;
-    }
-    window._eqChart.update();
-  };
+  _makeEquityChart('eq',sorted);
 
   // Win/Loss donut
   const wl=_mkChart(document.getElementById('wl'),{
