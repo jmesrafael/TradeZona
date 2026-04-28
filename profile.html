@@ -564,7 +564,7 @@ function populateSubscription(profile, isPro) {
       statusEl.className   = 'sub-val pro';
     }
 
-    if (profile?.subscription_expires_at) {
+    if (profile?.subscription_expires_at || profile?.pro_expires_at) {
       expiryEl.textContent = subStatus.label;
       expiryEl.className   = 'sub-val ' + (subStatus.expired ? 'expired' : subStatus.expiring ? 'expiring' : 'pro');
       expiryRow.style.display = 'flex';

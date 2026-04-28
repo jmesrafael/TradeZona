@@ -227,7 +227,9 @@ function getSubscriptionStatus(profile) {
 
   const planType = profile?.plan_type || 'none';
 
-  if (planType === 'lifetime' || !profile?.subscription_expires_at) {
+  const expiresAt = profile?.subscription_expires_at || profile?.pro_expires_at;
+
+  if (planType === 'lifetime' || !expiresAt) {
     return {
       isPro: true, expired: false, expiring: false,
       daysLeft: null, label: 'Lifetime', planType: 'lifetime'
@@ -235,7 +237,7 @@ function getSubscriptionStatus(profile) {
   }
 
   const now      = new Date();
-  const expires  = new Date(profile.subscription_expires_at);
+  const expires  = new Date(expiresAt);
   const msLeft   = expires - now;
   const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
   const expired  = daysLeft <= 0;

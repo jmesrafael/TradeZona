@@ -514,12 +514,6 @@ function showDayModal(dayNum,dateStr,trades){
     pos.className='dp-pos '+((t.position||'Long').toLowerCase());
     pos.textContent=t.position||'Long';
     left.appendChild(pair);left.appendChild(pos);
-    // Strategy tags — theme-based (not hardcoded)
-    (t.strategy||[]).forEach(s=>{
-      const tag=document.createElement('span');
-      tag.style.cssText='font-size:10px;background:rgba(var(--accent2-rgb,25,195,125),.1);color:var(--accent2);border-radius:4px;padding:1px 6px';
-      tag.textContent=s;left.appendChild(tag);
-    });
     const right=document.createElement('div');right.style.cssText='display:flex;align-items:center;gap:8px';
     if(t.time){const time=document.createElement('span');time.style.cssText='font-size:11px;color:var(--muted)';time.textContent=t.time;right.appendChild(time);}
     // Trade PNL — hardcoded green/red

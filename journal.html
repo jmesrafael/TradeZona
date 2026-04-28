@@ -1231,12 +1231,12 @@ let _bnbDupCount = 0;
   const _badge = document.getElementById('hPlanBadge');
   if (userIsPro) {
     const _sub = getSubscriptionStatus(profile);
-    if (_sub.expiring) {
-      _badge.textContent = `Pro · ${_sub.daysLeft}d left`;
-      _badge.className = 'plan-badge badge-expiring';
-    } else if (_sub.expired) {
+    if (_sub.expired) {
       _badge.textContent = 'Pro Expired';
       _badge.className = 'plan-badge badge-free';
+    } else if (_sub.expiring) {
+      _badge.textContent = `Pro · ${_sub.daysLeft}d left`;
+      _badge.className = 'plan-badge badge-expiring';
     } else {
       _badge.textContent = 'Pro';
       _badge.className = 'plan-badge badge-pro';

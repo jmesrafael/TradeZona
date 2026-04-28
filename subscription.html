@@ -818,7 +818,7 @@ function showToast(msg, icon, type) {
 
     document.getElementById('manageBtn').style.display = 'inline-flex';
 
-    if (currentProfile?.subscription_expires_at && planType !== 'lifetime') {
+    if ((currentProfile?.subscription_expires_at || currentProfile?.pro_expires_at) && planType !== 'lifetime') {
       const totalDays = planType === 'yearly' ? 365 : 30;
       const daysLeft  = subStatus.daysLeft ?? 0;
       const pct       = Math.max(0, Math.min(100, (daysLeft / totalDays) * 100));
