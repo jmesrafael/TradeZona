@@ -1235,7 +1235,7 @@ let _bnbDupCount = 0;
       _badge.textContent = 'Pro Expired';
       _badge.className = 'plan-badge badge-free';
     } else if (_sub.expiring) {
-      _badge.textContent = `Pro · ${_sub.daysLeft}d left`;
+      _badge.textContent = `Expires in ${_sub.daysLeft}d`;
       _badge.className = 'plan-badge badge-expiring';
     } else {
       _badge.textContent = 'Pro';

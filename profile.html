@@ -571,7 +571,7 @@ function populateSubscription(profile, isPro) {
 
       // Progress bar: show for non-lifetime plans
       if (planType !== 'lifetime') {
-        const totalDays = planType === 'yearly' ? 365 : 30;
+        const totalDays = planType === 'yearly' ? 365 : planType === 'monthly' ? 30 : (subStatus.daysLeft > 60 ? 365 : 30);
         const daysLeft  = subStatus.daysLeft ?? 0;
         const pct       = Math.max(0, Math.min(100, (daysLeft / totalDays) * 100));
         const fillColor = subStatus.expired ? 'var(--red)' : subStatus.expiring ? '#fbbf24' : 'var(--accent2)';

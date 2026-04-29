@@ -686,7 +686,7 @@ function renderSubBanner(s){const banner=document.getElementById('subBanner'),te
   const badge=document.getElementById('planBadge');
   const sub=getSubscriptionStatus(currentProfile);
   if(isPro){
-    if(sub.expiring){badge.textContent=`Pro · ${sub.daysLeft}d left`;badge.className='plan-badge badge-expiring';}
+    if(sub.expiring){badge.textContent=`Expires in ${sub.daysLeft}d`;badge.className='plan-badge badge-expiring';}
     else if(sub.expired){badge.textContent='Pro Expired';badge.className='plan-badge badge-free';}
     else{badge.textContent='Pro';badge.className='plan-badge badge-pro';}
     renderSubBanner(sub);
